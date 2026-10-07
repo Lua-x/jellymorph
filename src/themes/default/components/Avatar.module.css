@@ -1,0 +1,39 @@
+.avatar {
+  position: relative;
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: linear-gradient(
+    145deg,
+    hsl(var(--avatar-hue) 55% 42%),
+    hsl(calc(var(--avatar-hue) + 40) 50% 30%)
+  );
+  color: #fff;
+  font-weight: 650;
+}
+
+.sm {
+  width: 2rem;
+  height: 2rem;
+  font-size: 0.8125rem;
+}
+
+.lg {
+  width: 100%;
+  aspect-ratio: 1;
+  font-size: clamp(1.75rem, 30cqi, 3rem);
+}
+
+.initials {
+  letter-spacing: 0.02em;
+}
+
+.image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

@@ -1,0 +1,72 @@
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  text-align: center;
+}
+
+.page {
+  min-height: min(70dvh, 40rem);
+  padding: 3rem 1rem;
+}
+
+.section {
+  padding: 2.5rem 1rem;
+}
+
+.inline {
+  flex-direction: row;
+  padding: 0.5rem;
+}
+
+.spinner {
+  color: var(--color-accent-text);
+}
+
+.loadingLabel {
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+  animation: appear var(--duration-slow) var(--ease-standard) 400ms both;
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+  color: var(--color-accent-text);
+  font-size: 1.5rem;
+}
+
+.danger {
+  background: color-mix(in srgb, var(--color-danger) 14%, transparent);
+  color: var(--color-danger);
+}
+
+.title {
+  margin: 0.25rem 0 0;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 650;
+}
+
+.message {
+  max-width: 32rem;
+  margin: 0 0 0.5rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+:global([data-motion='reduced']) .loadingLabel {
+  animation: none;
+}

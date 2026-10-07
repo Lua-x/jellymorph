@@ -1,0 +1,115 @@
+.button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0 1.125rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    transform var(--duration-fast) var(--ease-standard),
+    opacity var(--duration-fast) var(--ease-standard);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.busy:disabled {
+  opacity: 1;
+}
+
+.content {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.content > svg {
+  font-size: 1.125rem;
+}
+
+.busy .content {
+  opacity: 0;
+}
+
+.spinner {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+}
+
+.md {
+  min-height: 2.75rem;
+}
+
+.lg {
+  min-height: 3.25rem;
+  padding: 0 1.5rem;
+  font-size: 1rem;
+}
+
+.block {
+  display: flex;
+  width: 100%;
+}
+
+.primary {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.primary:is(:hover, :focus-visible):not(:disabled) {
+  background: color-mix(in srgb, var(--color-accent) 86%, white);
+}
+
+.secondary {
+  background: var(--color-surface-raised);
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+
+.secondary:is(:hover, :focus-visible):not(:disabled) {
+  background: var(--color-surface-hover);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--color-text);
+}
+
+.ghost:is(:hover, :focus-visible):not(:disabled) {
+  background: var(--color-surface-hover);
+}
+
+.danger {
+  background: transparent;
+  border-color: color-mix(in srgb, var(--color-danger) 50%, transparent);
+  color: var(--color-danger);
+}
+
+.danger:is(:hover, :focus-visible):not(:disabled) {
+  background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+}
+
+:global([data-motion='reduced']) .button {
+  transition: none;
+}

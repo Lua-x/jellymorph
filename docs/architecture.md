@@ -32,11 +32,11 @@
 
 ### 1.1 Jellyfin-Server
 
-| Version | Status | Relevanz |
-| --- | --- | --- |
-| 10.10.x | Mindestversion laut Spezifikation und `MINIMUM_VERSION` des SDK | MediaSegments-API ist ab hier verfügbar |
-| 10.11.x | verbreitet | – |
-| 12.0.x | seit 07.09.2026 aktuell, neues Versionsschema („10.12“ heißt jetzt „12.0“) | siehe unten |
+| Version | Status                                                                     | Relevanz                                |
+| ------- | -------------------------------------------------------------------------- | --------------------------------------- |
+| 10.10.x | Mindestversion laut Spezifikation und `MINIMUM_VERSION` des SDK            | MediaSegments-API ist ab hier verfügbar |
+| 10.11.x | verbreitet                                                                 | –                                       |
+| 12.0.x  | seit 07.09.2026 aktuell, neues Versionsschema („10.12“ heißt jetzt „12.0“) | siehe unten                             |
 
 Was Jellyfin 12.0 für Clients ändert (aus den Release Notes):
 
@@ -50,41 +50,46 @@ Was Jellyfin 12.0 für Clients ändert (aus den Release Notes):
 
 - Generiert aus der OpenAPI von Jellyfin 12.0. Viele Klassen wurden umbenannt oder verschoben. Für uns relevant (verifiziert):
 
-  | Zweck | SDK 1.0.0 |
-  | --- | --- |
-  | Items, Resume, Latest, Similar, lokale Trailer | `getLibraryApi` → `getItems`, `getItem`, `getResumeItems`, `getLatestMedia`, `getSimilarItems`, `getLocalTrailers` |
-  | Favorit, gesehen | `getUserDataApi` → `markFavoriteItem`, `unmarkFavoriteItem`, `markPlayedItem`, `markUnplayedItem` |
-  | Serien | `getShowApi` → `getSeasons`, `getEpisodes` (mit `startItemId`/`adjacentTo`), `getNextUp` |
-  | Bibliotheken | `getUserViewApi` → `getUserViews` |
-  | Login, Quick Connect | `getAuthenticationApi` → `authenticateUserByName`, `getQuickConnectEnabled`, `initiateQuickConnect`, `getQuickConnectState`, `authenticateWithQuickConnect` |
-  | Benutzer | `getUserApi` → `getCurrentUser`, `getPublicUsers`, `updateUserConfiguration` |
-  | Wiedergabe | `getMediaInfoApi` → `getPostedPlaybackInfo`, `getBitrateTestBytes` |
-  | Reporting | `getSessionApi` → `reportPlaybackStart`, `reportPlaybackProgress`, `reportPlaybackStopped`, `pingPlaybackSession`, `postFullCapabilities` |
-  | Segmente, Trickplay | `getMediaSegmentApi` → `getItemSegments`; `getTrickPlayApi` |
-  | Einstellungen | `getDisplayPreferenceApi` → `getDisplayPreferences`, `updateDisplayPreferences` |
-  | Suche, Filter, Genres | `getLibraryApi.getItems({ searchTerm })`, `getFilterApi.getQueryFilters`, `getGenreApi.getGenres` |
-  | Server-Erkennung | `jellyfin.discovery.getRecommendedServerCandidates()` / `findBestServer()` |
-  | Bild-URLs | `getImageApi(api)` liefert `ImageUrlsApi` mit `getItemImageUrl()`, `getItemImageUrlById()`, `getUserImageUrl()` |
-  | Live-Updates | `api.subscribe()` über WebSocket (`UserDataChanged`, `LibraryChanged`, `UserUpdated` …) |
+  | Zweck                                          | SDK 1.0.0                                                                                                                                                   |
+  | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | Items, Resume, Latest, Similar, lokale Trailer | `getLibraryApi` → `getItems`, `getItem`, `getResumeItems`, `getLatestMedia`, `getSimilarItems`, `getLocalTrailers`                                          |
+  | Favorit, gesehen                               | `getUserDataApi` → `markFavoriteItem`, `unmarkFavoriteItem`, `markPlayedItem`, `markUnplayedItem`                                                           |
+  | Serien                                         | `getShowApi` → `getSeasons`, `getEpisodes` (mit `startItemId`/`adjacentTo`), `getNextUp`                                                                    |
+  | Bibliotheken                                   | `getUserViewApi` → `getUserViews`                                                                                                                           |
+  | Login, Quick Connect                           | `getAuthenticationApi` → `authenticateUserByName`, `getQuickConnectEnabled`, `initiateQuickConnect`, `getQuickConnectState`, `authenticateWithQuickConnect` |
+  | Benutzer                                       | `getUserApi` → `getCurrentUser`, `getPublicUsers`, `updateUserConfiguration`                                                                                |
+  | Wiedergabe                                     | `getMediaInfoApi` → `getPostedPlaybackInfo`, `getBitrateTestBytes`                                                                                          |
+  | Reporting                                      | `getSessionApi` → `reportPlaybackStart`, `reportPlaybackProgress`, `reportPlaybackStopped`, `pingPlaybackSession`, `postFullCapabilities`                   |
+  | Segmente, Trickplay                            | `getMediaSegmentApi` → `getItemSegments`; `getTrickPlayApi`                                                                                                 |
+  | Einstellungen                                  | `getDisplayPreferenceApi` → `getDisplayPreferences`, `updateDisplayPreferences`                                                                             |
+  | Suche, Filter, Genres                          | `getLibraryApi.getItems({ searchTerm })`, `getFilterApi.getQueryFilters`, `getGenreApi.getGenres`                                                           |
+  | Server-Erkennung                               | `jellyfin.discovery.getRecommendedServerCandidates()` / `findBestServer()`                                                                                  |
+  | Bild-URLs                                      | `getImageApi(api)` liefert `ImageUrlsApi` mit `getItemImageUrl()`, `getItemImageUrlById()`, `getUserImageUrl()`                                             |
+  | Live-Updates                                   | `api.subscribe()` über WebSocket (`UserDataChanged`, `LibraryChanged`, `UserUpdated` …)                                                                     |
 
 - **Kompatibilität mit 10.10, verifiziert:** Ich habe alle Endpunkt-Pfade aus dem generierten Client von 1.0.0 extrahiert und mit SDK 0.11.0 (generiert für 10.10) verglichen. Nur in 1.0.0 vorhanden: `/Backup*`, `/Items/{id}/Collections`, `/SyncPlay/{id}`, `/System/Configuration/Branding`, `/System/Info/Storage`. Keinen davon brauchen wir. Alle Pfade, die der Client nutzt, sind in 10.10 identisch.
 - **Fehlt in 1.0.0:** die dynamischen HLS-Endpunkte (`master.m3u8` …) und `DELETE /Videos/ActiveEncodings`. HLS brauchen wir nicht direkt, denn die URL kommt fertig als `MediaSourceInfo.TranscodingUrl` vom Server. `ActiveEncodings` brauchen wir beim Spurwechsel (§9.7) und rufen es deshalb über die SDK-Axios-Instanz auf. **[Entscheidung]**, dokumentiert in CLAUDE.md §12.
 - Der `Api`-Konstruktor akzeptiert eine eigene Axios-Instanz. Jede Methode nimmt Axios-Optionen an, also auch `signal` (Abbruch durch TanStack Query) und `fetchOptions: { keepalive: true }` (Stop-Meldung beim Schließen des Tabs; axios 1.20 unterstützt `fetchOptions`, verifiziert).
 - `getBrowserDeviceProfile()` erzeugt nur Untertitelprofile. Den DeviceProfile-Generator schreiben wir selbst (§9.3).
+- **Erkenntnisse aus Phase 1:**
+  - `getImageApi(api).getUserImageUrl()` baut `/Users/{id}/Images/Primary`. Diesen Pfad gibt es weder in der 10.10- noch in der 12.0-Spezifikation; beide liefern `/UserImage?userId=…&tag=…`.
+  - Die `ImageUrlsApi`-Helfer ziehen die komplette generierte `ImageApi` ins Bundle (~48 KB minifiziert). Bild-URLs entstehen deshalb in `api/urls.ts` über `api.getUri()`.
+  - `UserDto.HasPassword` und `HasConfiguredPassword` sind in 12.0 ohne Ersatz als veraltet markiert, werden aber von 10.10 bis 12.0 geliefert. Wir lesen `HasPassword`, damit wir keine Anmeldung mit leerem Passwort probieren müssen; ein solcher Versuch zählt zur Kontosperre.
+  - `api.logout()` ist veraltet. Wir nutzen stattdessen `getSessionApi(api).reportSessionEnded()`.
 - `axios` ist Peer-Dependency (`^1.12`) und damit zwingend.
 
 ### 1.3 Werkzeuge (npm-Stand 07.10.2026)
 
-| Paket | Version | Anmerkung |
-| --- | --- | --- |
-| Node | 24.19 (lokal) | CI ebenfalls Node 24 |
-| react / react-dom | 19.3.0 | |
-| vite | 8.3.3 | |
-| typescript | **~6.0** | 7.0.2 existiert, aber typescript-eslint 8.71 verlangt `<6.1.0` (verifiziert). **[Entscheidung]** |
-| eslint | 10.x | `eslint-plugin-jsx-a11y` unterstützt ESLint 10 nicht; im Projekt Crystal hat `eslint-plugin-jsx-a11y-x` funktioniert. In Phase 1 prüfen. |
-| vitest | 5.0 | |
-| msw | 3.0 | Node ≥ 22.12 |
-| @playwright/test | 1.63 | |
+| Paket             | Version       | Anmerkung                                                                                                                                |
+| ----------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Node              | 24.19 (lokal) | CI ebenfalls Node 24                                                                                                                     |
+| react / react-dom | 19.3.0        |                                                                                                                                          |
+| vite              | 8.3.3         |                                                                                                                                          |
+| typescript        | **~6.0**      | 7.0.2 existiert, aber typescript-eslint 8.71 verlangt `<6.1.0` (verifiziert). **[Entscheidung]**                                         |
+| eslint            | 10.x          | `eslint-plugin-jsx-a11y` unterstützt ESLint 10 nicht; im Projekt Crystal hat `eslint-plugin-jsx-a11y-x` funktioniert. In Phase 1 prüfen. |
+| vitest            | 5.0           |                                                                                                                                          |
+| msw               | 3.0           | Node ≥ 22.12                                                                                                                             |
+| @playwright/test  | 1.63          |                                                                                                                                          |
 
 ### 1.4 Browser-Ziele **[Entscheidung, Frage 3]**
 
@@ -96,29 +101,29 @@ Chrome/Edge ≥ 111, Firefox ≥ 128 (ESR), Safari/iOS ≥ 16.4. Damit stehen Co
 
 ### 2.1 Laufzeit (laut Spezifikation)
 
-| Paket | Zweck | Begründung | Geladen |
-| --- | --- | --- | --- |
-| `react`, `react-dom` 19.3 | UI | Spezifikation | Basis |
-| `react-router` 8.4 | Routing | Data Router mit `lazy`-Routen, Modal-Routen über `state.backgroundLocation` | Basis |
-| `@jellyfin/sdk` 1.0.0 + `axios` 1.20 | API | Spezifikation; axios ist Peer-Dependency. Importe über Unterpfade (`@jellyfin/sdk/lib/utils/api/...`), damit Tree-Shaking greift | Basis |
-| `@tanstack/react-query` 5.104 | Server-State | Caching, Abbruch, Hintergrund-Refresh, optimistische Updates | Basis |
-| `zustand` 5 | App-State | Session, Einstellungen, Player-Zustand; ~1 KB | Basis |
-| `@tanstack/react-virtual` 3.14 | Virtualisierung | Bibliotheksraster | Lazy (Bibliotheksroute) |
-| `hls.js` 1.7 | HLS | Transcoding-Wiedergabe außerhalb von Safari | Lazy (Player-Chunk) |
-| `motion` 14 | Animation | Nur über `LazyMotion` + `m.*`, Features asynchron nachladen | Basis (klein) + Lazy |
-| `@noriginmedia/norigin-spatial-navigation` 3.3 | Fernbedienung | Jetzt aufgeteilt in `-core` und `-react`; zieht `lodash-es` (tree-shakebar) | Basis |
-| `i18next` 26 + `react-i18next` 17 | i18n | Spezifikation; `react-i18next` ist die zugehörige React-Bindung | Basis; Sprachdateien Lazy |
-| `@fontsource/*` | Schriften | Spezifikation; Import im jeweiligen Theme-Einstieg | Lazy (Theme-Chunk) |
+| Paket                                          | Zweck           | Begründung                                                                                                                       | Geladen                   |
+| ---------------------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| `react`, `react-dom` 19.3                      | UI              | Spezifikation                                                                                                                    | Basis                     |
+| `react-router` 8.4                             | Routing         | Data Router mit `lazy`-Routen, Modal-Routen über `state.backgroundLocation`                                                      | Basis                     |
+| `@jellyfin/sdk` 1.0.0 + `axios` 1.20           | API             | Spezifikation; axios ist Peer-Dependency. Importe über Unterpfade (`@jellyfin/sdk/lib/utils/api/...`), damit Tree-Shaking greift | Basis                     |
+| `@tanstack/react-query` 5.104                  | Server-State    | Caching, Abbruch, Hintergrund-Refresh, optimistische Updates                                                                     | Basis                     |
+| `zustand` 5                                    | App-State       | Session, Einstellungen, Player-Zustand; ~1 KB                                                                                    | Basis                     |
+| `@tanstack/react-virtual` 3.14                 | Virtualisierung | Bibliotheksraster                                                                                                                | Lazy (Bibliotheksroute)   |
+| `hls.js` 1.7                                   | HLS             | Transcoding-Wiedergabe außerhalb von Safari                                                                                      | Lazy (Player-Chunk)       |
+| `motion` 14                                    | Animation       | Nur über `LazyMotion` + `m.*`, Features asynchron nachladen                                                                      | Basis (klein) + Lazy      |
+| `@noriginmedia/norigin-spatial-navigation` 3.3 | Fernbedienung   | Jetzt aufgeteilt in `-core` und `-react`; zieht `lodash-es` (tree-shakebar)                                                      | Basis                     |
+| `i18next` 26 + `react-i18next` 17              | i18n            | Spezifikation; `react-i18next` ist die zugehörige React-Bindung                                                                  | Basis; Sprachdateien Lazy |
+| `@fontsource/*`                                | Schriften       | Spezifikation; Import im jeweiligen Theme-Einstieg                                                                               | Lazy (Theme-Chunk)        |
 
 ### 2.2 Zusätzlich vorgeschlagen **[Frage 4]**
 
-| Paket | Art | Warum |
-| --- | --- | --- |
-| `blurhash` 2.0 | Laufzeit, ~1 KB gzip | BlurHash-Platzhalter sind Pflicht. Die Referenzimplementierung ist kleiner als jeder eigene Nachbau und getestet. Encoder nur im Fixture-Skript. |
-| `@testing-library/user-event`, `@testing-library/jest-dom`, `jsdom` | Dev | Übliches Zubehör zu React Testing Library |
-| `@axe-core/playwright` | Dev | Automatische Barrierefreiheitsprüfung in E2E (WCAG AA ist Pflicht) |
-| `typescript-eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh`, `eslint-plugin-jsx-a11y-x`, `eslint-config-prettier`, `globals` | Dev | ESLint-Grundausstattung für React + TS + a11y |
-| `@vitejs/plugin-react` 6 | Dev | Vite-Integration |
+| Paket                                                                                                                                            | Art                  | Warum                                                                                                                                            |
+| ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `blurhash` 2.0                                                                                                                                   | Laufzeit, ~1 KB gzip | BlurHash-Platzhalter sind Pflicht. Die Referenzimplementierung ist kleiner als jeder eigene Nachbau und getestet. Encoder nur im Fixture-Skript. |
+| `@testing-library/user-event`, `@testing-library/jest-dom`, `jsdom`                                                                              | Dev                  | Übliches Zubehör zu React Testing Library                                                                                                        |
+| `@axe-core/playwright`                                                                                                                           | Dev                  | Automatische Barrierefreiheitsprüfung in E2E (WCAG AA ist Pflicht)                                                                               |
+| `typescript-eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh`, `eslint-plugin-jsx-a11y-x`, `eslint-config-prettier`, `globals` | Dev                  | ESLint-Grundausstattung für React + TS + a11y                                                                                                    |
+| `@vitejs/plugin-react` 6                                                                                                                         | Dev                  | Vite-Integration                                                                                                                                 |
 
 ### 2.3 Bewusst **nicht** verwendet
 
@@ -198,11 +203,11 @@ docker/  e2e/  docs/  scripts/  .github/workflows/
 
 ### 3.3 Importregeln (per ESLint erzwungen) **[Entscheidung]**
 
-| Bereich | darf nicht importieren | Zweck |
-| --- | --- | --- |
-| `src/themes/**` | `@/api/**`, `@jellyfin/sdk*`, `axios`, `@tanstack/react-query`, `@/mocks/**`, `@/player/engines/**`, andere Themes (außer `default`); Globals `fetch`, `XMLHttpRequest`, `localStorage` | Themes bleiben reine Darstellung und rufen keine API auf |
-| `src/hooks/**`, `src/api/**`, `src/domain/**`, `src/player/**` | `@/themes/**` | Headless bleibt headless |
-| alles außer `src/app/main.tsx` | `@/mocks/**` | MSW landet nie im Basis-Bundle |
+| Bereich                                                        | darf nicht importieren                                                                                                                                                                  | Zweck                                                    |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| `src/themes/**`                                                | `@/api/**`, `@jellyfin/sdk*`, `axios`, `@tanstack/react-query`, `@/mocks/**`, `@/player/engines/**`, andere Themes (außer `default`); Globals `fetch`, `XMLHttpRequest`, `localStorage` | Themes bleiben reine Darstellung und rufen keine API auf |
+| `src/hooks/**`, `src/api/**`, `src/domain/**`, `src/player/**` | `@/themes/**`                                                                                                                                                                           | Headless bleibt headless                                 |
+| alles außer `src/app/main.tsx`                                 | `@/mocks/**`                                                                                                                                                                            | MSW landet nie im Basis-Bundle                           |
 
 Umgesetzt mit `no-restricted-imports` und `no-restricted-globals` als Overrides je Dateimuster. Dafür braucht es kein zusätzliches Plugin.
 
@@ -216,12 +221,12 @@ Umgesetzt mit `no-restricted-imports` und `no-restricted-globals` als Overrides 
 
 ```ts
 export interface AppConfig {
-  jellyfinUrl: string | null;   // JELLYFIN_URL
-  lockServer: boolean;          // LOCK_SERVER
-  proxyPath: string | null;     // '/jellyfin' wenn JELLYFIN_PROXY_TARGET gesetzt ist, sonst null
-  defaultTheme: ThemeId;        // DEFAULT_THEME, unbekannte IDs → 'default' + Warnung
-  appTitle: string;             // APP_TITLE
-  demoMode: boolean;            // DEMO_MODE – [Frage 5]
+  jellyfinUrl: string | null; // JELLYFIN_URL
+  lockServer: boolean; // LOCK_SERVER
+  proxyPath: string | null; // '/jellyfin' wenn JELLYFIN_PROXY_TARGET gesetzt ist, sonst null
+  defaultTheme: ThemeId; // DEFAULT_THEME, unbekannte IDs → 'default' + Warnung
+  appTitle: string; // APP_TITLE
+  demoMode: boolean; // DEMO_MODE – [Frage 5]
 }
 ```
 
@@ -269,15 +274,17 @@ In der Entwicklung liefert ein kleines Vite-Plugin `/config.js` aus `.env.local`
 
 Jeder Query-Aufruf reicht `signal` an das SDK durch. Retries: 2 bei Netzwerk- oder 5xx-Fehlern mit Backoff, keine bei 4xx.
 
+axios nutzt global den **Fetch-Adapter** (`axios.defaults.adapter = 'fetch'`, gilt auch für die SDK-interne Server-Erkennung). Gründe: `keepalive` für die Stop-Meldung beim Schließen des Tabs (§9.8) und gleiches Verhalten in Browser und Tests. MSW 3 fängt im Test-DOM `fetch` ab, aber nicht `XMLHttpRequest`. **[Entscheidung]**
+
 ### 5.6 URLs
 
-| Ziel | Aufbau |
-| --- | --- |
-| Bilder | `ImageUrlsApi.getItemImageUrl(item, type, { maxWidth, quality: 85, tag })`. Breite = gerenderte Breite × DPR, gerundet auf eine Stufenleiter (240/360/480/720/960/1280/1920/2560/3840). `srcset` für Hero/Backdrops. Bilder brauchen kein Token. |
-| Direct-Play-Stream | `api.getUri('/Videos/{id}/stream', { static: true, mediaSourceId, PlaySessionId, Tag, ApiKey })` |
-| Transcoding | `TranscodingUrl` aus PlaybackInfo, wie geliefert, an Basis-URL gehängt |
-| Untertitel | Abruf über `getSubtitleApi` als Text → Blob-URL für `<track>` (§9.6) |
-| Trickplay-Kacheln | `api.getUri('/Videos/{id}/Trickplay/{width}/{index}.jpg', { MediaSourceId, ApiKey })` |
+| Ziel               | Aufbau                                                                                                                                                                                                                                                                                             |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Bilder             | `api/urls.ts` → `api.getUri('/Items/{id}/Images/{type}', { tag, maxWidth, quality: 85 })` (nicht `ImageUrlsApi`, siehe §1.2). Breite = gerenderte Breite × DPR, gerundet auf eine Stufenleiter (240/360/480/720/960/1280/1920/2560/3840). `srcset` für Hero/Backdrops. Bilder brauchen kein Token. |
+| Direct-Play-Stream | `api.getUri('/Videos/{id}/stream', { static: true, mediaSourceId, PlaySessionId, Tag, ApiKey })`                                                                                                                                                                                                   |
+| Transcoding        | `TranscodingUrl` aus PlaybackInfo, wie geliefert, an Basis-URL gehängt                                                                                                                                                                                                                             |
+| Untertitel         | Abruf über `getSubtitleApi` als Text → Blob-URL für `<track>` (§9.6)                                                                                                                                                                                                                               |
+| Trickplay-Kacheln  | `api.getUri('/Videos/{id}/Trickplay/{width}/{index}.jpg', { MediaSourceId, ApiKey })`                                                                                                                                                                                                              |
 
 `api.getUri()` gehört zum SDK. URLs für `<video>`/`<img>` sind keine Fetches, deshalb ist das kein Verstoß gegen „kein handgeschriebener Fetch“.
 
@@ -290,7 +297,13 @@ Jeder Query-Aufruf reicht `signal` an das SDK durch. Retries: 2 bei Netzwerk- od
 Themes arbeiten mit schlanken, stabilen Typen statt mit `BaseItemDto`:
 
 ```ts
-export interface ImageRef { itemId: string; type: 'Primary' | 'Backdrop' | 'Thumb' | 'Logo' | 'Banner'; tag: string; blurHash?: string; aspectRatio?: number }
+export interface ImageRef {
+  itemId: string;
+  type: 'Primary' | 'Backdrop' | 'Thumb' | 'Logo' | 'Banner';
+  tag: string;
+  blurHash?: string;
+  aspectRatio?: number;
+}
 
 export interface MediaItem {
   id: string;
@@ -303,7 +316,13 @@ export interface MediaItem {
   genres: string[];
   overview?: string;
   images: { primary?: ImageRef; backdrop?: ImageRef[]; thumb?: ImageRef; logo?: ImageRef };
-  userData: { played: boolean; favorite: boolean; progress?: number /* 0..1 */; positionTicks?: number; unplayedCount?: number };
+  userData: {
+    played: boolean;
+    favorite: boolean;
+    progress?: number /* 0..1 */;
+    positionTicks?: number;
+    unplayedCount?: number;
+  };
   episode?: { seriesId: string; seriesName: string; seasonNumber?: number; episodeNumber?: number };
 }
 ```
@@ -319,23 +338,23 @@ export type QueryResult<T> =
 
 ### 6.2 Hooks → SDK
 
-| Hook | SDK-Aufrufe | Hinweise |
-| --- | --- | --- |
-| `useServerInfo(url)` | Discovery / `getPublicSystemInfo` | |
-| `useLoginFlow()` | Authentication-API, `getPublicUsers` | Modell für LoginPage (Schritte: server, credentials, quickConnect) |
-| `useCurrentUser()` | `getCurrentUser` | enthält `Configuration` (OrderedViews, Excludes, Sprachen) |
-| `useUserViews()` | `getUserViews({ includeHidden: false })` | Reihenfolge `OrderedViews` und `MyMediaExcludes` wendet der Server an (Phase 2 prüfen). Nicht unterstützte Typen werden gefiltert, siehe [Frage 10]. |
-| `useFeatured(n)` | `getItems({ sortBy: Random, includeItemTypes: [Movie, Series], hasOverview, imageTypes: [Backdrop], limit: n, recursive })` | Ergebnis 30 min stabil (`staleTime`), damit das Hero nicht springt |
-| `useHomeSections()` | Weiterschauen `getResumeItems({ mediaTypes: [Video] })`, Nächste Folgen `getNextUp`, Neu je Bibliothek `getLatestMedia({ parentId })` ohne `LatestItemsExcludes`, Favoriten `getItems({ isFavorite })`, Genres `getGenres`, Sammlungen `getItems({ includeItemTypes: [BoxSet] })` | Jede Sektion hat ihre eigene Query und lädt parallel. Leere Sektionen werden ausgeblendet. |
-| `useLibraryBrowser(source)` | `getItems` seitenweise (`startIndex`, `limit: 100`, `enableTotalRecordCount`) + `getQueryFilters` | Quelle: Bibliothek, Sammlung, Genre oder Person. Sprungleiste: `getItems({ nameLessThan: X, limit: 0 })` → Gesamtzahl = Index (Phase 2 prüfen). |
-| `useItem(id)` | `getItem` mit `fields` | |
-| `useSimilar(id)` | `getSimilarItems` | |
-| `useLocalTrailers(id)` | `getLocalTrailers` | nur wenn `LocalTrailerCount > 0` |
-| `useSeasons`, `useEpisodes`, `useSeriesNextUp` | `getSeasons`, `getEpisodes({ seasonId })`, `getNextUp({ seriesId })` | |
-| `useSearch(term)` | `getItems({ searchTerm, includeItemTypes })` je Gruppe parallel, Personen über `getPersonApi` | Debounce 300 ms, ab 2 Zeichen, vorherige Ergebnisse bleiben bis zur neuen Antwort sichtbar, veraltete Anfragen werden abgebrochen |
-| `useFavorites()` | `getItems({ isFavorite: true })` nach Typ gruppiert | |
-| `useMediaActions()` | Favorit, gesehen, abspielen, öffnen | Optimistisch: `setQueriesData` aktualisiert das Item in **allen** gecachten Listen. Bei Fehler Rollback + Toast. |
-| `useTrailerPreview(item)` | `getLocalTrailers` + Player-Engine im Vorschaumodus | stumm, nur Desktop/TV, nur mit Einstellung, nicht bei `saveData` |
+| Hook                                           | SDK-Aufrufe                                                                                                                                                                                                                                                                       | Hinweise                                                                                                                                             |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `useServerInfo(url)`                           | Discovery / `getPublicSystemInfo`                                                                                                                                                                                                                                                 |                                                                                                                                                      |
+| `useLoginFlow()`                               | Authentication-API, `getPublicUsers`                                                                                                                                                                                                                                              | Modell für LoginPage (Schritte: server, credentials, quickConnect)                                                                                   |
+| `useCurrentUser()`                             | `getCurrentUser`                                                                                                                                                                                                                                                                  | enthält `Configuration` (OrderedViews, Excludes, Sprachen)                                                                                           |
+| `useUserViews()`                               | `getUserViews({ includeHidden: false })`                                                                                                                                                                                                                                          | Reihenfolge `OrderedViews` und `MyMediaExcludes` wendet der Server an (Phase 2 prüfen). Nicht unterstützte Typen werden gefiltert, siehe [Frage 10]. |
+| `useFeatured(n)`                               | `getItems({ sortBy: Random, includeItemTypes: [Movie, Series], hasOverview, imageTypes: [Backdrop], limit: n, recursive })`                                                                                                                                                       | Ergebnis 30 min stabil (`staleTime`), damit das Hero nicht springt                                                                                   |
+| `useHomeSections()`                            | Weiterschauen `getResumeItems({ mediaTypes: [Video] })`, Nächste Folgen `getNextUp`, Neu je Bibliothek `getLatestMedia({ parentId })` ohne `LatestItemsExcludes`, Favoriten `getItems({ isFavorite })`, Genres `getGenres`, Sammlungen `getItems({ includeItemTypes: [BoxSet] })` | Jede Sektion hat ihre eigene Query und lädt parallel. Leere Sektionen werden ausgeblendet.                                                           |
+| `useLibraryBrowser(source)`                    | `getItems` seitenweise (`startIndex`, `limit: 100`, `enableTotalRecordCount`) + `getQueryFilters`                                                                                                                                                                                 | Quelle: Bibliothek, Sammlung, Genre oder Person. Sprungleiste: `getItems({ nameLessThan: X, limit: 0 })` → Gesamtzahl = Index (Phase 2 prüfen).      |
+| `useItem(id)`                                  | `getItem` mit `fields`                                                                                                                                                                                                                                                            |                                                                                                                                                      |
+| `useSimilar(id)`                               | `getSimilarItems`                                                                                                                                                                                                                                                                 |                                                                                                                                                      |
+| `useLocalTrailers(id)`                         | `getLocalTrailers`                                                                                                                                                                                                                                                                | nur wenn `LocalTrailerCount > 0`                                                                                                                     |
+| `useSeasons`, `useEpisodes`, `useSeriesNextUp` | `getSeasons`, `getEpisodes({ seasonId })`, `getNextUp({ seriesId })`                                                                                                                                                                                                              |                                                                                                                                                      |
+| `useSearch(term)`                              | `getItems({ searchTerm, includeItemTypes })` je Gruppe parallel, Personen über `getPersonApi`                                                                                                                                                                                     | Debounce 300 ms, ab 2 Zeichen, vorherige Ergebnisse bleiben bis zur neuen Antwort sichtbar, veraltete Anfragen werden abgebrochen                    |
+| `useFavorites()`                               | `getItems({ isFavorite: true })` nach Typ gruppiert                                                                                                                                                                                                                               |                                                                                                                                                      |
+| `useMediaActions()`                            | Favorit, gesehen, abspielen, öffnen                                                                                                                                                                                                                                               | Optimistisch: `setQueriesData` aktualisiert das Item in **allen** gecachten Listen. Bei Fehler Rollback + Toast.                                     |
+| `useTrailerPreview(item)`                      | `getLocalTrailers` + Player-Engine im Vorschaumodus                                                                                                                                                                                                                               | stumm, nur Desktop/TV, nur mit Einstellung, nicht bei `saveData`                                                                                     |
 
 ### 6.3 Query-Keys und Cache
 
@@ -353,8 +372,18 @@ export type QueryResult<T> =
 // src/themes/contract.ts
 import type { ComponentType, ReactNode } from 'react';
 import type {
-  AppError, Episode, FavoriteGroup, HomeSection, HomeSectionKind, ItemDetail, Library,
-  MediaItem, Profile, QueryResult, SearchGroup, Season,
+  AppError,
+  Episode,
+  FavoriteGroup,
+  HomeSection,
+  HomeSectionKind,
+  ItemDetail,
+  Library,
+  MediaItem,
+  Profile,
+  QueryResult,
+  SearchGroup,
+  Season,
 } from '@/domain/types';
 import type { LoginFlow } from '@/hooks/useLoginFlow';
 import type { LibraryBrowser } from '@/hooks/useLibraryBrowser';
@@ -418,20 +447,27 @@ export interface ThemeComponents {
 /** Context where a building block is rendered; 'preview' = settings live preview. */
 export type RenderContext = 'page' | 'preview';
 
-export interface AppShellProps { nav: NavModel; children: ReactNode }
-export interface LoginPageProps { flow: LoginFlow }
+export interface AppShellProps {
+  nav: NavModel;
+  children: ReactNode;
+}
+export interface LoginPageProps {
+  flow: LoginFlow;
+}
 export interface ProfileSelectProps {
   profiles: QueryResult<Profile[]>;
   onSelect: (profile: Profile) => void;
   onOtherUser: () => void;
-  onChangeServer?: () => void;          // undefined when the server is locked
+  onChangeServer?: () => void; // undefined when the server is locked
 }
 export interface HomePageProps {
   hero: QueryResult<MediaItem[]>;
-  libraries: QueryResult<Library[]>;    // e.g. library tiles below the hero
-  sections: readonly HomeSection[];     // each section carries its own QueryResult
+  libraries: QueryResult<Library[]>; // e.g. library tiles below the hero
+  sections: readonly HomeSection[]; // each section carries its own QueryResult
 }
-export interface LibraryPageProps { browser: LibraryBrowser }
+export interface LibraryPageProps {
+  browser: LibraryBrowser;
+}
 export interface ItemDetailPageProps {
   detail: QueryResult<ItemDetail>;
   similar: QueryResult<MediaItem[]>;
@@ -452,11 +488,17 @@ export interface SeriesPageProps {
 export interface SearchPageProps {
   term: string;
   onTermChange: (term: string) => void;
-  results: QueryResult<SearchGroup[]> | null;   // null = nothing searched yet
+  results: QueryResult<SearchGroup[]> | null; // null = nothing searched yet
 }
-export interface FavoritesPageProps { groups: QueryResult<FavoriteGroup[]> }
-export interface SettingsPageProps { settings: SettingsModel }
-export interface PlayerOverlayProps { player: PlayerModel }
+export interface FavoritesPageProps {
+  groups: QueryResult<FavoriteGroup[]>;
+}
+export interface SettingsPageProps {
+  settings: SettingsModel;
+}
+export interface PlayerOverlayProps {
+  player: PlayerModel;
+}
 export interface ResumePromptProps {
   item: MediaItem;
   positionTicks: number;
@@ -464,7 +506,10 @@ export interface ResumePromptProps {
   onRestart: () => void;
   onCancel: () => void;
 }
-export interface HeroProps { items: QueryResult<MediaItem[]>; context: RenderContext }
+export interface HeroProps {
+  items: QueryResult<MediaItem[]>;
+  context: RenderContext;
+}
 export interface RowProps {
   title: string;
   kind: HomeSectionKind;
@@ -472,11 +517,28 @@ export interface RowProps {
   seeAll?: { to: string };
   context: RenderContext;
 }
-export interface MediaCardProps { item: MediaItem; variant: CardVariant; context: RenderContext }
-export interface ToastProps { kind: 'info' | 'success' | 'error'; message: string; onDismiss: () => void }
-export interface LoadingStateProps { variant?: 'page' | 'section' | 'inline' }
-export interface EmptyStateProps { title: string; message?: string; action?: { label: string; onAction: () => void } }
-export interface ErrorStateProps { error: AppError; onRetry?: () => void }
+export interface MediaCardProps {
+  item: MediaItem;
+  variant: CardVariant;
+  context: RenderContext;
+}
+export interface ToastProps {
+  kind: 'info' | 'success' | 'error';
+  message: string;
+  onDismiss: () => void;
+}
+export interface LoadingStateProps {
+  variant?: 'page' | 'section' | 'inline';
+}
+export interface EmptyStateProps {
+  title: string;
+  message?: string;
+  action?: { label: string; onAction: () => void };
+}
+export interface ErrorStateProps {
+  error: AppError;
+  onRetry?: () => void;
+}
 ```
 
 Gegenüber dem Richtwert in CLAUDE.md:
@@ -671,16 +733,16 @@ Nutzt dieselbe Engine stumm, mit niedriger Bitrate und ohne Reporting. Sie start
 
 ## 10. Einstellungen und Persistenz
 
-| Einstellung | Speicherort am Server | geräteübergreifend |
-| --- | --- | --- |
-| Theme, Farbschema | DisplayPreferences | ja |
-| Sprache | DisplayPreferences | ja |
-| Reduzierte Bewegung (System/An/Aus) | DisplayPreferences | ja |
-| Trailer-Autoplay, UI-Sounds | DisplayPreferences | ja |
-| Nächste Folge automatisch | `UserConfiguration.EnableNextEpisodeAutoPlay` | ja, auch mit anderen Jellyfin-Clients **[Frage 6]** |
+| Einstellung                               | Speicherort am Server                                                                     | geräteübergreifend                                  |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| Theme, Farbschema                         | DisplayPreferences                                                                        | ja                                                  |
+| Sprache                                   | DisplayPreferences                                                                        | ja                                                  |
+| Reduzierte Bewegung (System/An/Aus)       | DisplayPreferences                                                                        | ja                                                  |
+| Trailer-Autoplay, UI-Sounds               | DisplayPreferences                                                                        | ja                                                  |
+| Nächste Folge automatisch                 | `UserConfiguration.EnableNextEpisodeAutoPlay`                                             | ja, auch mit anderen Jellyfin-Clients **[Frage 6]** |
 | Audio-/Untertitelsprache, Untertitelmodus | `UserConfiguration.AudioLanguagePreference`, `SubtitleLanguagePreference`, `SubtitleMode` | ja, auch mit anderen Jellyfin-Clients **[Frage 6]** |
-| Max. Streaming-Qualität | – (nur lokal) | nein: hängt von Gerät und Netz ab **[Frage 7]** |
-| Bedienmodus (Auto/Desktop/TV), Overscan | – (nur lokal) | nein |
+| Max. Streaming-Qualität                   | – (nur lokal)                                                                             | nein: hängt von Gerät und Netz ab **[Frage 7]**     |
+| Bedienmodus (Auto/Desktop/TV), Overscan   | – (nur lokal)                                                                             | nein                                                |
 
 - **Lokal:** zustand mit `persist` in `localStorage`, Schlüssel je `serverId:userId`. Schreibt sofort.
 - **Server:** `DisplayPreferences` mit `displayPreferencesId: 'settings'`, `client: 'jellymorph'`. Eigene Werte als flache Schlüssel in `CustomPrefs` mit Schema-Version. Lesen–Ändern–Schreiben, gebündelt (1 s Debounce). Fehler beim Speichern führen zu einem Toast mit erneutem Versuch.
@@ -718,18 +780,18 @@ Nutzt dieselbe Engine stumm, mit niedriger Bitrate und ohne Reporting. Sie start
 
 Definition: alles, was `index.html` statisch lädt (Entry-Chunk + statische Importe + CSS), **ohne** Theme-Chunks, Schriften und Bilder.
 
-| Posten | Schätzung gzip |
-| --- | --- |
-| react + react-dom | ~60 KB |
-| react-router | ~25 KB |
-| axios + genutzte SDK-Teile | ~25 KB |
-| i18next + react-i18next | ~18 KB |
-| TanStack Query | ~13 KB |
-| Spatial Navigation (+ lodash-es-Teile) | ~8 KB |
-| motion (`LazyMotion` + `m`, Features asynchron) | ~6 KB |
-| zustand, blurhash | ~2 KB |
-| App-Code (Config, API, Hooks, Navigation, Router) | ~40 KB |
-| **Summe** | **~200 KB** |
+| Posten                                            | Schätzung gzip |
+| ------------------------------------------------- | -------------- |
+| react + react-dom                                 | ~60 KB         |
+| react-router                                      | ~25 KB         |
+| axios + genutzte SDK-Teile                        | ~25 KB         |
+| i18next + react-i18next                           | ~18 KB         |
+| TanStack Query                                    | ~13 KB         |
+| Spatial Navigation (+ lodash-es-Teile)            | ~8 KB          |
+| motion (`LazyMotion` + `m`, Features asynchron)   | ~6 KB          |
+| zustand, blurhash                                 | ~2 KB          |
+| App-Code (Config, API, Hooks, Navigation, Router) | ~40 KB         |
+| **Summe**                                         | **~200 KB**    |
 
 Lazy: jedes Theme, Player inkl. hls.js (~140 KB gzip), Bibliothek (TanStack Virtual), Einstellungen, MSW, Sprachdateien, Motion-Features. Ein CI-Skript (`scripts/check-bundle.mjs`, ohne zusätzliche Abhängigkeit) liest das Vite-Manifest, summiert den Basis-Graphen per zlib-gzip und bricht über 250 KB ab. Theme-Chunks bekommen ein weiches Budget von 80 KB JS gzip (Warnung).
 
@@ -775,12 +837,12 @@ Theme- und Default-Chunk werden parallel zur Session-Wiederherstellung geladen. 
 
 ## 16. Tests und CI
 
-| Ebene | Werkzeug | Inhalt |
-| --- | --- | --- |
-| Unit | Vitest | Mapper, DeviceProfile aus Fähigkeits-Fixtures, Quellenwahl, Fallback-Kette, Trickplay-Mathematik, Segmente, Reporting-Takt (Fake-Timer), Settings-Merge, Config-Validierung, Token-Kontraste, i18n-Schlüsselgleichheit, Vertragstest für jedes Theme |
-| Integration | Vitest + RTL + MSW (Node) | Hooks gegen Mock-Jellyfin, Default-Seiten mit Lade-/Leer-/Fehlerzustand |
-| E2E | Playwright + MSW (Browser, Demo-Modus) gegen `vite preview` | Login (Passwort, Quick Connect, Profile), Home, Bibliothek (Sortierung, Filter, Sprungleiste), Details, Serie, Suche, Favoriten, Einstellungen/Theme-Wechsel, Player (Direct Play, Transcoding-Fallback, Spuren, Segmente, nächste Folge), **reine Tastaturdurchläufe**, axe |
-| Screenshots | Playwright-Skript | 1920×1080, 3840×2160, 1280×800, 390×844 × Seiten × aktive Themes → `artifacts/screenshots/` (nicht im Repo). Ich sehe sie mir in jeder UI-Phase an. |
+| Ebene       | Werkzeug                                                    | Inhalt                                                                                                                                                                                                                                                                       |
+| ----------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Unit        | Vitest                                                      | Mapper, DeviceProfile aus Fähigkeits-Fixtures, Quellenwahl, Fallback-Kette, Trickplay-Mathematik, Segmente, Reporting-Takt (Fake-Timer), Settings-Merge, Config-Validierung, Token-Kontraste, i18n-Schlüsselgleichheit, Vertragstest für jedes Theme                         |
+| Integration | Vitest + RTL + MSW (Node)                                   | Hooks gegen Mock-Jellyfin, Default-Seiten mit Lade-/Leer-/Fehlerzustand                                                                                                                                                                                                      |
+| E2E         | Playwright + MSW (Browser, Demo-Modus) gegen `vite preview` | Login (Passwort, Quick Connect, Profile), Home, Bibliothek (Sortierung, Filter, Sprungleiste), Details, Serie, Suche, Favoriten, Einstellungen/Theme-Wechsel, Player (Direct Play, Transcoding-Fallback, Spuren, Segmente, nächste Folge), **reine Tastaturdurchläufe**, axe |
+| Screenshots | Playwright-Skript                                           | 1920×1080, 3840×2160, 1280×800, 390×844 × Seiten × aktive Themes → `artifacts/screenshots/` (nicht im Repo). Ich sehe sie mir in jeder UI-Phase an.                                                                                                                          |
 
 **Mock-Jellyfin:** MSW-Handler für alle genutzten Endpunkte mit zustandsbehafteten Fixtures (Favorit, gesehen und Fortschritt ändern sich wirklich). Die Fixtures erzeugt ein Skript: rund 60 Filme, 12 Serien mit Staffeln und Episoden, eine Anime-Bibliothek, Sammlungen, Genres, 3 öffentliche Profile, Segmente, Trickplay, Kapitel. **Bilder** sind generierte SVG-Verläufe mit erfundenem Titel. Die BlurHashes werden aus denselben Verlaufsdaten berechnet. **Demo-Video:** selbst erzeugtes Testbild mit Ton. Ohne ffmpeg auf diesem Rechner (§19, [Frage 13]).
 
@@ -790,45 +852,47 @@ Theme- und Default-Chunk werden parallel zur Session-Wiederherstellung geladen. 
 
 ## 17. Phasenplan im Detail
 
-| Phase | Ergebnis |
-| --- | --- |
-| 1 Fundament | Vite/TS/ESLint/Prettier/Vitest/Playwright, `ci.yml`, Importregeln, Config + Dev-Plugin, API-Schicht (Client, Gerät, Server, Session, Fehler), Login (Passwort, Quick Connect, Profilauswahl, mehrere Server), MSW-Mock mit Fixture-Generator + Demo-Modus, i18n (de/en), Bundle-Budget-Skript, Minimal-Shell des Default-Themes für die Auth-Seiten. Prüfung der Device-ID-Frage (R6). |
-| 2 Default-Theme | Domänentypen + Mapper, alle Hooks aus §6.2, Theme-Slot-Mechanik (zunächst nur Default), Home, Bibliothek (VirtualGrid inkl. Tastaturnavigation zuerst), Details, Serie, Suche, Favoriten, Toasts, alle Lade-/Leer-/Fehlerzustände, WebSocket-Invalidierung. |
-| 3 Player | Fähigkeiten, DeviceProfile, PlaybackInfo, Engines, Untertitel, Spur-/Qualitätswechsel, Reporting, Segmente, Trickplay, Kapitel, Fortsetzen, nächste Folge, Fallback-Kette, Media Session, Trailer-Vorschau-Engine. |
-| 4 Theme-System | Registry mit Lazy Loading, Fallback + Error Boundary, Token-/Scope-Tests, Wechsel mit Überblendung, Einstellungen (alle aus §10) mit Live-Vorschau, Persistenz lokal + Server, Spatial Navigation über alle Seiten, TV-Modus. |
-| 5 Docker & Release | Dockerfile, nginx-Template, Entrypoint, Compose, PWA, `release.yml`, Dependabot, Docker-Job im CI. |
-| 6–10 Themes | je Theme: Tokens, Schriften, alle abweichenden Komponenten, Bewegung, reduzierte Variante, TV-Variante, Vorschaubild, rechtliche Prüfliste, Screenshot-Prüfung. |
-| 11 Feinschliff | README (de) mit Screenshots, `docs/themes.md`, Performance- und a11y-Audit, Changelog, Release v1.0.0. |
+| Phase              | Ergebnis                                                                                                                                                                                                                                                                                                                                                                               |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 Fundament        | Vite/TS/ESLint/Prettier/Vitest/Playwright, `ci.yml`, Importregeln, Config + Dev-Plugin, API-Schicht (Client, Gerät, Server, Session, Fehler), Login (Passwort, Quick Connect, Profilauswahl, mehrere Server), MSW-Mock mit Fixture-Generator + Demo-Modus, i18n (de/en), Bundle-Budget-Skript, Minimal-Shell des Default-Themes für die Auth-Seiten. Prüfung der Device-ID-Frage (R6). |
+| 2 Default-Theme    | Domänentypen + Mapper, alle Hooks aus §6.2, Theme-Slot-Mechanik (zunächst nur Default), Home, Bibliothek (VirtualGrid inkl. Tastaturnavigation zuerst), Details, Serie, Suche, Favoriten, Toasts, alle Lade-/Leer-/Fehlerzustände, WebSocket-Invalidierung.                                                                                                                            |
+| 3 Player           | Fähigkeiten, DeviceProfile, PlaybackInfo, Engines, Untertitel, Spur-/Qualitätswechsel, Reporting, Segmente, Trickplay, Kapitel, Fortsetzen, nächste Folge, Fallback-Kette, Media Session, Trailer-Vorschau-Engine.                                                                                                                                                                     |
+| 4 Theme-System     | Registry mit Lazy Loading, Fallback + Error Boundary, Token-/Scope-Tests, Wechsel mit Überblendung, Einstellungen (alle aus §10) mit Live-Vorschau, Persistenz lokal + Server, Spatial Navigation über alle Seiten, TV-Modus.                                                                                                                                                          |
+| 5 Docker & Release | Dockerfile, nginx-Template, Entrypoint, Compose, PWA, `release.yml`, Dependabot, Docker-Job im CI.                                                                                                                                                                                                                                                                                     |
+| 6–10 Themes        | je Theme: Tokens, Schriften, alle abweichenden Komponenten, Bewegung, reduzierte Variante, TV-Variante, Vorschaubild, rechtliche Prüfliste, Screenshot-Prüfung.                                                                                                                                                                                                                        |
+| 11 Feinschliff     | README (de) mit Screenshots, `docs/themes.md`, Performance- und a11y-Audit, Changelog, Release v1.0.0.                                                                                                                                                                                                                                                                                 |
 
 ---
 
 ## 18. Risiken
 
-| # | Risiko | Auswirkung | Gegenmaßnahme |
-| --- | --- | --- | --- |
-| R1 | SDK 1.0.0 ist gegen 12.0 generiert; das Verhalten (nicht die Pfade) kann auf 10.10/10.11 abweichen | falsche Ergebnisse, z. B. Filter | Pfade verifiziert (§1.2). Mapper tolerant gegenüber fehlenden Feldern. Manuelle Smoke-Tests gegen echte 10.10/10.11/12.0-Server ([Frage 2]). |
-| R2 | `ActiveEncodings` fehlt im SDK | verwaiste Transcodes beim Spurwechsel | Handgeschriebener Aufruf über SDK-Axios (§9.7), in Phase 3 auf 12.0 prüfen |
-| R3 | Codec-Erkennung im Browser ungenau (HEVC unter Windows nur mit Erweiterung, mkv-Sonderfall, HDR) | Direct Play schlägt fehl | Fallback-Kette (§9.11), Fähigkeits-Fixtures pro Browser |
-| R4 | Audiospurwechsel bei Direct Play unmöglich | Spurwechsel braucht neuen Stream | Bewusst immer neuer Stream an derselben Position (§9.7) |
-| R5 | CORS/Mixed Content ohne Proxy (HTTPS-Client + HTTP-Server, Server ohne CORS-Freigabe) | Login schlägt fehl | Klare Fehlermeldung mit Hinweis auf `JELLYFIN_PROXY_TARGET`; Proxy-Modus in Compose als Standard empfohlen |
-| R6 | Device-ID: mehrere Benutzer auf demselben Gerät verdrängen sich gegenseitig | Profilwechsel meldet andere ab | In Phase 1 am Server prüfen, ggf. Device-ID je Benutzer |
-| R7 | Spatial Navigation × Virtualisierung | Fokus geht im Raster verloren | Eigene Pfeiltasten-Logik in `VirtualGrid`, früh in Phase 2 mit E2E abgesichert |
-| R8 | Basis-Budget 250 KB ist knapp (~200 KB geschätzt) | Budget gerissen | Budget-Check in CI ab Phase 1, aggressives Lazy Loading |
-| R9 | `backdrop-filter`, Glow, Glitch, Filter auf TV-Hardware | Ruckeln unter 60 fps | TV-/Low-Power-Varianten, Effekte auf kleine Flächen, `@supports`-Fallbacks |
-| R10 | Neon-Effekte vs. Lesbarkeit/Anfälle | a11y-Verstoß | ≤ 3 Blitze/s, nie über Fließtext, reduzierte Bewegung schaltet ab, Kontrast-Tests |
-| R11 | Unsichere Kontexte (HTTP im LAN) | kein Service Worker/PWA, kein Wake Lock, MSW-Demo nur auf localhost | Funktionen per Feature-Detection ausblenden, Hinweis in README |
-| R12 | Autoplay-Richtlinien der Browser | Trailer starten nicht | Nur stumm, Fehler still ignorieren und Ken Burns zeigen |
-| R13 | Themes wirken zu nah an Markenoberflächen | rechtliches Risiko | Prüfliste §7.8, eigene Namen, eigene Icons, keine exakten Farben |
-| R14 | Docker nicht lokal verfügbar | Container-Fehler erst im CI sichtbar | Docker-Job im CI mit Laufzeittests ([Frage 12]) |
-| R15 | Kein ffmpeg lokal | kein HLS-Testmaterial für den Demo-Modus | [Frage 13] |
+| #   | Risiko                                                                                             | Auswirkung                                                          | Gegenmaßnahme                                                                                                                                |
+| --- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| R1  | SDK 1.0.0 ist gegen 12.0 generiert; das Verhalten (nicht die Pfade) kann auf 10.10/10.11 abweichen | falsche Ergebnisse, z. B. Filter                                    | Pfade verifiziert (§1.2). Mapper tolerant gegenüber fehlenden Feldern. Manuelle Smoke-Tests gegen echte 10.10/10.11/12.0-Server ([Frage 2]). |
+| R2  | `ActiveEncodings` fehlt im SDK                                                                     | verwaiste Transcodes beim Spurwechsel                               | Handgeschriebener Aufruf über SDK-Axios (§9.7), in Phase 3 auf 12.0 prüfen                                                                   |
+| R3  | Codec-Erkennung im Browser ungenau (HEVC unter Windows nur mit Erweiterung, mkv-Sonderfall, HDR)   | Direct Play schlägt fehl                                            | Fallback-Kette (§9.11), Fähigkeits-Fixtures pro Browser                                                                                      |
+| R4  | Audiospurwechsel bei Direct Play unmöglich                                                         | Spurwechsel braucht neuen Stream                                    | Bewusst immer neuer Stream an derselben Position (§9.7)                                                                                      |
+| R5  | CORS/Mixed Content ohne Proxy (HTTPS-Client + HTTP-Server, Server ohne CORS-Freigabe)              | Login schlägt fehl                                                  | Klare Fehlermeldung mit Hinweis auf `JELLYFIN_PROXY_TARGET`; Proxy-Modus in Compose als Standard empfohlen                                   |
+| R6  | Device-ID: mehrere Benutzer auf demselben Gerät verdrängen sich gegenseitig                        | Profilwechsel meldet andere ab                                      | In Phase 1 am Server prüfen, ggf. Device-ID je Benutzer                                                                                      |
+| R7  | Spatial Navigation × Virtualisierung                                                               | Fokus geht im Raster verloren                                       | Eigene Pfeiltasten-Logik in `VirtualGrid`, früh in Phase 2 mit E2E abgesichert                                                               |
+| R8  | Basis-Budget 250 KB ist knapp (~200 KB geschätzt)                                                  | Budget gerissen                                                     | Budget-Check in CI ab Phase 1, aggressives Lazy Loading                                                                                      |
+| R9  | `backdrop-filter`, Glow, Glitch, Filter auf TV-Hardware                                            | Ruckeln unter 60 fps                                                | TV-/Low-Power-Varianten, Effekte auf kleine Flächen, `@supports`-Fallbacks                                                                   |
+| R10 | Neon-Effekte vs. Lesbarkeit/Anfälle                                                                | a11y-Verstoß                                                        | ≤ 3 Blitze/s, nie über Fließtext, reduzierte Bewegung schaltet ab, Kontrast-Tests                                                            |
+| R11 | Unsichere Kontexte (HTTP im LAN)                                                                   | kein Service Worker/PWA, kein Wake Lock, MSW-Demo nur auf localhost | Funktionen per Feature-Detection ausblenden, Hinweis in README                                                                               |
+| R12 | Autoplay-Richtlinien der Browser                                                                   | Trailer starten nicht                                               | Nur stumm, Fehler still ignorieren und Ken Burns zeigen                                                                                      |
+| R13 | Themes wirken zu nah an Markenoberflächen                                                          | rechtliches Risiko                                                  | Prüfliste §7.8, eigene Namen, eigene Icons, keine exakten Farben                                                                             |
+| R14 | Docker nicht lokal verfügbar                                                                       | Container-Fehler erst im CI sichtbar                                | Docker-Job im CI mit Laufzeittests ([Frage 12])                                                                                              |
+| R15 | Kein ffmpeg lokal                                                                                  | kein HLS-Testmaterial für den Demo-Modus                            | [Frage 13]                                                                                                                                   |
 
 ---
 
 ## 19. Offene Fragen
 
+**Stand 2026-10-07:** Alle Empfehlungen sind angenommen. Frage 2 (eigener Server) ist noch offen. Details stehen in CLAUDE.md §12.
+
 Jede Frage hat eine Empfehlung. Ohne Gegenrede würde ich der Empfehlung folgen.
 
-1. ~~**Projektname, Repo, Image.**~~ **Beantwortet 2026-10-07:** *Jellymorph*, Repo `Lua-x/jellymorph`, Image `ghcr.io/lua-x/jellymorph`. Das Default-Theme heißt deshalb „Classic“ (siehe CLAUDE.md §12).
+1. ~~**Projektname, Repo, Image.**~~ **Beantwortet 2026-10-07:** _Jellymorph_, Repo `Lua-x/jellymorph`, Image `ghcr.io/lua-x/jellymorph`. Das Default-Theme heißt deshalb „Classic“ (siehe CLAUDE.md §12).
 2. **Test-Server.** Welche Jellyfin-Version läuft bei dir, und gibt es eine Adresse für `JELLYFIN_DEV_URL` (bleibt in `.env.local`, wird nie committet)? Ideal wäre zusätzlich je ein 10.10- und 12.0-Testserver. Empfehlung: mindestens dein Server + ein 12.0-Testcontainer im CI für Smoke-Tests.
 3. **Browser-/TV-Ziele.** Passt §1.4? Welche Fernseher bzw. Streaming-Sticks willst du konkret nutzen? Davon hängt ab, wie konservativ ich bei CSS und Effekten sein muss.
 4. **Zusätzliche Abhängigkeiten aus §2.2** (`blurhash`, `@axe-core/playwright`, Test- und ESLint-Zubehör). Empfehlung: freigeben.

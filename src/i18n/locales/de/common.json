@@ -1,0 +1,40 @@
+{
+  "loading": "Wird geladen …",
+  "actions": {
+    "retry": "Erneut versuchen",
+    "dismiss": "Schließen"
+  },
+  "language": {
+    "label": "Sprache",
+    "de": "Deutsch",
+    "en": "English"
+  },
+  "nav": {
+    "home": "Startseite",
+    "mainNavigation": "Hauptnavigation",
+    "userMenu": "Benutzermenü",
+    "switchProfile": "Profil wechseln",
+    "changeServer": "Server wechseln",
+    "signOut": "Abmelden",
+    "skipToContent": "Zum Inhalt springen"
+  },
+  "home": {
+    "greeting": "Hallo, {{name}}!",
+    "greetingAnonymous": "Willkommen!",
+    "libraries": "Deine Bibliotheken",
+    "noLibraries": "Keine Bibliotheken",
+    "noLibrariesHint": "Dein Benutzerkonto hat noch keinen Zugriff auf Filme oder Serien. Eine Administratorin oder ein Administrator kann das in Jellyfin freigeben.",
+    "kinds": {
+      "movies": "Filme",
+      "shows": "Serien",
+      "collections": "Sammlungen",
+      "videos": "Videos",
+      "mixed": "Gemischte Inhalte"
+    }
+  },
+  "notFound": {
+    "title": "Seite nicht gefunden",
+    "message": "Diese Seite gibt es nicht oder nicht mehr.",
+    "action": "Zur Startseite"
+  }
+}

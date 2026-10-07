@@ -1,0 +1,26 @@
+{
+  "default": {
+    "name": "Classic",
+    "description": "Clean and clear – the foundation for every other theme."
+  },
+  "neon-grid": {
+    "name": "Neon Grid",
+    "description": "Futuristic HUD with neon light, grids and glitch effects."
+  },
+  "crimson": {
+    "name": "Crimson",
+    "description": "Big screen: full-bleed hero, rows with preview cards, details as an overlay."
+  },
+  "glass": {
+    "name": "Glass",
+    "description": "Calm frosted surfaces, large carousels and soft depth."
+  },
+  "horizon": {
+    "name": "Horizon",
+    "description": "Clean 16:9 rows, expanding cards and detail pages with tabs."
+  },
+  "constellation": {
+    "name": "Constellation",
+    "description": "Starry sky, large library tiles and an expanding sidebar."
+  }
+}

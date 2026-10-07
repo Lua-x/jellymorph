@@ -24,21 +24,21 @@ Qualitätsmaßstab: Die App soll sich wie ein fertiges kommerzielles Produkt anf
 
 ## 3. Tech-Stack
 
-| Bereich | Wahl |
-| --- | --- |
-| Framework | React (aktuelle stabile Version) + TypeScript (strict) + Vite |
-| API | @jellyfin/sdk – kein handgeschriebener Fetch, wo das SDK eine Methode bietet |
-| Server-State | TanStack Query (Caching, Hintergrund-Refresh, Request-Abbruch) |
-| App-State | zustand (Session, Einstellungen, Theme) |
-| Routing | react-router |
-| Listen | TanStack Virtual für große Bibliotheken |
-| Wiedergabe | hls.js (Safari: natives HLS) |
-| Animation | Motion (Framer Motion) |
-| Navigation | Spatial Navigation für Fernbedienung, z. B. @noriginmedia/norigin-spatial-navigation |
-| Styling | CSS Modules + Design-Tokens als CSS Custom Properties je Theme |
-| i18n | i18next – Deutsch (Standard), Englisch |
-| Tests | Vitest + React Testing Library, MSW als Mock-Jellyfin, Playwright (E2E + Screenshots) |
-| Code-Qualität | ESLint, Prettier, Conventional Commits |
+| Bereich       | Wahl                                                                                  |
+| ------------- | ------------------------------------------------------------------------------------- |
+| Framework     | React (aktuelle stabile Version) + TypeScript (strict) + Vite                         |
+| API           | @jellyfin/sdk – kein handgeschriebener Fetch, wo das SDK eine Methode bietet          |
+| Server-State  | TanStack Query (Caching, Hintergrund-Refresh, Request-Abbruch)                        |
+| App-State     | zustand (Session, Einstellungen, Theme)                                               |
+| Routing       | react-router                                                                          |
+| Listen        | TanStack Virtual für große Bibliotheken                                               |
+| Wiedergabe    | hls.js (Safari: natives HLS)                                                          |
+| Animation     | Motion (Framer Motion)                                                                |
+| Navigation    | Spatial Navigation für Fernbedienung, z. B. @noriginmedia/norigin-spatial-navigation  |
+| Styling       | CSS Modules + Design-Tokens als CSS Custom Properties je Theme                        |
+| i18n          | i18next – Deutsch (Standard), Englisch                                                |
+| Tests         | Vitest + React Testing Library, MSW als Mock-Jellyfin, Playwright (E2E + Screenshots) |
+| Code-Qualität | ESLint, Prettier, Conventional Commits                                                |
 
 Keine weiteren größeren Abhängigkeiten ohne Rückfrage.
 
@@ -86,12 +86,12 @@ docs/             # architecture.md, themes.md
 import type { ComponentType } from 'react';
 
 export interface ThemeManifest {
-  id: string;                         // 'neon-grid'
-  nameKey: string;                    // i18n-Key Anzeigename
-  descriptionKey: string;             // i18n-Key Kurzbeschreibung
-  preview: string;                    // Vorschaubild für die Einstellungen
+  id: string; // 'neon-grid'
+  nameKey: string; // i18n-Key Anzeigename
+  descriptionKey: string; // i18n-Key Kurzbeschreibung
+  preview: string; // Vorschaubild für die Einstellungen
   colorSchemes: Array<'dark' | 'light'>;
-  load: () => Promise<ThemeModule>;   // eigener Lazy-Chunk
+  load: () => Promise<ThemeModule>; // eigener Lazy-Chunk
 }
 
 export interface ThemeModule {
@@ -260,13 +260,13 @@ Orientierung: Disney+
 - Healthcheck-Endpunkt `/healthz`; Betrieb mit read-only Root-Filesystem möglich (benötigte Schreibpfade als tmpfs dokumentieren)
 - Beispiel-`docker-compose.yml` im Repo
 
-| Variable | Zweck | Standard |
-| --- | --- | --- |
-| `JELLYFIN_URL` | Server-URL vorbelegen | leer |
-| `LOCK_SERVER` | Server-URL fest, im UI nicht änderbar | `false` |
-| `JELLYFIN_PROXY_TARGET` | nginx leitet `/jellyfin/` an diesen Server weiter (gleiche Origin, keine CORS-Probleme) | leer |
-| `DEFAULT_THEME` | Theme für neue Benutzer | `default` |
-| `APP_TITLE` | Titel im Browser | `Jellymorph` |
+| Variable                | Zweck                                                                                   | Standard     |
+| ----------------------- | --------------------------------------------------------------------------------------- | ------------ |
+| `JELLYFIN_URL`          | Server-URL vorbelegen                                                                   | leer         |
+| `LOCK_SERVER`           | Server-URL fest, im UI nicht änderbar                                                   | `false`      |
+| `JELLYFIN_PROXY_TARGET` | nginx leitet `/jellyfin/` an diesen Server weiter (gleiche Origin, keine CORS-Probleme) | leer         |
+| `DEFAULT_THEME`         | Theme für neue Benutzer                                                                 | `default`    |
+| `APP_TITLE`             | Titel im Browser                                                                        | `Jellymorph` |
 
 Lokale Entwicklung: Vite-Dev-Proxy auf `JELLYFIN_DEV_URL` aus `.env.local` (in `.gitignore`). Ohne Server läuft die App im Demo-Modus mit MSW.
 
@@ -297,8 +297,8 @@ Performance-Ziele: Basis-Bundle ohne Theme < 250 KB gzip, LCP < 2,5 s auf Deskto
 
 ## 11. Phasen & Status
 
-- [x] Phase 0 – Plan: Architektur, finaler Theme-Vertrag, Abhängigkeiten mit Begründung, Player-Datenfluss, Risiken, offene Fragen → docs/architecture.md. Keine Implementierung. *(Plan erstellt 2026-10-07, Freigabe und Antworten auf die offenen Fragen in docs/architecture.md §19 stehen aus.)*
-- [ ] Phase 1 – Fundament: Setup, Tooling, ci.yml, Laufzeit-Config, API-Client, Auth (Server, Login, Quick Connect, Profilauswahl), Mock-Server + Demo-Modus, i18n
+- [x] Phase 0 – Plan: Architektur, finaler Theme-Vertrag, Abhängigkeiten mit Begründung, Player-Datenfluss, Risiken, offene Fragen → docs/architecture.md. Keine Implementierung. _(freigegeben 2026-10-07)_
+- [x] Phase 1 – Fundament: Setup, Tooling, ci.yml, Laufzeit-Config, API-Client, Auth (Server, Login, Quick Connect, Profilauswahl), Mock-Server + Demo-Modus, i18n _(fertig 2026-10-07, v0.1.0, Freigabe ausstehend)_
 - [ ] Phase 2 – Default-Theme: alle Seiten funktional (Home, Bibliothek, Details, Serien, Suche, Favoriten)
 - [ ] Phase 3 – Player: komplett inkl. Reporting, Spuren, Trickplay, Segmente, Nächste Folge
 - [ ] Phase 4 – Theme-System: Registry, Fallback, Einstellungen mit Live-Vorschau, Persistenz, Spatial Navigation
@@ -315,6 +315,29 @@ Performance-Ziele: Basis-Bundle ohne Theme < 250 KB gzip, LCP < 2,5 s auf Deskto
 Hier trägt Claude Code wichtige Architekturentscheidungen und Abweichungen mit Begründung ein.
 
 - **2026-10-07 – Name „Jellymorph“** (Nutzerentscheidung). „Morph“ steht für den Kern der App: Ein Theme verwandelt die ganze Oberfläche. Der Name war auf GitHub frei; JellyStream, JellyFrame und JellyShift sind schon vergeben. Das Default-Theme heißt deshalb **„Classic“** statt „Jelly“, damit App und Theme nicht verwechselt werden. Kennung im Code und für Jellyfin (`clientInfo.name`, DisplayPreferences-Client): `jellymorph`.
+- **2026-10-07 – Antworten auf die offenen Fragen aus docs/architecture.md §19** (Nutzer: „alles ja“, also jeweils die Empfehlung):
+  - Zusätzliche Pakete `blurhash`, `@axe-core/playwright` sowie Test- und ESLint-Zubehör sind freigegeben.
+  - Neue Container-Variable `DEMO_MODE` (Standard `false`).
+  - Audio-/Untertitelsprache, Untertitelmodus und „nächste Folge automatisch“ liegen in der Jellyfin-`UserConfiguration`. Streaming-Qualität und Bedienmodus bleiben lokal pro Gerät.
+  - Mehrere gemerkte Profile pro Gerät, mit Schalter „Auf diesem Gerät merken“ beim Login.
+  - ASS/SSA werden standardmäßig als WebVTT angezeigt, dazu die Option „gestaltete Untertitel einbrennen“. Kein JASSUB.
+  - Musik, Bücher, Fotos, Live-TV und Playlists sind in v1 ausgeblendet.
+  - Deutsche Texte in Du-Form.
+  - Docker wird nur in GitHub Actions geprüft.
+  - Das Demo-Video entsteht per Browser-Aufnahme (MediaRecorder), ohne ffmpeg.
+  - Lizenz AGPL-3.0.
+  - Browser-Basis: Chrome/Edge ≥ 111, Firefox ≥ 128, Safari ≥ 16.4.
+  - Noch offen (Frage 2): Version und Adresse des eigenen Jellyfin-Servers. Bis dahin wird nur gegen den Mock-Server entwickelt.
+- **2026-10-07 – Phase 1, Umsetzungsentscheidungen:**
+  - axios läuft global mit dem Fetch-Adapter: wegen `keepalive` für die spätere Stop-Meldung und weil MSW 3 im Test-DOM nur `fetch` abfängt.
+  - Bild-URLs entstehen über `api.getUri()` in `src/api/urls.ts`. Die SDK-`ImageUrlsApi` kostet ~48 KB, und ihr `getUserImageUrl()` zielt auf eine nicht existierende Route.
+  - `UserDto.HasPassword` wird trotz Deprecation gelesen (siehe architecture.md §1.2).
+  - Der Theme-Vertrag wächst je Phase. Phase 1 enthält `AppShell`, `LoginPage`, `ProfileSelect`, `HomePage` (vorläufig: Begrüßung + Bibliotheken), `Toast` und die Zustände. `LoginPage` bekommt ein `LoginFlow`-Modell mit den Schritten server/credentials/quickConnect.
+  - Der Demo-Server speichert ausgegebene Tokens in `localStorage`, damit eine Sitzung ein Neuladen übersteht, wie bei einem echten Server.
+  - Globale Theme-Regeln stehen unter `:where([data-theme='…'])`, damit Komponentenstile immer Vorrang haben.
+  - Vor dem ersten Rendern zeigt `index.html` einen neutralen Splash. Fehler beim Start (z. B. Demo ohne Service Worker) erscheinen als zweisprachige Meldung in `app/boot-error.ts`.
+  - Version je Phase: Phase n → 0.n.0 (wie bei Crystal).
+- **2026-10-07 – MSW 3 über das Vite-Plugin `msw/vite` im Modus `worker-only`.** Es liefert `mockServiceWorker.js` im Dev-Server aus und legt es beim Build in `dist/`. Die Datei liegt also nicht im Repo und ist immer passend zur installierten MSW-Version. Gestartet wird über die stabile API `setupWorker`, nicht über das experimentelle `virtual:msw`.
 
 - **2026-10-07 – SDK 1.0.0 trotz Mindestversion 10.10.** `@jellyfin/sdk` 1.0.0 ist gegen die OpenAPI von Jellyfin 12.0 generiert (Klassen umbenannt, z. B. `ItemsApi` → `LibraryApi`, `PlaystateApi` → `SessionApi`). Ein Abgleich aller Endpunkt-Pfade mit SDK 0.11.0 (= Jellyfin 10.10) zeigt: Jeder Pfad, den der Client braucht, existiert unverändert in 10.10. `MINIMUM_VERSION` des SDK ist weiterhin 10.10.0. Details: docs/architecture.md §1.2.
 - **2026-10-07 – Zwei handgeschriebene Aufrufe über die SDK-Axios-Instanz.** `DELETE /Videos/ActiveEncodings` (Transcode beim Spurwechsel beenden) fehlt im generierten Client von SDK 1.0.0. Stream-, Untertitel- und Trickplay-URLs für `<video>`/`<img>` werden mit `api.getUri()` und dem Query-Parameter `ApiKey` gebaut, weil Medienelemente keine Header senden können. Details: §5.6 und §9.7.

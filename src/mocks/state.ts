@@ -1,0 +1,145 @@
+import { DEMO_USERS, type MockUser } from './fixtures';
+
+interface QuickConnectRequest {
+  code: string;
+  secret: string;
+  createdAt: number;
+  approvedBy: string | null;
+}
+
+export interface MockOptions {
+  /** Approve Quick Connect codes automatically after this many ms (demo mode). null = never. */
+  quickConnectAutoApproveMs: number | null;
+  quickConnectEnabled: boolean;
+  /** Simulated network latency in ms. */
+  latencyMs: number;
+  /** Keeps issued tokens across page loads (demo mode), like a real server would. */
+  tokenStorage: Storage | null;
+}
+
+const TOKEN_STORAGE_KEY = 'jellymorph.demo.tokens';
+
+/** Mutable state of the mock server: issued tokens and pending Quick Connect requests. */
+export class MockState {
+  readonly options: MockOptions;
+  readonly users: MockUser[] = [...DEMO_USERS];
+  private readonly tokens: Map<string, string>;
+  private readonly quickConnect = new Map<string, QuickConnectRequest>();
+  private counter = 0;
+
+  constructor(options: Partial<MockOptions> = {}) {
+    this.options = {
+      quickConnectAutoApproveMs: null,
+      quickConnectEnabled: true,
+      latencyMs: 0,
+      tokenStorage: null,
+      ...options,
+    };
+    this.tokens = new Map(this.loadTokens());
+  }
+
+  private loadTokens(): [string, string][] {
+    try {
+      const raw = this.options.tokenStorage?.getItem(TOKEN_STORAGE_KEY);
+      const parsed: unknown = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed)
+        ? parsed.filter(
+            (entry): entry is [string, string] =>
+              Array.isArray(entry) && typeof entry[0] === 'string' && typeof entry[1] === 'string',
+          )
+        : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private saveTokens(): void {
+    try {
+      this.options.tokenStorage?.setItem(TOKEN_STORAGE_KEY, JSON.stringify([...this.tokens]));
+    } catch {
+      // Demo persistence is best effort.
+    }
+  }
+
+  private nextId(): string {
+    this.counter += 1;
+    const random = Math.floor(Math.random() * 0xffffffff)
+      .toString(16)
+      .padStart(8, '0');
+    return `${Date.now().toString(16)}${this.counter.toString(16).padStart(4, '0')}${random}`.padEnd(
+      32,
+      '0',
+    );
+  }
+
+  issueToken(userId: string): string {
+    const token = this.nextId();
+    this.tokens.set(token, userId);
+    this.saveTokens();
+    return token;
+  }
+
+  userForToken(token: string | null): MockUser | null {
+    if (!token) return null;
+    const userId = this.tokens.get(token);
+    return this.users.find((user) => user.id === userId) ?? null;
+  }
+
+  revokeToken(token: string): void {
+    this.tokens.delete(token);
+    this.saveTokens();
+  }
+
+  /** Revokes every token, e.g. to test the "session expired" flow. */
+  revokeAll(): void {
+    this.tokens.clear();
+    this.saveTokens();
+  }
+
+  findUserByName(name: string): MockUser | null {
+    return this.users.find((user) => user.name.toLowerCase() === name.trim().toLowerCase()) ?? null;
+  }
+
+  startQuickConnect(): QuickConnectRequest {
+    const request: QuickConnectRequest = {
+      code: String(100000 + ((Date.now() + this.counter * 7919) % 900000)).slice(0, 6),
+      secret: this.nextId(),
+      createdAt: Date.now(),
+      approvedBy: null,
+    };
+    this.counter += 1;
+    this.quickConnect.set(request.secret, request);
+    return request;
+  }
+
+  quickConnectRequest(secret: string): QuickConnectRequest | null {
+    const request = this.quickConnect.get(secret);
+    if (!request) return null;
+    const autoApprove = this.options.quickConnectAutoApproveMs;
+    if (
+      !request.approvedBy &&
+      autoApprove !== null &&
+      Date.now() - request.createdAt >= autoApprove
+    ) {
+      request.approvedBy = DEMO_USERS[0]?.id ?? null;
+    }
+    return request;
+  }
+
+  approveQuickConnect(code: string, userId: string): boolean {
+    for (const request of this.quickConnect.values()) {
+      if (request.code === code) {
+        request.approvedBy = userId;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  consumeQuickConnect(secret: string): string | null {
+    const request = this.quickConnectRequest(secret);
+    if (!request?.approvedBy) return null;
+    this.quickConnect.delete(secret);
+    return request.approvedBy;
+  }
+}

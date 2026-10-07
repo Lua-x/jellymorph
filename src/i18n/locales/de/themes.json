@@ -1,0 +1,26 @@
+{
+  "default": {
+    "name": "Classic",
+    "description": "Schlicht und übersichtlich – die Grundlage für alle anderen Themes."
+  },
+  "neon-grid": {
+    "name": "Neon Grid",
+    "description": "Futuristisches HUD mit Neonlicht, Raster und Glitch-Effekten."
+  },
+  "crimson": {
+    "name": "Crimson",
+    "description": "Großes Kino: bildfüllendes Hero, Reihen mit Vorschaukarten, Details als Overlay."
+  },
+  "glass": {
+    "name": "Glass",
+    "description": "Ruhige Milchglasflächen, große Karussells und sanfte Tiefe."
+  },
+  "horizon": {
+    "name": "Horizon",
+    "description": "Klare 16:9-Reihen, aufklappende Karten und Detailseiten mit Tabs."
+  },
+  "constellation": {
+    "name": "Constellation",
+    "description": "Sternenhimmel, große Bibliothekskacheln und eine aufklappbare Seitenleiste."
+  }
+}

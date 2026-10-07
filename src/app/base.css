@@ -1,0 +1,127 @@
+/* Theme-neutral base: reset, fluid sizing, utilities and the boot splash. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --page-gutter: clamp(1rem, 4vw, 3rem);
+  --content-max-width: 120rem;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* 16px up to 1920px wide, then grows linearly to 32px at 3840px (4K at device pixel ratio 1). */
+html {
+  font-size: clamp(16px, calc(100vw / 120), 32px);
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+img,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+h1,
+h2,
+h3,
+p {
+  overflow-wrap: break-word;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Shown by index.html until the first theme chunk has rendered. */
+.boot-splash {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #0d0f13;
+  color: #3563e6;
+}
+
+.boot-splash svg {
+  width: 3.5rem;
+  height: 3.5rem;
+  animation: boot-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes boot-pulse {
+  50% {
+    opacity: 0.45;
+    transform: scale(0.94);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boot-splash svg {
+    animation: none;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  .boot-splash {
+    background: #f4f5f8;
+  }
+}
+
+.toast-viewport {
+  position: fixed;
+  right: 0;
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  left: 0;
+  z-index: 1000;
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+  padding: 0 1rem;
+  pointer-events: none;
+}
+
+.boot-error {
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  padding: 2rem;
+  background: #0d0f13;
+  color: #eef1f6;
+  font-family: system-ui, sans-serif;
+  text-align: center;
+}
+
+.boot-error p {
+  max-width: 36rem;
+  margin: 0.5rem auto;
+  color: #9ea7b6;
+}

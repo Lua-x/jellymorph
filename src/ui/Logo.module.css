@@ -1,0 +1,14 @@
+.logo {
+  display: block;
+  width: 1em;
+  height: 1em;
+  flex: none;
+}
+
+.shape {
+  fill: var(--logo-shape, currentColor);
+}
+
+.dot {
+  fill: var(--logo-dot, #fff);
+}

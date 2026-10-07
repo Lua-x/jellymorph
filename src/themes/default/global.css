@@ -1,0 +1,40 @@
+/*
+ * Classic – global styles. Every selector starts with the theme scope.
+ * :where() keeps the specificity at element level so component styles always win.
+ */
+
+[data-theme='default'] body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-feature-settings: 'cv11', 'ss01';
+}
+
+:where([data-theme='default']) ::selection {
+  background: color-mix(in srgb, var(--color-accent) 45%, transparent);
+  color: var(--color-text);
+}
+
+:where([data-theme='default']) :focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+:where([data-theme='default']) a {
+  color: var(--color-accent-text);
+}
+
+:where([data-theme='default']) ::-webkit-scrollbar {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+:where([data-theme='default']) ::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border: 3px solid var(--color-bg);
+  border-radius: 999px;
+}
+
+:where([data-theme='default']) ::-webkit-scrollbar-track {
+  background: transparent;
+}

@@ -1,0 +1,38 @@
+{
+  "network": {
+    "title": "No connection",
+    "message": "The server cannot be reached. Check your network connection and try again."
+  },
+  "timeout": {
+    "title": "Timed out",
+    "message": "The server took too long to respond. Try again in a moment."
+  },
+  "auth": {
+    "title": "Sign-in required",
+    "message": "Your sign-in is no longer valid. Please sign in again."
+  },
+  "forbidden": {
+    "title": "No access",
+    "message": "Your account is not allowed to open this content."
+  },
+  "notFound": {
+    "title": "Not found",
+    "message": "This content no longer exists or has been moved."
+  },
+  "server": {
+    "title": "Server error",
+    "message": "Something went wrong on the server. Please try again later."
+  },
+  "unsupported": {
+    "title": "Not supported",
+    "message": "This Jellyfin version is not supported. Version 10.10 or later is required."
+  },
+  "aborted": {
+    "title": "Canceled",
+    "message": "The operation was canceled."
+  },
+  "unknown": {
+    "title": "Something went wrong",
+    "message": "An unexpected error occurred. Please try again."
+  }
+}

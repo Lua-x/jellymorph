@@ -1,0 +1,33 @@
+.spinner {
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.lg {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-width: 3px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* Reduced motion: no rotation, a calm pulse still signals activity. */
+:global([data-motion='reduced']) .spinner {
+  border-right-color: currentColor;
+  animation: pulse 1.6s ease-in-out infinite;
+}
