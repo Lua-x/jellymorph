@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import {
   expectNoA11yViolations,
+  expectSignedIn,
   openApp,
   openUserMenu,
   PROFILE_PAGE_HEADING,
@@ -11,10 +12,10 @@ test('signs in with a profile without password and shows the supported libraries
   page,
 }) => {
   await signInAs(page, 'Alex');
-  const libraries = page.getByRole('region', { name: 'Deine Bibliotheken' });
-  await expect(libraries.getByText('Anime')).toBeVisible();
-  await expect(libraries.getByText('Sammlungen')).toBeVisible();
-  await expect(libraries.getByText('Musik')).toHaveCount(0);
+  const libraries = page.getByRole('region', { name: 'Bibliotheken' });
+  await expect(libraries.getByRole('link', { name: /Anime/ })).toBeVisible();
+  await expect(libraries.getByRole('link', { name: /Sammlungen/ })).toBeVisible();
+  await expect(libraries.getByRole('link', { name: /Musik/ })).toHaveCount(0);
   await expect(page).toHaveTitle('Startseite · Jellymorph');
 });
 
@@ -31,7 +32,7 @@ test('asks for the password of protected profiles', async ({ page }) => {
 
   await page.getByLabel('Passwort', { exact: true }).fill('demo');
   await page.keyboard.press('Enter');
-  await expect(page.getByRole('heading', { name: 'Hallo, Mika!' })).toBeVisible();
+  await expectSignedIn(page, 'Mika');
 });
 
 test('signs in a user who is not listed publicly', async ({ page }) => {
@@ -40,7 +41,7 @@ test('signs in a user who is not listed publicly', async ({ page }) => {
   await page.getByLabel('Benutzername').fill('Robin');
   await page.getByLabel('Passwort', { exact: true }).fill('demo');
   await page.getByRole('button', { name: 'Anmelden', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Hallo, Robin!' })).toBeVisible();
+  await expectSignedIn(page, 'Robin');
 });
 
 test('signs in with Quick Connect', async ({ page }) => {
@@ -49,15 +50,13 @@ test('signs in with Quick Connect', async ({ page }) => {
   await expect(page.getByText(/^Code: \d \d \d \d \d \d$/)).toBeAttached();
   await expect(page.getByText('Warte auf Bestätigung …')).toBeVisible();
   // The demo server approves the code automatically after a few seconds.
-  await expect(page.getByRole('heading', { name: 'Hallo, Alex!' })).toBeVisible({
-    timeout: 15_000,
-  });
+  await expectSignedIn(page, 'Alex', 15_000);
 });
 
 test('remembers profiles and keeps the session after a reload', async ({ page }) => {
   await signInAs(page, 'Mika', 'demo');
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Hallo, Mika!' })).toBeVisible();
+  await expectSignedIn(page, 'Mika');
 
   await openUserMenu(page);
   await page.getByRole('button', { name: 'Profil wechseln' }).click();
@@ -65,7 +64,7 @@ test('remembers profiles and keeps the session after a reload', async ({ page })
   await expect(page.getByRole('button', { name: 'Mika auf diesem Gerät vergessen' })).toBeVisible();
 
   await page.getByRole('button', { name: 'Mika', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Hallo, Mika!' })).toBeVisible();
+  await expectSignedIn(page, 'Mika');
 });
 
 test('signing out ends the session and stores no password', async ({ page }) => {
@@ -86,7 +85,7 @@ test('returns to the requested page after signing in', async ({ page }) => {
   await page.getByRole('button', { name: 'Alex' }).click();
   await expect(page.getByRole('heading', { name: 'Seite nicht gefunden' })).toBeVisible();
   await page.getByRole('button', { name: 'Zur Startseite' }).click();
-  await expect(page.getByRole('heading', { name: 'Hallo, Alex!' })).toBeVisible();
+  await expectSignedIn(page, 'Alex');
 });
 
 test('switches the language', async ({ page }) => {
@@ -112,7 +111,7 @@ test.describe('keyboard and accessibility @desktop-only', () => {
     await expect(page.getByLabel('Passwort', { exact: true })).toBeFocused();
     await page.keyboard.type('demo');
     await page.keyboard.press('Enter');
-    await expect(page.getByRole('heading', { name: 'Hallo, Kim!' })).toBeVisible();
+    await expectSignedIn(page, 'Kim');
 
     const menuButton = page.getByRole('button', { name: /Benutzermenü/ });
     await menuButton.focus();
@@ -151,9 +150,9 @@ test.describe('keyboard and accessibility @desktop-only', () => {
     await page.getByRole('button', { name: 'Mit Passwort anmelden' }).click();
     await page.getByLabel('Benutzername').fill('Alex');
     await page.keyboard.press('Enter');
-    await expect(page.getByRole('heading', { name: 'Hallo, Alex!' })).toBeVisible();
+    await expectSignedIn(page, 'Alex');
     await expect(
-      page.getByRole('region', { name: 'Deine Bibliotheken' }).getByText('Filme'),
+      page.getByRole('region', { name: 'Bibliotheken' }).getByRole('link', { name: /Filme/ }),
     ).toBeVisible();
     await expectNoA11yViolations(page);
   });

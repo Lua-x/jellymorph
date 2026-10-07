@@ -22,6 +22,15 @@ async function renderApp(config: AppConfig = locked) {
   return { user };
 }
 
+/** The user menu shows who is signed in once the app shell is there. */
+function findSignedIn(name: string) {
+  return screen.findByRole(
+    'button',
+    { name: new RegExp(`^${name}.*Benutzermenü`) },
+    { timeout: 3000 },
+  );
+}
+
 beforeAll(async () => {
   await initI18n('de');
   await Promise.all([loadDefaultTheme(), loadThemeModule(getThemeManifest('default'))]);
@@ -44,10 +53,10 @@ describe('sign-in', () => {
     const { user } = await renderApp();
     await user.click(await screen.findByRole('button', { name: /Alex/ }));
 
-    expect(await screen.findByRole('heading', { name: 'Hallo, Alex!' })).toBeInTheDocument();
-    const libraries = await screen.findByRole('region', { name: 'Deine Bibliotheken' });
-    expect(within(libraries).getByText('Filme')).toBeInTheDocument();
-    expect(within(libraries).getByText('Anime')).toBeInTheDocument();
+    expect(await findSignedIn('Alex')).toBeInTheDocument();
+    const libraries = await screen.findByRole('region', { name: 'Bibliotheken' });
+    expect(await within(libraries).findByRole('link', { name: /Filme/ })).toBeInTheDocument();
+    expect(within(libraries).getByRole('link', { name: /Anime/ })).toBeInTheDocument();
     // Music libraries are out of scope for v1 and stay hidden.
     expect(within(libraries).queryByText('Musik')).not.toBeInTheDocument();
   });
@@ -65,7 +74,7 @@ describe('sign-in', () => {
 
     await user.clear(password);
     await user.type(password, 'demo{Enter}');
-    expect(await screen.findByRole('heading', { name: 'Hallo, Mika!' })).toBeInTheDocument();
+    expect(await findSignedIn('Mika')).toBeInTheDocument();
     expect(JSON.stringify(Object.entries(localStorage))).not.toContain('"demo"');
   });
 
@@ -83,19 +92,19 @@ describe('sign-in', () => {
     const { user } = await renderApp();
     await user.click(await screen.findByRole('button', { name: /Kim/ }));
     await user.type(await screen.findByLabelText('Passwort'), 'demo{Enter}');
-    await screen.findByRole('heading', { name: 'Hallo, Kim!' });
+    await findSignedIn('Kim');
 
     await user.click(screen.getByRole('button', { name: /Benutzermenü/ }));
     await user.click(screen.getByRole('button', { name: 'Profil wechseln' }));
     await user.click(await screen.findByRole('button', { name: 'Kim' }));
 
-    expect(await screen.findByRole('heading', { name: 'Hallo, Kim!' })).toBeInTheDocument();
+    expect(await findSignedIn('Kim')).toBeInTheDocument();
   });
 
   it('ends the session on the server when signing out', async () => {
     const { user } = await renderApp();
     await user.click(await screen.findByRole('button', { name: /Alex/ }));
-    await screen.findByRole('heading', { name: 'Hallo, Alex!' });
+    await findSignedIn('Alex');
     const token = useSessionStore.getState().api?.accessToken ?? null;
     expect(mockState.userForToken(token)?.name).toBe('Alex');
 

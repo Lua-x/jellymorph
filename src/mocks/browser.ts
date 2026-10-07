@@ -7,7 +7,7 @@ export async function startDemoServer(): Promise<void> {
   const state = new MockState({
     quickConnectAutoApproveMs: 4_000,
     latencyMs: 180,
-    tokenStorage: window.localStorage,
+    storage: window.localStorage,
   });
   const worker = setupWorker(...createHandlers(state));
   await worker.start({

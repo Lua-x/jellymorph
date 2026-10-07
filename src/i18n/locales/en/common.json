@@ -12,18 +12,15 @@
   "nav": {
     "home": "Home",
     "mainNavigation": "Main navigation",
-    "userMenu": "User menu",
     "switchProfile": "Switch profile",
     "changeServer": "Change server",
     "signOut": "Sign out",
-    "skipToContent": "Skip to content"
+    "skipToContent": "Skip to content",
+    "search": "Search",
+    "favorites": "Favorites",
+    "userMenuFor": "{{name}} – user menu"
   },
   "home": {
-    "greeting": "Hi, {{name}}!",
-    "greetingAnonymous": "Welcome!",
-    "libraries": "Your libraries",
-    "noLibraries": "No libraries",
-    "noLibrariesHint": "Your account has no access to movies or shows yet. An administrator can grant access in Jellyfin.",
     "kinds": {
       "movies": "Movies",
       "shows": "Shows",

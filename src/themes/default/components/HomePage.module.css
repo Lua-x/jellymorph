@@ -1,98 +1,125 @@
 .page {
   display: grid;
-  gap: 2rem;
+  grid-template-columns: minmax(0, 1fr);
 }
 
-.greeting {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(1.75rem, 1.2rem + 2vw, 2.5rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
+.rows {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2.5rem;
+  margin-top: 1.5rem;
+}
+
+.section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
 }
 
 .sectionTitle {
-  margin: 0 0 1rem;
+  margin: 0;
   font-family: var(--font-display);
   font-size: 1.25rem;
   font-weight: 650;
 }
 
-.grid {
+.tiles {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr));
+  gap: 1rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .tile {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 7;
   overflow: hidden;
-  border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
-  background: var(--color-surface);
+  background: var(--color-surface-raised);
+  color: #fff;
+  text-decoration: none;
   box-shadow: var(--shadow-card);
+  transition: transform var(--duration-base) var(--ease-emphasized);
 }
 
-.media {
-  position: relative;
-  display: grid;
-  place-items: center;
-  aspect-ratio: 16 / 9;
+.tile:is(:hover, :focus-visible) {
+  transform: translateY(-0.1875rem) scale(1.02);
+  box-shadow: var(--focus-ring), var(--shadow-card);
+  outline: none;
+}
+
+.tileSkeleton {
+  box-shadow: none;
+}
+
+.tileFallback {
+  position: absolute;
+  inset: 0;
   background:
     radial-gradient(80% 90% at 30% 20%, var(--backdrop-glow), transparent 70%),
     var(--color-surface-raised);
 }
 
-.fallbackIcon {
-  color: var(--color-text-muted);
-  font-size: 2.5rem;
-}
-
-.image {
+.tileLabel {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0;
-  transition: opacity var(--duration-slow) var(--ease-standard);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2rem 1rem 0.75rem;
+  background: linear-gradient(0deg, rgb(0 0 0 / 70%), transparent);
+  font-weight: 700;
+  font-size: 1.0625rem;
 }
 
-.loaded {
-  opacity: 1;
+.tileLabel > svg {
+  font-size: 1.25rem;
 }
 
-.caption {
-  display: grid;
-  gap: 0.125rem;
-  padding: 0.875rem 1rem 1rem;
+.genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.name {
-  overflow: hidden;
-  font-weight: 650;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.genre {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: 0 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 600;
+  text-decoration: none;
 }
 
-.kind {
-  color: var(--color-text-muted);
-  font-size: 0.875rem;
+.genre:is(:hover, :focus-visible) {
+  background: var(--color-surface-hover);
+  border-color: var(--color-focus);
+}
+
+.genre:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+:global([data-motion='reduced']) .tile {
+  transition: none;
 }
 
 @media (max-width: 40rem) {
-  .grid {
+  .tiles {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.75rem;
   }
-
-  .caption {
-    padding: 0.625rem 0.75rem 0.75rem;
-  }
-}
-
-:global([data-motion='reduced']) .image {
-  transition: none;
 }

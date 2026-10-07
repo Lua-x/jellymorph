@@ -27,6 +27,7 @@ export async function fetchCurrentUser(api: Api, signal?: AbortSignal): Promise<
     imageUrl:
       data.Id && data.PrimaryImageTag ? userImageUrl(api, data.Id, data.PrimaryImageTag) : null,
     isAdministrator: data.Policy?.IsAdministrator === true,
+    latestExcludes: data.Configuration?.LatestItemsExcludes ?? [],
   };
 }
 
@@ -34,12 +35,17 @@ function toLibrary(api: Api, view: BaseItemDto): Library | null {
   const kind = libraryKind(view.CollectionType);
   if (!kind || !view.Id) return null;
   const tag = view.ImageTags?.Primary;
+  const hashes = view.ImageBlurHashes?.Primary as Record<string, string> | undefined;
   return {
     id: view.Id,
     name: view.Name ?? '',
     kind,
-    imageUrl: tag
-      ? itemImageUrl(api, view.Id, 'Primary', { tag, maxWidth: 640, quality: 85 })
+    image: tag
+      ? {
+          url: itemImageUrl(api, view.Id, 'Primary', { tag }),
+          blurHash: hashes?.[tag] ?? null,
+          aspectRatio: view.PrimaryImageAspectRatio ?? 16 / 9,
+        }
       : null,
   };
 }

@@ -5,7 +5,7 @@ export const LANGUAGES = ['de', 'en'] as const;
 export type Language = (typeof LANGUAGES)[number];
 export const DEFAULT_LANGUAGE: Language = 'de';
 
-export const NAMESPACES = ['common', 'auth', 'errors', 'themes'] as const;
+export const NAMESPACES = ['common', 'auth', 'content', 'errors', 'themes'] as const;
 
 export function isLanguage(value: unknown): value is Language {
   return typeof value === 'string' && (LANGUAGES as readonly string[]).includes(value);

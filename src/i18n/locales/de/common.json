@@ -12,18 +12,15 @@
   "nav": {
     "home": "Startseite",
     "mainNavigation": "Hauptnavigation",
-    "userMenu": "Benutzermenü",
     "switchProfile": "Profil wechseln",
     "changeServer": "Server wechseln",
     "signOut": "Abmelden",
-    "skipToContent": "Zum Inhalt springen"
+    "skipToContent": "Zum Inhalt springen",
+    "search": "Suche",
+    "favorites": "Favoriten",
+    "userMenuFor": "{{name}} – Benutzermenü"
   },
   "home": {
-    "greeting": "Hallo, {{name}}!",
-    "greetingAnonymous": "Willkommen!",
-    "libraries": "Deine Bibliotheken",
-    "noLibraries": "Keine Bibliotheken",
-    "noLibrariesHint": "Dein Benutzerkonto hat noch keinen Zugriff auf Filme oder Serien. Eine Administratorin oder ein Administrator kann das in Jellyfin freigeben.",
     "kinds": {
       "movies": "Filme",
       "shows": "Serien",

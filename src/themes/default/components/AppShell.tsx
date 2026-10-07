@@ -54,6 +54,7 @@ function UserMenu({ nav }: { nav: NavModel }) {
         className={styles.userButton}
         aria-expanded={open}
         aria-controls={panelId}
+        aria-label={t('nav.userMenuFor', { name: nav.user.name })}
         onClick={() => {
           setOpen((value) => !value);
         }}
@@ -61,7 +62,6 @@ function UserMenu({ nav }: { nav: NavModel }) {
         <Avatar name={nav.user.name} imageUrl={nav.user.imageUrl} />
         <span className={styles.userName}>{nav.user.name}</span>
         <Icon name="chevronDown" className={styles.chevron} />
-        <span className="visually-hidden">{t('nav.userMenu')}</span>
       </button>
       <div id={panelId} className={styles.panel} hidden={!open}>
         <div className={styles.panelHeader}>
@@ -104,6 +104,9 @@ function UserMenu({ nav }: { nav: NavModel }) {
 export function AppShell({ nav, children }: AppShellProps) {
   const { t } = useTranslation();
   const mainRef = useRef<HTMLElement>(null);
+  const home = nav.items.filter((item) => item.id === 'home');
+  const tools = nav.items.filter((item) => item.group === 'main' && item.id !== 'home');
+  const libraries = nav.items.filter((item) => item.group === 'library');
   return (
     <div className={styles.shell}>
       <a
@@ -124,11 +127,11 @@ export function AppShell({ nav, children }: AppShellProps) {
           </AppLink>
           <nav className={styles.nav} aria-label={t('nav.mainNavigation')}>
             <ul className={styles.navList}>
-              {nav.items.map((item) => (
+              {[...home, ...libraries, ...tools].map((item) => (
                 <li key={item.id}>
                   <AppLink
                     nav
-                    end
+                    end={item.id === 'home'}
                     to={item.to}
                     className={styles.navLink}
                     activeClassName={styles.active}
@@ -146,6 +149,25 @@ export function AppShell({ nav, children }: AppShellProps) {
       <main id="main" ref={mainRef} tabIndex={-1} className={styles.main}>
         {children}
       </main>
+      {/* Phones: the main destinations sit at the bottom, within thumb reach. */}
+      <nav className={styles.bottomNav} aria-label={t('nav.mainNavigation')}>
+        <ul>
+          {[...home, ...tools].map((item) => (
+            <li key={item.id}>
+              <AppLink
+                nav
+                end={item.id === 'home'}
+                to={item.to}
+                className={styles.bottomLink}
+                activeClassName={styles.bottomActive}
+              >
+                <Icon name={item.icon} />
+                <span>{item.label}</span>
+              </AppLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { delay, http, HttpResponse, type HttpResponseResolver } from 'msw';
 import { DEMO_SERVER, DEMO_VIEWS, type MockUser } from './fixtures';
-import { avatarSvg, libraryArtSvg, svgResponseInit } from './images';
+import { createContentHandlers } from './content-handlers';
+import { avatarSvg, svgResponseInit } from './images';
 import type { MockState } from './state';
 
 /** Reads the token from `Authorization: MediaBrowser …, Token="…"` or the ApiKey parameter. */
@@ -57,12 +58,16 @@ export function createHandlers(state: MockState) {
   /** Wraps a resolver that needs a signed-in user. */
   const authed =
     (
-      resolver: (user: MockUser, request: Request) => Response | Promise<Response>,
-    ): HttpResponseResolver =>
-    async ({ request }) => {
+      resolver: (
+        user: MockUser,
+        request: Request,
+        params: Record<string, string>,
+      ) => Response | Promise<Response>,
+    ): HttpResponseResolver<Record<string, string>> =>
+    async ({ request, params }) => {
       await latency();
       const user = state.userForToken(tokenOf(request));
-      return user ? resolver(user, request) : unauthorized();
+      return user ? resolver(user, request, params) : unauthorized();
     };
 
   return [
@@ -147,6 +152,7 @@ export function createHandlers(state: MockState) {
             IsFolder: true,
             CollectionType: view.collectionType ?? undefined,
             ImageTags: { Primary: `library-${view.id}` },
+            PrimaryImageAspectRatio: 16 / 9,
           })),
           TotalRecordCount: DEMO_VIEWS.length,
           StartIndex: 0,
@@ -161,10 +167,6 @@ export function createHandlers(state: MockState) {
       return new HttpResponse(avatarSvg(user.hue), svgResponseInit());
     }),
 
-    http.get('*/Items/:itemId/Images/:imageType', ({ params }) => {
-      const view = DEMO_VIEWS.find((candidate) => candidate.id === params.itemId);
-      if (!view) return new HttpResponse(null, { status: 404 });
-      return new HttpResponse(libraryArtSvg(view.hue), svgResponseInit());
-    }),
+    ...createContentHandlers(state, authed),
   ];
 }

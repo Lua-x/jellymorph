@@ -299,7 +299,7 @@ Performance-Ziele: Basis-Bundle ohne Theme < 250 KB gzip, LCP < 2,5 s auf Deskto
 
 - [x] Phase 0 – Plan: Architektur, finaler Theme-Vertrag, Abhängigkeiten mit Begründung, Player-Datenfluss, Risiken, offene Fragen → docs/architecture.md. Keine Implementierung. _(freigegeben 2026-10-07)_
 - [x] Phase 1 – Fundament: Setup, Tooling, ci.yml, Laufzeit-Config, API-Client, Auth (Server, Login, Quick Connect, Profilauswahl), Mock-Server + Demo-Modus, i18n _(fertig 2026-10-07, v0.1.0, Freigabe ausstehend)_
-- [ ] Phase 2 – Default-Theme: alle Seiten funktional (Home, Bibliothek, Details, Serien, Suche, Favoriten)
+- [x] Phase 2 – Default-Theme: alle Seiten funktional (Home, Bibliothek, Details, Serien, Suche, Favoriten) _(fertig 2026-10-07, v0.2.0, Freigabe ausstehend)_
 - [ ] Phase 3 – Player: komplett inkl. Reporting, Spuren, Trickplay, Segmente, Nächste Folge
 - [ ] Phase 4 – Theme-System: Registry, Fallback, Einstellungen mit Live-Vorschau, Persistenz, Spatial Navigation
 - [ ] Phase 5 – Docker & Release: Dockerfile, nginx, Entrypoint, Compose, release.yml
@@ -337,6 +337,21 @@ Hier trägt Claude Code wichtige Architekturentscheidungen und Abweichungen mit 
   - Globale Theme-Regeln stehen unter `:where([data-theme='…'])`, damit Komponentenstile immer Vorrang haben.
   - Vor dem ersten Rendern zeigt `index.html` einen neutralen Splash. Fehler beim Start (z. B. Demo ohne Service Worker) erscheinen als zweisprachige Meldung in `app/boot-error.ts`.
   - Version je Phase: Phase n → 0.n.0 (wie bei Crystal).
+- **2026-10-07 – Phase 2, Umsetzungsentscheidungen:**
+  - Theme-Vertrag v1 ergänzt um `LibraryPage`, `ItemDetailPage`, `SeriesPage`, `SearchPage`, `FavoritesPage`, `Hero`, `Row` und `MediaCard`.
+    - `SeriesPageProps.series` ist ein geladenes `ItemDetail` statt eines `QueryResult`: Ob ein Eintrag eine Serie ist, steht erst nach dem Laden fest. Bis dahin zeigt `ItemDetailPage` den Ladezustand.
+    - `CardVariant` ist `poster | landscape | episode`.
+    - Themes setzen andere Slots über `<ThemeSlot>` zusammen, nicht über `useThemeComponent()` + JSX. So bleibt die Komponentenidentität stabil (React-Compiler-Regel), und jeder Baustein hat eine eigene Fehlergrenze.
+  - „Abspielen“-Buttons erscheinen erst mit dem Player in Phase 3. `useMediaActions().play` ist bis dahin `null`, damit es keine toten Buttons gibt.
+  - Favorit und gesehen werden sofort im ganzen Cache aktualisiert (optimistisch) und nach der Server-Antwort bestätigt bzw. bei Fehlern zurückgesetzt, mit Toast.
+  - Live-Updates kommen über den SDK-WebSocket (`UserDataChanged`, `LibraryChanged`), gebündelt nach 1,5 s.
+  - Sortierung und Filter der Bibliothek stehen in der URL (teilbar, Zurück-Taste funktioniert).
+  - Die Sprungleiste zählt per `nameLessThan` (klein geschrieben, weil Jellyfin Sortiernamen klein speichert). Das muss am echten Server noch geprüft werden.
+  - Jahre im Filter kommen vom Legacy-Endpunkt `/Items/Filters`, weil `/Items/Filters2` keine Jahre liefert.
+  - „Nächste Folgen“ auf der Startseite lässt angefangene Folgen weg, die stehen unter „Weiterschauen“. Auf der Serienseite ist die angefangene Folge die nächste.
+  - Inhaltsseiten außer der Startseite werden per Lazy Loading nachgeladen.
+  - **Theme-Regel:** Seiten-Grids brauchen `grid-template-columns: minmax(0, 1fr)`. Sonst wächst die Spalte mit einer langen Kartenreihe mit, und die Seite scrollt seitlich. Ein E2E-Test prüft das.
+  - Der Demo-Server speichert auch Favoriten und den Gesehen-Status pro Benutzer in `localStorage`.
 - **2026-10-07 – MSW 3 über das Vite-Plugin `msw/vite` im Modus `worker-only`.** Es liefert `mockServiceWorker.js` im Dev-Server aus und legt es beim Build in `dist/`. Die Datei liegt also nicht im Repo und ist immer passend zur installierten MSW-Version. Gestartet wird über die stabile API `setupWorker`, nicht über das experimentelle `virtual:msw`.
 
 - **2026-10-07 – SDK 1.0.0 trotz Mindestversion 10.10.** `@jellyfin/sdk` 1.0.0 ist gegen die OpenAPI von Jellyfin 12.0 generiert (Klassen umbenannt, z. B. `ItemsApi` → `LibraryApi`, `PlaystateApi` → `SessionApi`). Ein Abgleich aller Endpunkt-Pfade mit SDK 0.11.0 (= Jellyfin 10.10) zeigt: Jeder Pfad, den der Client braucht, existiert unverändert in 10.10. `MINIMUM_VERSION` des SDK ist weiterhin 10.10.0. Details: docs/architecture.md §1.2.

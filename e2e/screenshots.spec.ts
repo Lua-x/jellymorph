@@ -1,7 +1,7 @@
 import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import { openApp, openUserMenu, signInAs } from './helpers';
+import { expectSignedIn, openApp, openUserMenu, signInAs } from './helpers';
 
 /**
  * Review screenshots for the Definition of Done (CLAUDE.md §9). Not part of the normal E2E run:
@@ -17,11 +17,47 @@ const VIEWPORTS = [
 const OUTPUT = join(import.meta.dirname, '..', 'artifacts', 'screenshots');
 mkdirSync(OUTPUT, { recursive: true });
 
-async function shoot(page: Page, name: string, suffix = '') {
+async function shoot(page: Page, name: string, suffix = '', fullPage = false) {
   const { width, height } = page.viewportSize() ?? { width: 0, height: 0 };
-  // Let entrance animations settle so screenshots show the resting state.
-  await page.waitForTimeout(450);
-  await page.screenshot({ path: join(OUTPUT, `${name}-${width}x${height}${suffix}.png`) });
+  if (fullPage) {
+    // Lazy images only load near the viewport: scroll through once, then back to the top.
+    await page.evaluate(async () => {
+      for (let y = 0; y < document.documentElement.scrollHeight; y += window.innerHeight / 2) {
+        window.scrollTo(0, y);
+        await new Promise((resolve) => setTimeout(resolve, 120));
+      }
+      window.scrollTo(0, 0);
+    });
+  }
+  // Wait for visible images and let entrance animations and fades settle.
+  await page.waitForFunction(
+    (all) =>
+      [...document.images].every((image) => {
+        if (image.complete) return true;
+        const rect = image.getBoundingClientRect();
+        // Cards scrolled sideways out of a row never load (lazy), and that is fine.
+        const outsideHorizontally = rect.right < 0 || rect.left > window.innerWidth;
+        const outsideVertically = rect.bottom < 0 || rect.top > window.innerHeight;
+        return outsideHorizontally || (!all && outsideVertically);
+      }),
+    fullPage,
+    { timeout: 15_000 },
+  );
+  await page.waitForTimeout(600);
+  await page.screenshot({
+    path: join(OUTPUT, `${name}-${width}x${height}${suffix}.png`),
+    fullPage,
+  });
+}
+
+async function openFromSearch(page: Page, term: string, group: string) {
+  await page.goto(`/search?q=${encodeURIComponent(term)}`);
+  await page
+    .getByRole('region', { name: new RegExp(`^${group}`) })
+    .getByRole('link', { name: new RegExp(term) })
+    .first()
+    .click();
+  await expect(page.getByRole('heading', { level: 1, name: term })).toBeVisible();
 }
 
 test.describe('screenshots @shots', () => {
@@ -47,10 +83,40 @@ test.describe('screenshots @shots', () => {
 
       test('home and user menu', async ({ page }) => {
         await signInAs(page, 'Alex');
-        await page.waitForFunction(() => [...document.images].every((image) => image.complete));
+        await expect(page.getByRole('region', { name: 'Weiterschauen' })).toBeVisible();
         await shoot(page, '04-home');
+        await shoot(page, '04-home', '-full', true);
         await openUserMenu(page);
         await shoot(page, '05-user-menu');
+      });
+
+      test('library, details, search and favorites', async ({ page }) => {
+        await signInAs(page, 'Alex');
+        await page
+          .getByRole('region', { name: 'Bibliotheken' })
+          .getByRole('link', { name: /^Filme/ })
+          .click();
+        await expect(page.getByText('56 Titel')).toBeVisible();
+        await shoot(page, '07-library');
+        await page.getByRole('button', { name: 'Filter', exact: true }).click();
+        await page.getByRole('button', { name: 'Krimi', pressed: false }).click();
+        await shoot(page, '08-library-filters');
+
+        await openFromSearch(page, 'Kupferherz', 'Filme');
+        await shoot(page, '09-movie');
+        await shoot(page, '09-movie', '-full', true);
+
+        await openFromSearch(page, 'Hafenviertel', 'Serien');
+        await expect(page.getByRole('tab', { name: 'Staffel 2', selected: true })).toBeVisible();
+        await shoot(page, '10-series', '-full', true);
+
+        await page.goto('/search?q=or');
+        await expect(page.getByRole('region', { name: /^Filme/ })).toBeVisible();
+        await shoot(page, '11-search');
+
+        await page.goto('/favorites');
+        await expect(page.getByRole('heading', { level: 1, name: 'Favoriten' })).toBeVisible();
+        await shoot(page, '12-favorites');
       });
 
       test('server selection', async ({ page }) => {
@@ -103,9 +169,11 @@ test.describe('screenshots @shots', () => {
       await expect(page.getByRole('button', { name: 'Alex' })).toBeVisible();
       await shoot(page, '01-profiles', '-light');
       await page.getByRole('button', { name: 'Alex' }).click();
-      await expect(page.getByRole('heading', { name: 'Hallo, Alex!' })).toBeVisible();
-      await page.waitForFunction(() => [...document.images].every((image) => image.complete));
+      await expectSignedIn(page, 'Alex');
+      await expect(page.getByRole('region', { name: 'Weiterschauen' })).toBeVisible();
       await shoot(page, '04-home', '-light');
+      await openFromSearch(page, 'Hafenviertel', 'Serien');
+      await shoot(page, '10-series', '-light');
     });
   });
 });

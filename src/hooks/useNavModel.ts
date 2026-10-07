@@ -5,10 +5,19 @@ import { useNavigate } from 'react-router';
 import { signOutOnServer } from '@/api/auth';
 import { useSessionStore } from '@/api/session-store';
 import { useAppConfig } from '@/config/context';
-import type { NavModel } from '@/navigation/nav-model';
+import type { LibraryKind } from '@/domain/types';
+import type { NavIcon, NavItem, NavModel } from '@/navigation/nav-model';
 import { paths } from '@/navigation/paths';
 import { useActiveSession } from './useSession';
-import { useCurrentUser } from './useUser';
+import { useCurrentUser, useLibraries } from './useUser';
+
+const LIBRARY_ICONS: Record<LibraryKind, NavIcon> = {
+  movies: 'movies',
+  shows: 'shows',
+  collections: 'collections',
+  videos: 'videos',
+  mixed: 'folder',
+};
 
 export function useNavModel(): NavModel {
   const { t } = useTranslation();
@@ -17,6 +26,7 @@ export function useNavModel(): NavModel {
   const queryClient = useQueryClient();
   const { session, server, key } = useActiveSession();
   const user = useCurrentUser();
+  const libraries = useLibraries();
   const deactivate = useSessionStore((state) => state.deactivate);
   const removeSession = useSessionStore((state) => state.removeSession);
   const [signingOut, setSigningOut] = useState(false);
@@ -38,7 +48,24 @@ export function useNavModel(): NavModel {
 
   return {
     appTitle: config.appTitle,
-    items: [{ id: 'home', label: t('nav.home'), to: paths.home, icon: 'home' }],
+    items: [
+      { id: 'home', label: t('nav.home'), to: paths.home, icon: 'home', group: 'main' },
+      ...(libraries.status === 'success' ? libraries.data : []).map((library): NavItem => ({
+        id: `library-${library.id}`,
+        label: library.name,
+        to: paths.library(library.id),
+        icon: LIBRARY_ICONS[library.kind],
+        group: 'library',
+      })),
+      { id: 'search', label: t('nav.search'), to: paths.search(), icon: 'search', group: 'main' },
+      {
+        id: 'favorites',
+        label: t('nav.favorites'),
+        to: paths.favorites,
+        icon: 'favorites',
+        group: 'main',
+      },
+    ],
     user: {
       name: user.status === 'success' ? user.data.name : session.userName,
       imageUrl: user.status === 'success' ? user.data.imageUrl : null,

@@ -10,8 +10,20 @@
  */
 import type { ComponentType, ReactNode } from 'react';
 import type { ThemeId } from '@/config/theme-ids';
-import type { AppError, CurrentUser, Library, QueryResult } from '@/domain/types';
+import type {
+  AppError,
+  CurrentUser,
+  FavoriteGroup,
+  HomeSection,
+  ItemDetail,
+  Library,
+  MediaItem,
+  QueryResult,
+  SearchGroup,
+  Season,
+} from '@/domain/types';
 import type { LoginFlow, ProfileSelectModel } from '@/hooks/auth/types';
+import type { LibraryBrowser } from '@/hooks/useLibraryBrowser';
 import type { NavModel } from '@/navigation/nav-model';
 
 export type { ThemeId };
@@ -56,6 +68,14 @@ export interface ThemeComponents {
   LoginPage: ComponentType<LoginPageProps>;
   ProfileSelect: ComponentType<ProfileSelectProps>;
   HomePage: ComponentType<HomePageProps>;
+  LibraryPage: ComponentType<LibraryPageProps>;
+  ItemDetailPage: ComponentType<ItemDetailPageProps>;
+  SeriesPage: ComponentType<SeriesPageProps>;
+  SearchPage: ComponentType<SearchPageProps>;
+  FavoritesPage: ComponentType<FavoritesPageProps>;
+  Hero: ComponentType<HeroProps>;
+  Row: ComponentType<RowProps>;
+  MediaCard: ComponentType<MediaCardProps>;
   Toast: ComponentType<ToastProps>;
   LoadingState: ComponentType<LoadingStateProps>;
   EmptyState: ComponentType<EmptyStateProps>;
@@ -75,9 +95,76 @@ export interface LoginPageProps {
 
 export type ProfileSelectProps = ProfileSelectModel;
 
+/** Where a building block is rendered; 'preview' = the live preview in the settings. */
+export type RenderContext = 'page' | 'preview';
+
+/** How a detail page is presented; themes may show details as a modal over the previous page. */
+export type Presentation = 'page' | 'modal';
+
+/** Card shapes the data suggests; themes may map them to their own designs. */
+export type CardVariant = 'poster' | 'landscape' | 'episode';
+
 export interface HomePageProps {
   user: QueryResult<CurrentUser>;
+  hero: QueryResult<MediaItem[]>;
   libraries: QueryResult<Library[]>;
+  /** Rows in display order; each one loads independently. */
+  sections: readonly HomeSection[];
+}
+
+export interface LibraryPageProps {
+  browser: LibraryBrowser;
+}
+
+export interface ItemDetailPageProps {
+  detail: QueryResult<ItemDetail>;
+  similar: QueryResult<MediaItem[]>;
+  presentation: Presentation;
+  onClose: () => void;
+}
+
+export interface SeriesPageProps {
+  series: ItemDetail;
+  seasons: QueryResult<Season[]>;
+  selectedSeasonId: string | null;
+  onSelectSeason: (seasonId: string) => void;
+  episodes: QueryResult<MediaItem[]>;
+  /** The episode to watch next, null when everything is watched or nothing started. */
+  nextUp: QueryResult<MediaItem | null>;
+  similar: QueryResult<MediaItem[]>;
+  presentation: Presentation;
+  onClose: () => void;
+}
+
+export interface SearchPageProps {
+  term: string;
+  onTermChange: (term: string) => void;
+  /** null while the term is too short to search. */
+  results: QueryResult<SearchGroup[]> | null;
+}
+
+export interface FavoritesPageProps {
+  groups: QueryResult<FavoriteGroup[]>;
+}
+
+export interface HeroProps {
+  items: QueryResult<MediaItem[]>;
+  context: RenderContext;
+}
+
+export interface RowProps {
+  title: string;
+  items: QueryResult<MediaItem[]>;
+  variant: CardVariant;
+  /** Link to the full list. */
+  seeAll: string | null;
+  context: RenderContext;
+}
+
+export interface MediaCardProps {
+  item: MediaItem;
+  variant: CardVariant;
+  context: RenderContext;
 }
 
 export interface ToastProps {

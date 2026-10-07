@@ -1,0 +1,135 @@
+{
+  "actions": {
+    "saveFailed": "Die Änderung konnte nicht gespeichert werden. Versuche es erneut.",
+    "favorite": "Favorit",
+    "unfavorite": "Aus Favoriten entfernen",
+    "markPlayed": "Als gesehen markieren",
+    "markUnplayed": "Als ungesehen markieren",
+    "details": "Details",
+    "seeAll": "Alle anzeigen",
+    "scrollLeft": "Zurückblättern",
+    "scrollRight": "Weiterblättern"
+  },
+  "meta": {
+    "played": "Gesehen",
+    "unplayed_one": "{{count}} ungesehene Folge",
+    "unplayed_other": "{{count}} ungesehene Folgen",
+    "favorite": "Favorit",
+    "progress": "{{percent}} % gesehen",
+    "hoursMinutes": "{{hours}} Std. {{minutes}} Min.",
+    "minutes_one": "{{count}} Min.",
+    "minutes_other": "{{count}} Min.",
+    "episodeCode": "S{{season}} · F{{episode}}",
+    "yearRange": "{{from}}–{{to}}",
+    "since": "seit {{year}}",
+    "titles_one": "{{count}} Titel",
+    "titles_other": "{{count}} Titel",
+    "seasons_one": "{{count}} Staffel",
+    "seasons_other": "{{count}} Staffeln",
+    "rating": "Bewertung"
+  },
+  "home": {
+    "featured": "Empfohlen",
+    "heroPosition": "{{current}} von {{total}}",
+    "showItem": "{{name}} anzeigen",
+    "libraries": "Bibliotheken",
+    "sections": {
+      "resume": "Weiterschauen",
+      "nextUp": "Nächste Folgen",
+      "latest": "Neu in {{library}}",
+      "favorites": "Deine Favoriten",
+      "collections": "Sammlungen",
+      "genres": "Genres"
+    },
+    "empty": {
+      "title": "Noch nichts zu sehen",
+      "message": "Auf diesem Server sind noch keine Filme oder Serien für dich freigegeben."
+    }
+  },
+  "library": {
+    "items_one": "{{count}} Titel",
+    "items_other": "{{count}} Titel",
+    "sort": "Sortieren nach",
+    "sortFields": {
+      "name": "Titel",
+      "dateAdded": "Zuletzt hinzugefügt",
+      "year": "Erscheinungsjahr",
+      "rating": "Bewertung"
+    },
+    "ascending": "Aufsteigend sortiert – umkehren",
+    "descending": "Absteigend sortiert – umkehren",
+    "filters": "Filter",
+    "filterCount_one": "Filter ({{count}})",
+    "filterCount_other": "Filter ({{count}})",
+    "status": "Status",
+    "played": {
+      "all": "Alle",
+      "unplayed": "Ungesehen",
+      "played": "Gesehen"
+    },
+    "favoritesOnly": "Nur Favoriten",
+    "genres": "Genres",
+    "years": "Jahre",
+    "activeFilters": "Aktive Filter",
+    "removeFilter": "Filter „{{name}}“ entfernen",
+    "clearFilters": "Filter zurücksetzen",
+    "noResults": "Keine Titel gefunden",
+    "noResultsHint": "Keine Titel passen zu den gewählten Filtern.",
+    "empty": "Hier gibt es noch keine Titel.",
+    "grid": "Titel in {{name}}",
+    "jumpBar": "Alphabetische Sprungleiste",
+    "jumpTo": "Zu {{letter}} springen",
+    "kinds": {
+      "collection": "Sammlung",
+      "genre": "Genre",
+      "person": "Filmografie"
+    }
+  },
+  "detail": {
+    "director_one": "Regie",
+    "director_other": "Regie",
+    "audio": "Ton",
+    "subtitles": "Untertitel",
+    "none": "keine",
+    "studios": "Studio",
+    "cast": "Besetzung",
+    "similar": "Ähnliche Titel",
+    "seasons": "Staffeln",
+    "episodes": "Episoden",
+    "noEpisodes": "Diese Staffel hat noch keine Episoden.",
+    "nextUp": "Als Nächstes",
+    "episodeShort": "S{{season}} · F{{episode}} · {{name}}",
+    "markEpisodePlayed": "„{{name}}“ als gesehen markieren",
+    "markEpisodeUnplayed": "„{{name}}“ als ungesehen markieren"
+  },
+  "search": {
+    "title": "Suche",
+    "label": "Suchbegriff",
+    "placeholder": "Filme, Serien, Personen …",
+    "clear": "Suche leeren",
+    "hint": "Gib mindestens zwei Zeichen ein, um zu suchen.",
+    "results_one": "{{count}} Treffer",
+    "results_other": "{{count}} Treffer",
+    "noResults": "Keine Treffer für „{{term}}“",
+    "noResultsHint": "Prüfe die Schreibweise oder versuche einen anderen Begriff.",
+    "groups": {
+      "movies": "Filme",
+      "shows": "Serien",
+      "episodes": "Episoden",
+      "collections": "Sammlungen",
+      "people": "Personen"
+    }
+  },
+  "favorites": {
+    "title": "Favoriten",
+    "empty": "Noch keine Favoriten",
+    "emptyHint": "Markiere Filme, Serien und Sammlungen mit dem Herz, um sie hier zu sammeln.",
+    "groups": {
+      "movies": "Filme",
+      "shows": "Serien",
+      "episodes": "Episoden",
+      "collections": "Sammlungen",
+      "videos": "Videos"
+    }
+  }
+}

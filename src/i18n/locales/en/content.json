@@ -1,0 +1,135 @@
+{
+  "actions": {
+    "saveFailed": "The change could not be saved. Please try again.",
+    "favorite": "Favorite",
+    "unfavorite": "Remove from favorites",
+    "markPlayed": "Mark as watched",
+    "markUnplayed": "Mark as unwatched",
+    "details": "Details",
+    "seeAll": "See all",
+    "scrollLeft": "Scroll back",
+    "scrollRight": "Scroll forward"
+  },
+  "meta": {
+    "played": "Watched",
+    "unplayed_one": "{{count}} unwatched episode",
+    "unplayed_other": "{{count}} unwatched episodes",
+    "favorite": "Favorite",
+    "progress": "{{percent}}% watched",
+    "hoursMinutes": "{{hours}} h {{minutes}} min",
+    "minutes_one": "{{count}} min",
+    "minutes_other": "{{count}} min",
+    "episodeCode": "S{{season}} · E{{episode}}",
+    "yearRange": "{{from}}–{{to}}",
+    "since": "since {{year}}",
+    "titles_one": "{{count}} title",
+    "titles_other": "{{count}} titles",
+    "seasons_one": "{{count}} season",
+    "seasons_other": "{{count}} seasons",
+    "rating": "Rating"
+  },
+  "home": {
+    "featured": "Featured",
+    "heroPosition": "{{current}} of {{total}}",
+    "showItem": "Show {{name}}",
+    "libraries": "Libraries",
+    "sections": {
+      "resume": "Continue watching",
+      "nextUp": "Next up",
+      "latest": "New in {{library}}",
+      "favorites": "Your favorites",
+      "collections": "Collections",
+      "genres": "Genres"
+    },
+    "empty": {
+      "title": "Nothing to watch yet",
+      "message": "No movies or shows on this server are shared with you yet."
+    }
+  },
+  "library": {
+    "items_one": "{{count}} title",
+    "items_other": "{{count}} titles",
+    "sort": "Sort by",
+    "sortFields": {
+      "name": "Title",
+      "dateAdded": "Recently added",
+      "year": "Release year",
+      "rating": "Rating"
+    },
+    "ascending": "Sorted ascending – reverse",
+    "descending": "Sorted descending – reverse",
+    "filters": "Filters",
+    "filterCount_one": "Filters ({{count}})",
+    "filterCount_other": "Filters ({{count}})",
+    "status": "Status",
+    "played": {
+      "all": "All",
+      "unplayed": "Unwatched",
+      "played": "Watched"
+    },
+    "favoritesOnly": "Favorites only",
+    "genres": "Genres",
+    "years": "Years",
+    "activeFilters": "Active filters",
+    "removeFilter": "Remove filter “{{name}}”",
+    "clearFilters": "Clear filters",
+    "noResults": "No titles found",
+    "noResultsHint": "No titles match the selected filters.",
+    "empty": "There are no titles here yet.",
+    "grid": "Titles in {{name}}",
+    "jumpBar": "Alphabetical jump bar",
+    "jumpTo": "Jump to {{letter}}",
+    "kinds": {
+      "collection": "Collection",
+      "genre": "Genre",
+      "person": "Filmography"
+    }
+  },
+  "detail": {
+    "director_one": "Director",
+    "director_other": "Directors",
+    "audio": "Audio",
+    "subtitles": "Subtitles",
+    "none": "none",
+    "studios": "Studio",
+    "cast": "Cast",
+    "similar": "More like this",
+    "seasons": "Seasons",
+    "episodes": "Episodes",
+    "noEpisodes": "This season has no episodes yet.",
+    "nextUp": "Up next",
+    "episodeShort": "S{{season}} · E{{episode}} · {{name}}",
+    "markEpisodePlayed": "Mark “{{name}}” as watched",
+    "markEpisodeUnplayed": "Mark “{{name}}” as unwatched"
+  },
+  "search": {
+    "title": "Search",
+    "label": "Search term",
+    "placeholder": "Movies, shows, people …",
+    "clear": "Clear search",
+    "hint": "Type at least two characters to search.",
+    "results_one": "{{count}} result",
+    "results_other": "{{count}} results",
+    "noResults": "No results for “{{term}}”",
+    "noResultsHint": "Check the spelling or try a different term.",
+    "groups": {
+      "movies": "Movies",
+      "shows": "Shows",
+      "episodes": "Episodes",
+      "collections": "Collections",
+      "people": "People"
+    }
+  },
+  "favorites": {
+    "title": "Favorites",
+    "empty": "No favorites yet",
+    "emptyHint": "Mark movies, shows and collections with the heart to collect them here.",
+    "groups": {
+      "movies": "Movies",
+      "shows": "Shows",
+      "episodes": "Episodes",
+      "collections": "Collections",
+      "videos": "Videos"
+    }
+  }
+}

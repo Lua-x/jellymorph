@@ -19,9 +19,28 @@ type IconName =
   | 'check'
   | 'info'
   | 'refresh'
-  | 'language';
+  | 'language'
+  | 'heart'
+  | 'chevronLeft'
+  | 'filter'
+  | 'arrowUp'
+  | 'arrowDown'
+  | 'star'
+  | 'play';
+
+const HEART =
+  'M12 20s-7.5-4.6-9.2-9.4C1.6 7.2 3.8 4 7 4c2.1 0 3.5 1.1 5 3 1.5-1.9 2.9-3 5-3 3.2 0 5.4 3.2 4.2 6.6C19.5 15.4 12 20 12 20z';
 
 const paths: Record<IconName, string> = {
+  search: 'M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4',
+  favorites: HEART,
+  heart: HEART,
+  chevronLeft: 'M15 6l-6 6 6 6',
+  filter: 'M4 6h16M7 12h10M10 18h4',
+  arrowUp: 'M12 19V5M6 11l6-6 6 6',
+  arrowDown: 'M12 5v14M6 13l6 6 6-6',
+  star: 'M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z',
+  play: 'M8 5.5v13l10-6.5z',
   home: 'M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z',
   movies:
     'M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM8 4v16M16 4v16M4 9h4M4 15h4M16 9h4M16 15h4',
@@ -52,14 +71,23 @@ const paths: Record<IconName, string> = {
     'M4 5h8M8 3v2M5.5 5c.8 3 2.8 5.5 5.5 7M10.5 5c-.8 3-3 6-6.5 7.5M13 21l4-9 4 9M14.3 18h5.4',
 };
 
-export function Icon({ name, className }: { name: IconName; className?: string }) {
+export function Icon({
+  name,
+  className,
+  filled = false,
+}: {
+  name: IconName;
+  className?: string;
+  /** Fill the shape (e.g. an active favorite heart). */
+  filled?: boolean;
+}) {
   return (
     <svg
       className={className}
       viewBox="0 0 24 24"
       width="1em"
       height="1em"
-      fill="none"
+      fill={filled ? 'currentColor' : 'none'}
       stroke="currentColor"
       strokeWidth="1.75"
       strokeLinecap="round"

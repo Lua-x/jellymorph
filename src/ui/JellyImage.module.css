@@ -1,0 +1,34 @@
+.frame {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.placeholder,
+.image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.image {
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity var(--duration-slow, 360ms) var(--ease-standard, ease);
+}
+
+.contain {
+  object-fit: contain;
+  object-position: left bottom;
+}
+
+.loaded {
+  opacity: 1;
+}
+
+:global([data-motion='reduced']) .image {
+  transition: none;
+}

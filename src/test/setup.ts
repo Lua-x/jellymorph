@@ -20,6 +20,44 @@ if (typeof window.matchMedia !== 'function') {
   });
 }
 
+// Live updates use a WebSocket; tests exercise data flows without a socket server.
+class SilentWebSocket extends EventTarget {
+  static readonly CONNECTING = 0;
+  static readonly OPEN = 1;
+  static readonly CLOSING = 2;
+  static readonly CLOSED = 3;
+  readyState = 0;
+  send(): void {
+    // No server in tests.
+  }
+  close(): void {
+    this.readyState = 3;
+  }
+}
+Object.defineProperty(window, 'WebSocket', { configurable: true, value: SilentWebSocket });
+Object.defineProperty(globalThis, 'WebSocket', { configurable: true, value: SilentWebSocket });
+
+// Layout APIs jsdom does not implement.
+class NoopResizeObserver {
+  observe(): void {
+    // Layout is not computed in jsdom.
+  }
+  unobserve(): void {
+    // See observe().
+  }
+  disconnect(): void {
+    // See observe().
+  }
+}
+Object.defineProperty(window, 'ResizeObserver', { configurable: true, value: NoopResizeObserver });
+Object.defineProperty(globalThis, 'ResizeObserver', {
+  configurable: true,
+  value: NoopResizeObserver,
+});
+window.scrollTo = () => undefined;
+Element.prototype.scrollIntoView = () => undefined;
+Element.prototype.scrollBy = () => undefined;
+
 beforeAll(() => {
   server.listen({ onUnhandledFrame: 'error' });
 });

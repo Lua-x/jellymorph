@@ -1,0 +1,258 @@
+.header {
+  position: relative;
+  margin: -2rem calc(var(--page-gutter) * -1) 0;
+  padding: clamp(10rem, 28vw, 22rem) var(--page-gutter) 0;
+  isolation: isolate;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: -1;
+  height: min(78vh, 46rem);
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      0deg,
+      var(--color-bg) 4%,
+      color-mix(in srgb, var(--color-bg) 55%, transparent) 50%,
+      transparent 85%
+    ),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-bg) 70%, transparent), transparent 70%);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(10rem, 18rem) minmax(0, 1fr);
+  gap: 2.5rem;
+  align-items: start;
+}
+
+.poster {
+  position: relative;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-overlay);
+}
+
+.wide {
+  aspect-ratio: 16 / 9;
+}
+
+.posterFallback {
+  position: absolute;
+  inset: 0;
+  background: var(--color-surface-raised);
+}
+
+.info {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  min-width: 0;
+  padding-top: 0.5rem;
+}
+
+.parentLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  justify-self: start;
+  padding: 0.25rem 0.625rem 0.25rem 0.25rem;
+  border-radius: var(--radius-control);
+  color: var(--color-text);
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.parentLink:is(:hover, :focus-visible) {
+  background: var(--color-surface-hover);
+}
+
+.parentLink:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.logo {
+  height: clamp(4.5rem, 10vw, 8rem);
+  max-width: min(32rem, 100%);
+  margin: 0;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 1.3rem + 3vw, 3.25rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+.genres {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.tagline {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-style: italic;
+}
+
+.overview {
+  max-width: 48rem;
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: 0.75rem 2rem;
+  max-width: 56rem;
+  margin: 0.5rem 0 0;
+}
+
+.facts dt {
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.facts dd {
+  margin: 0.125rem 0 0;
+  line-height: 1.5;
+}
+
+.cast {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 650;
+}
+
+.castList {
+  display: flex;
+  gap: 1.25rem;
+  margin: 0 calc(var(--page-gutter) * -1);
+  padding: 0.5rem var(--page-gutter) 0.75rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  list-style: none;
+}
+
+.person {
+  display: grid;
+  justify-items: center;
+  gap: 0.375rem;
+  width: 7.5rem;
+  border-radius: var(--radius-card);
+  color: var(--color-text);
+  text-align: center;
+  text-decoration: none;
+}
+
+.personImage {
+  position: relative;
+  width: 6.5rem;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--color-surface-raised);
+  transition: transform var(--duration-base) var(--ease-emphasized);
+}
+
+.person:focus-visible {
+  outline: none;
+}
+
+.person:is(:hover, :focus-visible) .personImage {
+  transform: scale(1.05);
+  box-shadow: var(--focus-ring);
+}
+
+.personFallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--color-text-muted);
+  font-size: 2rem;
+}
+
+.personName {
+  font-size: 0.875rem;
+  font-weight: 650;
+}
+
+.personRole {
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+}
+
+.skeletonBackdrop {
+  background: var(--color-surface);
+}
+
+.skeletonBlock {
+  box-shadow: none;
+}
+
+.skeletonLine {
+  display: block;
+  width: 70%;
+  height: 1rem;
+  border-radius: 0.25rem;
+  background: var(--color-surface-raised);
+}
+
+.skeletonTitle {
+  width: 45%;
+  height: 2.5rem;
+}
+
+.skeletonShort {
+  width: 35%;
+}
+
+:global([data-motion='reduced']) .personImage {
+  transition: none;
+}
+
+@media (max-width: 48rem) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+  }
+
+  .poster {
+    width: min(55%, 14rem);
+  }
+
+  .wide {
+    width: 100%;
+  }
+}

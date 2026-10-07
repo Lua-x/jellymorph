@@ -1,0 +1,114 @@
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 650;
+}
+
+.seeAll {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-control);
+  color: var(--color-accent-text);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.seeAll:is(:hover, :focus-visible) {
+  background: var(--color-surface-hover);
+}
+
+.seeAll:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.viewport {
+  position: relative;
+  margin: 0 calc(var(--page-gutter) * -1);
+}
+
+.track {
+  display: flex;
+  gap: 1rem;
+  margin: 0;
+  padding: 0.5rem var(--page-gutter) 0.75rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-padding-inline: var(--page-gutter);
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  list-style: none;
+}
+
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+.slot {
+  flex: 0 0 clamp(8.5rem, 13vw, 12rem);
+  min-width: 0;
+  scroll-snap-align: start;
+}
+
+.wide {
+  flex-basis: clamp(14rem, 22vw, 21rem);
+}
+
+.arrow {
+  position: absolute;
+  top: 0.5rem;
+  bottom: 3.75rem;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: calc(var(--page-gutter) + 0.5rem);
+  min-width: 2.5rem;
+  border: 0;
+  background: color-mix(in srgb, var(--color-bg) 75%, transparent);
+  color: var(--color-text);
+  font-size: 1.75rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--duration-base) var(--ease-standard);
+}
+
+.previous {
+  left: 0;
+}
+
+.next {
+  right: 0;
+}
+
+.viewport:hover .arrow {
+  opacity: 1;
+}
+
+/* No hover on touch screens: swiping is the way to scroll. */
+@media (hover: none) {
+  .arrow {
+    display: none;
+  }
+}
+
+:global([data-motion='reduced']) .arrow {
+  transition: none;
+}

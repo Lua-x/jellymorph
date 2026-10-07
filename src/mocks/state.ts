@@ -1,4 +1,5 @@
 import { DEMO_USERS, type MockUser } from './fixtures';
+import { UserLibrary } from './library';
 
 interface QuickConnectRequest {
   code: string;
@@ -13,8 +14,8 @@ export interface MockOptions {
   quickConnectEnabled: boolean;
   /** Simulated network latency in ms. */
   latencyMs: number;
-  /** Keeps issued tokens across page loads (demo mode), like a real server would. */
-  tokenStorage: Storage | null;
+  /** Keeps tokens and watch state across page loads (demo mode), like a real server would. */
+  storage: Storage | null;
 }
 
 const TOKEN_STORAGE_KEY = 'jellymorph.demo.tokens';
@@ -23,6 +24,8 @@ const TOKEN_STORAGE_KEY = 'jellymorph.demo.tokens';
 export class MockState {
   readonly options: MockOptions;
   readonly users: MockUser[] = [...DEMO_USERS];
+  /** Watch state (played, favorite, progress) per user. */
+  readonly library: UserLibrary;
   private readonly tokens: Map<string, string>;
   private readonly quickConnect = new Map<string, QuickConnectRequest>();
   private counter = 0;
@@ -32,15 +35,16 @@ export class MockState {
       quickConnectAutoApproveMs: null,
       quickConnectEnabled: true,
       latencyMs: 0,
-      tokenStorage: null,
+      storage: null,
       ...options,
     };
     this.tokens = new Map(this.loadTokens());
+    this.library = new UserLibrary(this.options.storage);
   }
 
   private loadTokens(): [string, string][] {
     try {
-      const raw = this.options.tokenStorage?.getItem(TOKEN_STORAGE_KEY);
+      const raw = this.options.storage?.getItem(TOKEN_STORAGE_KEY);
       const parsed: unknown = raw ? JSON.parse(raw) : [];
       return Array.isArray(parsed)
         ? parsed.filter(
@@ -55,7 +59,7 @@ export class MockState {
 
   private saveTokens(): void {
     try {
-      this.options.tokenStorage?.setItem(TOKEN_STORAGE_KEY, JSON.stringify([...this.tokens]));
+      this.options.storage?.setItem(TOKEN_STORAGE_KEY, JSON.stringify([...this.tokens]));
     } catch {
       // Demo persistence is best effort.
     }

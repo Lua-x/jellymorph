@@ -16,7 +16,14 @@ export async function signInAs(page: Page, name: string, password?: string): Pro
     await page.getByLabel('Passwort', { exact: true }).fill(password);
     await page.getByRole('button', { name: 'Anmelden', exact: true }).click();
   }
-  await expect(page.getByRole('heading', { name: `Hallo, ${name}!` })).toBeVisible();
+  await expectSignedIn(page, name);
+}
+
+/** The user menu button names the signed-in user once the app shell is shown. */
+export async function expectSignedIn(page: Page, name: string, timeout = 10_000): Promise<void> {
+  await expect(page.getByRole('button', { name: `${name} – Benutzermenü` })).toBeVisible({
+    timeout,
+  });
 }
 
 export async function openUserMenu(page: Page): Promise<void> {
