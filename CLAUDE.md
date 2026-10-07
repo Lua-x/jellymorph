@@ -1,6 +1,6 @@
 # CLAUDE.md – Jellyfin Theme Client
 
-Projektname: `<PROJEKTNAME>` · Repo: `github.com/Lua-x/<REPO>` · Image: `ghcr.io/lua-x/<repo>`
+Projektname: **Jellymorph** · Repo: `github.com/Lua-x/jellymorph` · Image: `ghcr.io/lua-x/jellymorph`
 
 Diese Datei ist die verbindliche Spezifikation. Lies sie zu Beginn jeder Sitzung vollständig. Weiche nur nach Rückfrage davon ab. Halte Abschnitt 11 (Status) und 12 (Entscheidungen) aktuell.
 
@@ -192,7 +192,7 @@ Der Container schreibt beim Start `config.js` (`window.__APP_CONFIG__`). Die App
 
 Für alle gilt: `prefers-reduced-motion` und die Einstellung „Reduzierte Bewegung“ werden respektiert. Animiert werden nur `transform`, `opacity` und `filter`.
 
-### default – „Jelly“
+### default – „Classic“
 
 Schlicht und funktional. Referenzimplementierung aller Komponenten, Fallback für andere Themes und Vorlage im Theme-Guide.
 
@@ -266,7 +266,7 @@ Orientierung: Disney+
 | `LOCK_SERVER` | Server-URL fest, im UI nicht änderbar | `false` |
 | `JELLYFIN_PROXY_TARGET` | nginx leitet `/jellyfin/` an diesen Server weiter (gleiche Origin, keine CORS-Probleme) | leer |
 | `DEFAULT_THEME` | Theme für neue Benutzer | `default` |
-| `APP_TITLE` | Titel im Browser | Projektname |
+| `APP_TITLE` | Titel im Browser | `Jellymorph` |
 
 Lokale Entwicklung: Vite-Dev-Proxy auf `JELLYFIN_DEV_URL` aus `.env.local` (in `.gitignore`). Ohne Server läuft die App im Demo-Modus mit MSW.
 
@@ -313,6 +313,8 @@ Performance-Ziele: Basis-Bundle ohne Theme < 250 KB gzip, LCP < 2,5 s auf Deskto
 ## 12. Entscheidungen & Notizen
 
 Hier trägt Claude Code wichtige Architekturentscheidungen und Abweichungen mit Begründung ein.
+
+- **2026-10-07 – Name „Jellymorph“** (Nutzerentscheidung). „Morph“ steht für den Kern der App: Ein Theme verwandelt die ganze Oberfläche. Der Name war auf GitHub frei; JellyStream, JellyFrame und JellyShift sind schon vergeben. Das Default-Theme heißt deshalb **„Classic“** statt „Jelly“, damit App und Theme nicht verwechselt werden. Kennung im Code und für Jellyfin (`clientInfo.name`, DisplayPreferences-Client): `jellymorph`.
 
 - **2026-10-07 – SDK 1.0.0 trotz Mindestversion 10.10.** `@jellyfin/sdk` 1.0.0 ist gegen die OpenAPI von Jellyfin 12.0 generiert (Klassen umbenannt, z. B. `ItemsApi` → `LibraryApi`, `PlaystateApi` → `SessionApi`). Ein Abgleich aller Endpunkt-Pfade mit SDK 0.11.0 (= Jellyfin 10.10) zeigt: Jeder Pfad, den der Client braucht, existiert unverändert in 10.10. `MINIMUM_VERSION` des SDK ist weiterhin 10.10.0. Details: docs/architecture.md §1.2.
 - **2026-10-07 – Zwei handgeschriebene Aufrufe über die SDK-Axios-Instanz.** `DELETE /Videos/ActiveEncodings` (Transcode beim Spurwechsel beenden) fehlt im generierten Client von SDK 1.0.0. Stream-, Untertitel- und Trickplay-URLs für `<video>`/`<img>` werden mit `api.getUri()` und dem Query-Parameter `ApiKey` gebaut, weil Medienelemente keine Header senden können. Details: §5.6 und §9.7.

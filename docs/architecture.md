@@ -243,7 +243,7 @@ In der Entwicklung liefert ein kleines Vite-Plugin `/config.js` aus `.env.local`
 
 ### 5.1 Client und Gerät
 
-- Eine `Jellyfin`-Instanz mit `clientInfo { name: <Projektname>, version }` und `deviceInfo { name, id, languages }`. `languages` ist die UI-Sprache und erzeugt den `Accept-Language`-Header.
+- Eine `Jellyfin`-Instanz mit `clientInfo { name: 'Jellymorph', version }` und `deviceInfo { name, id, languages }`. `languages` ist die UI-Sprache und erzeugt den `Accept-Language`-Header.
 - **Device-ID:** zufällig (`crypto.getRandomValues`, funktioniert auch in unsicheren HTTP-Kontexten im LAN), einmalig pro Browser in `localStorage`. Gerätename aus User-Agent-Daten (z. B. „Chrome · Windows“).
 - **Risiko R6:** Jellyfin bindet Tokens an die Device-ID. Ob ein Login von Benutzer B auf derselben Device-ID das Token von A ungültig macht, prüfe ich in Phase 1 am echten Server. Falls ja: Device-ID pro Benutzer mit Suffix.
 
@@ -683,7 +683,7 @@ Nutzt dieselbe Engine stumm, mit niedriger Bitrate und ohne Reporting. Sie start
 | Bedienmodus (Auto/Desktop/TV), Overscan | – (nur lokal) | nein |
 
 - **Lokal:** zustand mit `persist` in `localStorage`, Schlüssel je `serverId:userId`. Schreibt sofort.
-- **Server:** `DisplayPreferences` mit `displayPreferencesId: 'settings'`, `client: '<app-id>'`. Eigene Werte als flache Schlüssel in `CustomPrefs` mit Schema-Version. Lesen–Ändern–Schreiben, gebündelt (1 s Debounce). Fehler beim Speichern führen zu einem Toast mit erneutem Versuch.
+- **Server:** `DisplayPreferences` mit `displayPreferencesId: 'settings'`, `client: 'jellymorph'`. Eigene Werte als flache Schlüssel in `CustomPrefs` mit Schema-Version. Lesen–Ändern–Schreiben, gebündelt (1 s Debounce). Fehler beim Speichern führen zu einem Toast mit erneutem Versuch.
 - **Beim Login gewinnt der Server-Wert:** Nach dem Login werden die Server-Werte geladen, überschreiben die lokalen und werden angewendet (Theme-Wechsel mit Überblendung, falls abweichend).
 - **Vor dem Login:** zuletzt auf diesem Gerät benutztes Theme, sonst `DEFAULT_THEME`.
 - Ungültige Werte (z. B. unbekannte Theme-ID von einer neueren Version) werden ignoriert, nicht übernommen.
@@ -828,7 +828,7 @@ Theme- und Default-Chunk werden parallel zur Session-Wiederherstellung geladen. 
 
 Jede Frage hat eine Empfehlung. Ohne Gegenrede würde ich der Empfehlung folgen.
 
-1. **Projektname, Repo, Image.** Benötigt für `clientInfo.name`, Titel, Manifest, Repo und Image. Vorschläge: *Facet* (jedes Theme eine Facette), *Marquee*, *Shoal*. Verfügbarkeit auf GitHub/npm habe ich nicht geprüft. Bis zur Entscheidung heißt der Ordner `jellyfin-theme-client`.
+1. ~~**Projektname, Repo, Image.**~~ **Beantwortet 2026-10-07:** *Jellymorph*, Repo `Lua-x/jellymorph`, Image `ghcr.io/lua-x/jellymorph`. Das Default-Theme heißt deshalb „Classic“ (siehe CLAUDE.md §12).
 2. **Test-Server.** Welche Jellyfin-Version läuft bei dir, und gibt es eine Adresse für `JELLYFIN_DEV_URL` (bleibt in `.env.local`, wird nie committet)? Ideal wäre zusätzlich je ein 10.10- und 12.0-Testserver. Empfehlung: mindestens dein Server + ein 12.0-Testcontainer im CI für Smoke-Tests.
 3. **Browser-/TV-Ziele.** Passt §1.4? Welche Fernseher bzw. Streaming-Sticks willst du konkret nutzen? Davon hängt ab, wie konservativ ich bei CSS und Effekten sein muss.
 4. **Zusätzliche Abhängigkeiten aus §2.2** (`blurhash`, `@axe-core/playwright`, Test- und ESLint-Zubehör). Empfehlung: freigeben.
