@@ -63,13 +63,13 @@
 }
 
 .slot {
-  flex: 0 0 clamp(8.5rem, 13vw, 12rem);
+  flex: 0 0 clamp(8.5rem, 13cqi, 12rem);
   min-width: 0;
   scroll-snap-align: start;
 }
 
 .wide {
-  flex-basis: clamp(14rem, 22vw, 21rem);
+  flex-basis: clamp(14rem, 22cqi, 21rem);
 }
 
 .arrow {

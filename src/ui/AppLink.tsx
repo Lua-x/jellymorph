@@ -10,13 +10,22 @@ interface AppLinkProps {
   /** Only match the exact path for `nav` links. */
   end?: boolean;
   activeClassName?: string;
+  onClick?: () => void;
 }
 
 /** Routing link for themes, so themes do not depend on the router API directly. */
-export function AppLink({ to, className, children, nav, end, activeClassName }: AppLinkProps) {
+export function AppLink({
+  to,
+  className,
+  children,
+  nav,
+  end,
+  activeClassName,
+  onClick,
+}: AppLinkProps) {
   if (!nav) {
     return (
-      <Link to={to} className={className}>
+      <Link to={to} className={className} onClick={onClick}>
         {children}
       </Link>
     );
@@ -25,6 +34,7 @@ export function AppLink({ to, className, children, nav, end, activeClassName }: 
     <NavLink
       to={to}
       end={end}
+      onClick={onClick}
       className={({ isActive }) =>
         [className, isActive ? activeClassName : undefined].filter(Boolean).join(' ')
       }

@@ -10,6 +10,7 @@ export const queryKeys = {
   fixedServer: (url: string) => ['fixedServer', url] as const,
   publicProfiles: (serverId: string) => ['server', serverId, 'publicProfiles'] as const,
   quickConnectEnabled: (serverId: string) => ['server', serverId, 'quickConnectEnabled'] as const,
+  languages: (serverId: string) => ['server', serverId, 'languages'] as const,
   user,
   currentUser: (key: SessionKey) => [...user(key), 'currentUser'] as const,
   libraries: (key: SessionKey) => [...user(key), 'libraries'] as const,

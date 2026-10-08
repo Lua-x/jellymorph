@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Navigate, Outlet, useLocation } from 'react-router';
 import { getActiveSession, useSessionStore } from '@/api/session-store';
 import { useCurrentServer } from '@/hooks/useSession';
+import { useSettingsSync } from '@/hooks/useSettingsSync';
 import { paths, returnTarget, type ReturnState } from '@/navigation/paths';
 import { useToasts } from '@/ui/toast-store';
 
@@ -20,6 +21,7 @@ export function SessionGuard() {
   const session = useSessionStore(getActiveSession);
   const notice = useSessionStore((state) => state.notice);
   const showToast = useToasts((state) => state.show);
+  useSettingsSync();
 
   useEffect(() => {
     if (notice === 'expired') showToast('info', t('credentials.expired'));

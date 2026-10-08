@@ -6,7 +6,8 @@
  * props and the shared hooks; they never talk to the server themselves.
  *
  * The contract grows with the project phases: phase 1 covers the shell and the sign-in
- * screens, phase 2 adds the content pages, phase 3 the player (PlayerOverlay, ResumePrompt).
+ * screens, phase 2 adds the content pages, phase 3 the player (PlayerOverlay, ResumePrompt),
+ * phase 4 the settings (SettingsPage).
  */
 import type { ComponentType, ReactNode } from 'react';
 import type { ThemeId } from '@/config/theme-ids';
@@ -26,6 +27,7 @@ import type { LoginFlow, ProfileSelectModel } from '@/hooks/auth/types';
 import type { LibraryBrowser } from '@/hooks/useLibraryBrowser';
 import type { NavModel } from '@/navigation/nav-model';
 import type { PlayerModel } from '@/player/model';
+import type { SettingsModel } from '@/settings/model';
 
 export type { ThemeId };
 
@@ -74,6 +76,7 @@ export interface ThemeComponents {
   SeriesPage: ComponentType<SeriesPageProps>;
   SearchPage: ComponentType<SearchPageProps>;
   FavoritesPage: ComponentType<FavoritesPageProps>;
+  SettingsPage: ComponentType<SettingsPageProps>;
   PlayerOverlay: ComponentType<PlayerOverlayProps>;
   ResumePrompt: ComponentType<ResumePromptProps>;
   Hero: ComponentType<HeroProps>;
@@ -86,6 +89,33 @@ export interface ThemeComponents {
 }
 
 export type ThemeSlot = keyof ThemeComponents;
+
+/** Every slot at runtime, for the contract test. The type below fails when one is missing. */
+export const THEME_SLOTS = [
+  'AppShell',
+  'LoginPage',
+  'ProfileSelect',
+  'HomePage',
+  'LibraryPage',
+  'ItemDetailPage',
+  'SeriesPage',
+  'SearchPage',
+  'FavoritesPage',
+  'SettingsPage',
+  'PlayerOverlay',
+  'ResumePrompt',
+  'Hero',
+  'Row',
+  'MediaCard',
+  'Toast',
+  'LoadingState',
+  'EmptyState',
+  'ErrorState',
+] as const satisfies readonly ThemeSlot[];
+
+type MissingSlot = Exclude<ThemeSlot, (typeof THEME_SLOTS)[number]>;
+// Compile-time check: adding a slot to ThemeComponents without listing it here fails.
+export const ALL_SLOTS_LISTED: MissingSlot extends never ? true : false = true;
 
 export interface AppShellProps {
   nav: NavModel;
@@ -151,6 +181,14 @@ export interface FavoritesPageProps {
 }
 
 /**
+ * Theme choice with live preview (`<ThemePreview>` from themes/ThemePreview), color scheme,
+ * motion, language, playback and device settings, account actions.
+ */
+export interface SettingsPageProps {
+  settings: SettingsModel;
+}
+
+/**
  * Everything drawn on top of the video: controls, timeline, menus, skip and next-episode offers,
  * loading and error states. The video element itself belongs to the app (full screen stage).
  */
@@ -190,6 +228,8 @@ export interface MediaCardProps {
 export interface ToastProps {
   kind: 'info' | 'success' | 'error';
   message: string;
+  /** E.g. "Try again" after a failed save. */
+  action?: { label: string; onAction: () => void };
   onDismiss: () => void;
 }
 

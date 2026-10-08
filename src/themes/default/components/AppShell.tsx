@@ -23,6 +23,8 @@ function UserMenu({ nav }: { nav: NavModel }) {
     };
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
+        // Handled here: the app's back navigation must not also go back a page.
+        event.preventDefault();
         setOpen(false);
         buttonRef.current?.focus();
       }
@@ -70,6 +72,18 @@ function UserMenu({ nav }: { nav: NavModel }) {
         </div>
         <ul className={styles.menuList}>
           <li>
+            <AppLink
+              to={nav.settings}
+              className={styles.menuItem}
+              onClick={() => {
+                setOpen(false);
+              }}
+            >
+              <Icon name="sliders" />
+              {t('nav.settings')}
+            </AppLink>
+          </li>
+          <li>
             <button type="button" className={styles.menuItem} onClick={run(nav.switchProfile)}>
               <Icon name="switch" />
               {t('nav.switchProfile')}
@@ -112,6 +126,7 @@ export function AppShell({ nav, children }: AppShellProps) {
       <a
         href="#main"
         className={styles.skipLink}
+        data-nav-ignore
         onClick={(event) => {
           event.preventDefault();
           mainRef.current?.focus();

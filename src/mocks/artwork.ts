@@ -109,8 +109,14 @@ export function artworkSvg(item: MockItem, type: MockImageType): string {
   if (item.type === 'Person') return personSvg(item);
   const portrait = type === 'Primary' && item.type !== 'Episode';
   if (type === 'Logo') {
+    const size = item.name.length > 18 ? 74 : 104;
+    // Long titles are squeezed into the box instead of running out of it.
+    const fit =
+      item.name.length * size * 0.56 > 776
+        ? ' textLength="776" lengthAdjust="spacingAndGlyphs"'
+        : '';
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220">
-<text x="12" y="150" text-anchor="start" font-family="Georgia, 'Times New Roman', serif" font-size="${String(item.name.length > 18 ? 74 : 104)}" font-weight="700" fill="#fff" stroke="hsl(${String(item.hue)} 60% 25%)" stroke-width="3" paint-order="stroke">${escapeXml(item.name)}</text>
+<text x="12" y="150" text-anchor="start"${fit} font-family="Georgia, 'Times New Roman', serif" font-size="${String(size)}" font-weight="700" fill="#fff" stroke="hsl(${String(item.hue)} 60% 25%)" stroke-width="3" paint-order="stroke">${escapeXml(item.name)}</text>
 </svg>`;
   }
   const [width, height] = portrait ? [400, 600] : [1280, 720];

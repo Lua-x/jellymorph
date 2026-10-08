@@ -82,8 +82,28 @@ export interface CurrentUser {
   isAdministrator: boolean;
   /** Libraries the user excluded from "Latest" in their Jellyfin settings. */
   latestExcludes: string[];
-  /** Jellyfin setting "play next episode automatically", shared with other clients. */
+  /** Playback settings from the Jellyfin user configuration, shared with other clients. */
+  playback: PlaybackPreferences;
+}
+
+export type SubtitleMode = 'default' | 'always' | 'onlyForced' | 'none' | 'smart';
+
+export interface PlaybackPreferences {
+  /** ISO 639-2 code, null = no preference. */
+  audioLanguage: string | null;
+  subtitleLanguage: string | null;
+  subtitleMode: SubtitleMode;
   nextEpisodeAutoplay: boolean;
+}
+
+/** A language for audio and subtitle preferences. */
+export interface LanguageOption {
+  /** ISO 639-2, as Jellyfin stores it. */
+  code: string;
+  /** ISO 639-1, for names in the UI language (Intl.DisplayNames). */
+  twoLetterCode: string | null;
+  /** Name as the server reports it (English). */
+  name: string;
 }
 
 export type ItemKind =

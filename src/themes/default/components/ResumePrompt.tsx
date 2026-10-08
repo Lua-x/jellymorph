@@ -26,17 +26,18 @@ export function ResumePrompt({
     resumeRef.current?.focus({ preventScroll: true });
   }, []);
 
-  // Escape and the back keys of remotes cancel, like closing the player.
+  // Escape and the back keys of remotes cancel, like closing the player. Listening on the
+  // document runs before the app's back handling on window, which then sees defaultPrevented.
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (['Escape', 'GoBack', 'BrowserBack'].includes(event.key)) {
+      if (['Escape', 'Backspace', 'GoBack', 'BrowserBack'].includes(event.key)) {
         event.preventDefault();
         onCancel();
       }
     };
-    window.addEventListener('keydown', onKeyDown);
+    document.addEventListener('keydown', onKeyDown);
     return () => {
-      window.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('keydown', onKeyDown);
     };
   }, [onCancel]);
 

@@ -4,6 +4,7 @@ import { useStore } from 'zustand';
 import { getDeviceId } from '@/api/device';
 import type { CurrentUser, MediaItem } from '@/domain/types';
 import { queryKeys } from '@/hooks/query-keys';
+import { claimKeys } from '@/navigation/spatial';
 import { useActiveSession } from '@/hooks/useSession';
 import { useDeviceSettings } from '@/settings/store';
 import { PlaybackController } from './controller';
@@ -86,8 +87,8 @@ export function usePlayer(options: UsePlayerOptions): PlayerBindings {
       store,
       preferences: useDeviceSettings.getState().player,
       autoplayNext: () =>
-        queryClient.getQueryData<CurrentUser>(queryKeys.currentUser(key))?.nextEpisodeAutoplay ??
-        true,
+        queryClient.getQueryData<CurrentUser>(queryKeys.currentUser(key))?.playback
+          .nextEpisodeAutoplay ?? true,
       onPreferencesChange: (patch) => {
         useDeviceSettings.getState().setPlayer(patch);
       },
@@ -191,8 +192,11 @@ export function usePlayer(options: UsePlayerOptions): PlayerBindings {
       const stage = stageRef.current;
       if (stage && handlePlayerKey(event, modelRef.current, stage)) event.preventDefault();
     };
+    // The player handles arrows and back keys itself (keyboard.ts).
+    const release = claimKeys();
     window.addEventListener('keydown', onKeyDown);
     return () => {
+      release();
       window.removeEventListener('keydown', onKeyDown);
     };
   }, []);

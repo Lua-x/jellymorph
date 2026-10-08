@@ -75,6 +75,12 @@ export function createAppRouter() {
                         Component: (await import('./routes/FavoritesRoute')).FavoritesRoute,
                       }),
                     },
+                    {
+                      path: paths.settings,
+                      lazy: async () => ({
+                        Component: (await import('./routes/SettingsRoute')).SettingsRoute,
+                      }),
+                    },
                     { path: '*', element: <NotFoundRoute /> },
                   ],
                 },

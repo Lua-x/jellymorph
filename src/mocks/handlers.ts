@@ -6,7 +6,7 @@ import { createPlaybackHandlers } from './playback-handlers';
 import type { MockState } from './state';
 import { tokenOf } from './token';
 
-function userDto(user: MockUser) {
+function userDto(state: MockState, user: MockUser) {
   return {
     Name: user.name,
     ServerId: DEMO_SERVER.Id,
@@ -16,22 +16,14 @@ function userDto(user: MockUser) {
     HasPassword: user.password !== null,
     HasConfiguredPassword: user.password !== null,
     EnableAutoLogin: false,
-    Configuration: {
-      AudioLanguagePreference: '',
-      SubtitleLanguagePreference: '',
-      SubtitleMode: 'Default',
-      EnableNextEpisodeAutoPlay: true,
-      OrderedViews: [],
-      MyMediaExcludes: [],
-      LatestItemsExcludes: [],
-    },
+    Configuration: state.userConfiguration(user.id),
     Policy: { IsAdministrator: user.isAdministrator, IsDisabled: false },
   };
 }
 
 function authResult(state: MockState, user: MockUser) {
   return {
-    User: userDto(user),
+    User: userDto(state, user),
     AccessToken: state.issueToken(user.id),
     ServerId: DEMO_SERVER.Id,
     SessionInfo: { UserId: user.id, UserName: user.name },
@@ -80,7 +72,9 @@ export function createHandlers(state: MockState) {
 
     http.get('*/Users/Public', async () => {
       await latency();
-      return HttpResponse.json(state.users.filter((user) => user.isPublic).map(userDto));
+      return HttpResponse.json(
+        state.users.filter((user) => user.isPublic).map((user) => userDto(state, user)),
+      );
     }),
 
     http.post('*/Users/AuthenticateByName', async ({ request }) => {
@@ -139,7 +133,7 @@ export function createHandlers(state: MockState) {
 
     http.get(
       '*/Users/Me',
-      authed((user) => HttpResponse.json(userDto(user))),
+      authed((user) => HttpResponse.json(userDto(state, user))),
     ),
 
     http.get(
@@ -168,6 +162,71 @@ export function createHandlers(state: MockState) {
       if (!user?.imageTag) return new HttpResponse(null, { status: 404 });
       return new HttpResponse(avatarSvg(user.hue), svgResponseInit());
     }),
+
+    http.post(
+      '*/Users/Configuration',
+      authed(async (user, request) => {
+        const userId = new URL(request.url).searchParams.get('userId') ?? user.id;
+        if (userId !== user.id && !user.isAdministrator)
+          return new HttpResponse(null, { status: 403 });
+        const body = (await request.json()) as Record<string, unknown> | null;
+        state.setUserConfiguration(userId, { ...state.userConfiguration(userId), ...body });
+        return new HttpResponse(null, { status: 204 });
+      }),
+    ),
+
+    http.get(
+      '*/DisplayPreferences/:id',
+      authed((user, request, params) => {
+        const search = new URL(request.url).searchParams;
+        return HttpResponse.json(
+          state.displayPreferences(
+            search.get('userId') ?? user.id,
+            params.id ?? '',
+            search.get('client') ?? '',
+          ),
+        );
+      }),
+    ),
+
+    http.post(
+      '*/DisplayPreferences/:id',
+      authed(async (user, request, params) => {
+        if (state.hasFault('preferences')) return new HttpResponse(null, { status: 500 });
+        const search = new URL(request.url).searchParams;
+        const body = (await request.json()) as Record<string, unknown> | null;
+        state.setDisplayPreferences(
+          search.get('userId') ?? user.id,
+          params.id ?? '',
+          search.get('client') ?? '',
+          body ?? {},
+        );
+        return new HttpResponse(null, { status: 204 });
+      }),
+    ),
+
+    http.get(
+      '*/Localization/Cultures',
+      authed(() =>
+        HttpResponse.json(
+          [
+            ['Deutsch', 'German', 'de', 'ger'],
+            ['English', 'English', 'en', 'eng'],
+            ['Français', 'French', 'fr', 'fre'],
+            ['Español', 'Spanish', 'es', 'spa'],
+            ['Italiano', 'Italian', 'it', 'ita'],
+            ['Nederlands', 'Dutch', 'nl', 'dut'],
+            ['日本語', 'Japanese', 'ja', 'jpn'],
+          ].map(([name, display, two, three]) => ({
+            Name: name,
+            DisplayName: display,
+            TwoLetterISOLanguageName: two,
+            ThreeLetterISOLanguageName: three,
+            ThreeLetterISOLanguageNames: [three],
+          })),
+        ),
+      ),
+    ),
 
     ...createContentHandlers(state, authed),
     ...createPlaybackHandlers(state, authed),

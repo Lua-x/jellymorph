@@ -18,7 +18,8 @@
     "skipToContent": "Zum Inhalt springen",
     "search": "Suche",
     "favorites": "Favoriten",
-    "userMenuFor": "{{name}} – Benutzermenü"
+    "userMenuFor": "{{name}} – Benutzermenü",
+    "settings": "Einstellungen"
   },
   "home": {
     "kinds": {

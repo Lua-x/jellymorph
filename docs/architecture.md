@@ -110,8 +110,8 @@ Chrome/Edge ≥ 111, Firefox ≥ 128 (ESR), Safari/iOS ≥ 16.4. Damit stehen Co
 | `zustand` 5                                    | App-State       | Session, Einstellungen, Player-Zustand; ~1 KB                                                                                    | Basis                     |
 | `@tanstack/react-virtual` 3.14                 | Virtualisierung | Bibliotheksraster                                                                                                                | Lazy (Bibliotheksroute)   |
 | `hls.js` 1.7                                   | HLS             | Transcoding-Wiedergabe außerhalb von Safari                                                                                      | Lazy (Player-Chunk)       |
-| `motion` 14                                    | Animation       | Nur über `LazyMotion` + `m.*`, Features asynchron nachladen                                                                      | Basis (klein) + Lazy      |
-| `@noriginmedia/norigin-spatial-navigation` 3.3 | Fernbedienung   | Jetzt aufgeteilt in `-core` und `-react`; zieht `lodash-es` (tree-shakebar)                                                      | Basis                     |
+| `motion` 14                                    | Animation       | Nur über `LazyMotion` + `m.*`, Features asynchron nachladen. Noch nicht installiert, kommt mit dem ersten Theme, das es braucht  | Basis (klein) + Lazy      |
+| ~~`@noriginmedia/norigin-spatial-navigation`~~ | Fernbedienung   | In Phase 4 durch eine eigene DOM-basierte Navigation ersetzt (§8), keine Abhängigkeit                                            | –                         |
 | `i18next` 26 + `react-i18next` 17              | i18n            | Spezifikation; `react-i18next` ist die zugehörige React-Bindung                                                                  | Basis; Sprachdateien Lazy |
 | `@fontsource/*`                                | Schriften       | Spezifikation; Import im jeweiligen Theme-Einstieg                                                                               | Lazy (Theme-Chunk)        |
 
@@ -547,8 +547,9 @@ Gegenüber dem Richtwert in CLAUDE.md:
 - `LoadingState` bekommt eine optionale `variant`.
 - `ThemeModule.options` für Unterschiede, die die Datenschicht oder das Routing betreffen. Beispiel: Crimson öffnet Details als Modal über der Startseite (`detailPresentation: 'modal'`).
 - `contractVersion`, damit spätere Vertragsänderungen auffallen.
-- Wiederverwendbare **gemeinsame Hooks und Bausteine für Themes** (alle headless oder theme-neutral): `useThemeComponent(name)`, `useMediaActions()`, `useTrailerPreview()`, `useFocusable()`, `useMotionPreference()`, `useSettings()` (lesend), `useT()`, `<JellyImage>`, `<VirtualGrid>`, `<AppLink>`.
+- Wiederverwendbare **gemeinsame Hooks und Bausteine für Themes** (alle headless oder theme-neutral): `<ThemeSlot>`, `useMediaActions()`, `useTrailerPreview()`, `useMotionPreference()`, `useAppearance()`, `<ThemePreview>`, `<JellyImage>`, `<VirtualGrid>`, `<AppLink>`, `useScrubber()`. Fokus braucht keinen eigenen Hook: Die Navigation arbeitet mit echtem DOM-Fokus (§8).
 - Seiten wie Genre, Sammlung und Person brauchen keine eigene Komponente. Sie sind `LibraryPage` mit einer anderen `source`.
+- **Stand Phase 4:** Der Block oben ist der Plan aus Phase 0, maßgeblich ist `src/themes/contract.ts`. Dort sind u. a. `HomePageProps.user`, `RowProps` (`variant`, `seeAll: string | null`), `ResumePromptProps.positionSeconds`, `ToastProps.action` und `ErrorStateProps.variant` genauer gefasst. `THEME_SLOTS` listet alle Slots zur Laufzeit; ein Compile-Check schlägt fehl, wenn ein Slot in der Liste fehlt. Anleitung für Theme-Autoren: [themes.md](themes.md).
 
 ### 7.2 Registry und Laden
 
@@ -564,8 +565,11 @@ themes/crimson/
   global.css          # nur [data-theme="crimson"] …-Selektoren
   components/*.tsx + *.module.css
   i18n/de.json, en.json
-  preview-dark.webp
+  preview-dark.jpg    # npm run previews
+  preview-light.jpg
 ```
+
+Stand Phase 4: Die IDs aller geplanten Themes stehen in `config/theme-ids.ts` (auch für `DEFAULT_THEME`), Name und Beschreibung im Namespace `themes`. `registry.ts` enthält bisher nur Classic. Eine gespeicherte ID ohne Registry-Eintrag fällt auf Classic zurück.
 
 ### 7.3 Fallback
 
@@ -586,16 +590,20 @@ Default-Komponenten benutzen nur die gemeinsamen semantischen Tokens. Wenn sie a
 
 `setTheme(id)` lädt den Chunk (bei Bedarf kurzer Ladeindikator am Auswahlelement) und tauscht dann mit `document.startViewTransition()` und einer Überblendung von etwa 250 ms. Ohne View-Transitions-Unterstützung blendet ein Overlay mit `opacity` über. Bei reduzierter Bewegung erfolgt der Wechsel sofort. Es gibt kein Neuladen der Seite, Fokus und Scrollposition bleiben erhalten.
 
+Umsetzung (`themes/loader.ts`, `themes/transition.ts`): Der Loader merkt sich jedes Theme-Promise mit Status und Wert. `use()` suspendiert deshalb nur beim ersten Laden, nie beim Zurückwechseln. Der `ThemeProvider` wartet auf den neuen Chunk und tauscht erst dann, innerhalb von `startViewTransition` per `flushSync` (Dauer 260 ms in `app/base.css`). Ersatz ohne View Transitions: ein Overlay, das in 140 ms ein- und in 220 ms ausblendet. Dasselbe gilt für den Wechsel des Farbschemas. `data-theme`, `data-color-scheme` und `data-motion` setzt der Provider auf `<html>`.
+
 ### 7.6 Live-Vorschau in den Einstellungen **[Entscheidung]**
 
 - Die Kacheln der Theme-Auswahl zeigen Vorschaubilder. Diese werden je Theme-Phase per Playwright im Demo-Modus erzeugt, sind also echte Screenshots mit Platzhalterbildern.
 - Die **Live-Vorschau** rendert `Hero`, `Row` und `MediaCard` des fokussierten Themes mit **echten Daten** des Benutzers in einem Container mit eigenem `data-theme`/`data-color-scheme`, mit `context: 'preview'`, `inert` und ohne eigenen Fokus.
 - „Übernehmen“ wendet das Theme global an (§7.5). Das Farbschema lässt sich in der Vorschau umschalten, wenn das Theme mehrere hat.
+- Umsetzung (`themes/ThemePreview.tsx`): Die Vorschau zeigt `Hero` und eine Reihe „Weiterschauen“ (ohne angefangene Titel die Hero-Titel). Sie hat einen eigenen `ThemeContext`, wird mit 1280 px Breite gelayoutet und per `ResizeObserver` auf den verfügbaren Platz skaliert. `Hero` und `Row` von Classic rechnen in `cqi`; außerhalb eines Containers entspricht das der Viewport-Breite. Ist das gezeigte Theme schon aktiv, steht statt des Buttons „Dieses Theme ist aktiv.“.
 
 ### 7.7 Bewegung
 
 - Animiert werden nur `transform`, `opacity` und `filter`. Eine Code-Review-Regel und ein E2E-Test prüfen, dass keine Animation Layout-Eigenschaften anfasst.
 - `MotionConfig reducedMotion` folgt `data-motion`. `useMotionPreference()` liefert Themes `'full' | 'reduced'`. Bei `reduced` entfallen Glitch, Ken Burns, Parallax, Neigung und automatische Karussells. Überblendungen bleiben kurz erhalten.
+- Stand Phase 4: `data-motion` ergibt sich aus der Einstellung „Bewegung“ (Wie das System / Reduziert / Alle Animationen) und `prefers-reduced-motion`. Classic kommt mit CSS-Übergängen aus, `motion` ist deshalb noch nicht installiert. Es folgt mit dem ersten Theme, das Feder-Animationen braucht. Ein E2E-Test liest alle `transition`- und `@keyframes`-Regeln aus dem CSSOM und prüft, dass nur `transform`, `opacity` und `filter` (samt `translate`, `scale`, `rotate`) animiert werden.
 - Neon Grid: Glitch-Effekte flackern maximal 3× pro Sekunde (WCAG 2.3.1) und laufen nie über Fließtext.
 
 ### 7.8 Rechtliche Prüfliste je Theme
@@ -606,7 +614,7 @@ Vor dem Abschluss jeder Theme-Phase: keine Markennamen in Code, Dateinamen, Komm
 
 ## 8. Navigation und Eingabe
 
-- **Spatial Navigation** (norigin v3) mit `shouldFocusDOMNode: true`: Der Fokus der Bibliothek ist echter DOM-Fokus. Dadurch greifen `:focus-visible`, Screenreader und Fokus = Hover einheitlich.
+- **Spatial Navigation** (norigin v3) mit `shouldFocusDOMNode: true`: Der Fokus der Bibliothek ist echter DOM-Fokus. Dadurch greifen `:focus-visible`, Screenreader und Fokus = Hover einheitlich. **Geändert in Phase 4:** eigene Umsetzung statt norigin, siehe §8.1.
 - **Fokus = Hover:** Jede Theme-Regel für Hover wird als `:is(:hover, :focus-visible)` geschrieben (Konvention im Theme-Guide). Ein E2E-Test fokussiert per Tastatur, hovert per Maus und vergleicht die berechneten Stile ausgewählter Elemente.
 - **Eingabemodus:** `data-input` wechselt bei der jeweils letzten Eingabeart. Bei Maus-/Touch-Bedienung bleibt die Spatial Navigation aktiv, springt aber erst beim nächsten Pfeiltastendruck an.
 - **Virtualisiertes Raster:** Nicht gerenderte Karten kann die Bibliothek nicht fokussieren. `VirtualGrid` behandelt Pfeiltasten daher selbst (Index-Arithmetik), scrollt den Virtualizer und fokussiert danach. Hohes Risiko, wird in Phase 2 zuerst gebaut (R7).
@@ -615,6 +623,24 @@ Vor dem Abschluss jeder Theme-Phase: keine Markennamen in Code, Dateinamen, Komm
 - **TV-Modus** (`data-device="tv"`): automatisch per User-Agent-Heuristik oder fest per Einstellung (Auto/Desktop/TV). Die Schriftgröße skaliert mit der Breite (1920 px → 24 px rem, 3840 px → 48 px), Overscan-Rand per Einstellung 0–5 % (Standard 3 %), kein Hover-Zwang, größere Fokusringe.
 - **Desktop 4K bei DPR 1:** fließende Rem-Größe ab 1440 px (16 px → 32 px bei 3840 px), damit 3840×2160 nicht winzig wirkt.
 - **Seitenwechsel:** Fokus springt auf die Überschrift (Tastatur/Screenreader) bzw. auf das erste sinnvolle Element (TV). Seitentitel und Live-Region kündigen den Wechsel an.
+
+### 8.1 Umsetzung in Phase 4 **[Entscheidung]**
+
+**Eigene, DOM-basierte Navigation statt norigin** (`navigation/spatial.ts`, knapp 300 Zeilen, keine Abhängigkeit). norigin verlangt, dass jede fokussierbare Komponente sich per `useFocusable()` registriert und ihre Fokus-Schlüssel und Eltern-Kontexte kennt. Damit müsste jedes der sechs Themes jede Karte, jeden Button und jedes Menü verdrahten, und ein vergessenes Element wäre mit der Fernbedienung unerreichbar. Die eigene Lösung arbeitet nur mit der Geometrie des echten DOM: Alles, was mit Tab erreichbar ist, ist auch mit den Pfeilen erreichbar. Themes brauchen keine Registrierung.
+
+- **Wahl des Ziels:** Ein Pfeil sucht unter allen sichtbaren fokussierbaren Elementen das nächste in dieser Richtung. Kandidaten müssen jenseits der Mitte des aktuellen Elements beginnen (sonst zählt eine angehobene Karte in derselben Reihe als „darunter“). Versatz auf der Querachse wiegt dreimal so schwer wie der Abstand, so bleibt der Fokus in seiner Reihe oder Spalte. Bei Gleichstand gewinnt die nähere Mitte. `score()` und `nearest()` sind reine Funktionen mit Unit-Tests.
+- **Ebenen:** Feste und klebende Leisten (Kopfzeile, untere Navigation) liegen geometrisch immer über bzw. unter dem Inhalt. Sie bilden deshalb eine eigene Ebene, die die Pfeile erst erreichen, wenn der Inhalt in dieser Richtung nichts mehr hat. Von der Leiste aus geht es nur zu Elementen, die gerade auf dem Bildschirm sind.
+- **Bereiche:** In offenen Dialogen und Menüs (`role="dialog"`, `aria-modal`, `role="menu"`, `dialog[open]`) bleibt der Fokus innerhalb.
+- **Einstieg:** Ohne fokussiertes Element (oder mit Fokus auf `<main>` nach einem Seitenwechsel) springt der erste Pfeil auf ein Element mit `data-autofocus`, sonst auf das erste sichtbare Element im Hauptbereich.
+- **Konventionen für Themes:** `data-autofocus` markiert bei Bedarf den Einstieg einer Seite; Classic braucht es nicht, weil das erste sichtbare Element („Abspielen“ im Hero) passt. `data-nav-ignore` nimmt ein Element von den Pfeilen aus, es bleibt per Tab erreichbar (Skip-Link). Komponenten mit eigener Pfeillogik (Raster, Tabs, Radiogruppen, Menüs, Zeitleiste) rufen `preventDefault()` auf, dann bleibt die globale Navigation still.
+- **Felder:** Textfelder behalten ←/→ für den Cursor, bis er am Anfang bzw. Ende steht. `select` behält ↑/↓, Schieberegler behalten ←/→.
+- **Zurück:** Esc, Backspace außerhalb von Textfeldern, `GoBack`/`BrowserBack`/`XF86Back` sowie die Key-Codes 461 (webOS) und 10009 (Tizen) gehen eine Seite zurück, solange es in der App eine vorherige Seite gibt. Offene Overlays verarbeiten die Taste vorher selbst. In Textfeldern löschen Backspace und Esc wie gewohnt.
+- **Player:** `claimKeys()` schaltet die globale Behandlung ab, solange der Player eigene Tasten braucht.
+- Der Handler hängt in der Bubble-Phase an `window`, läuft also nach allen Komponenten-Handlern. Gescrollt wird mit `scrollIntoView({ block: 'nearest' })`, bei reduzierter Bewegung ohne Animation.
+
+**TV-Modus** (`navigation/device.ts`, `app/Environment.tsx`): `data-device` ist `tv`, wenn die Einstellung „Bedienmodus“ auf Fernseher steht oder bei „Automatisch“ der User-Agent zu einem Smart-TV oder Streaming-Stick passt (webOS, Tizen, Fire TV, Android/Google TV …). Sonst `touch` bei grobem Zeiger ohne Hover, ansonsten `desktop`. Im TV-Modus gilt `font-size: clamp(16px, 100vw / 80, 48px)` (1920 px → 24 px, 3840 px → 48 px). Der Overscan-Rand (0–5 %, Standard 3 %) landet als `--overscan-x`/`--overscan-y` im Seitenrand `--page-gutter` und in den Abständen des Player-Overlays.
+
+**Prüfung:** `navigation/navigation.test.ts` (Geometrie, Felder, gesperrte Tasten, Zurück-Taste, Geräteerkennung). E2E in `e2e/settings.spec.ts`: nur mit Pfeiltasten vom Hero über „Weiterschauen“ zu einem Titel und zurück, TV-Modus bei 1920 px, Fokus = Hover für Navigationslinks, Buttons, Karten, Radiogruppe und Schalter per Vergleich der berechneten Stile. Die Ebenen brauchen echtes Layout und sind deshalb nur per E2E abgedeckt.
 
 ---
 
@@ -729,6 +755,8 @@ Auslöser sind `MediaError` (Code 3/4), fatale hls.js-Fehler und ein Stillstand 
 
 Nutzt dieselbe Engine stumm, mit niedriger Bitrate und ohne Reporting. Sie startet nur nach 3 s Ruhe auf dem Hero, wenn die Einstellung „Trailer-Autoplay“ an ist, die Bewegung nicht reduziert ist, `saveData` nicht gesetzt ist und das Gerät kein Smartphone ist. Sie stoppt bei Scrollen, Fokuswechsel oder verborgenem Tab.
 
+Umsetzung (Phase 4): `useTrailerPreview(itemId)` in `player/useTrailerPreview.ts` liefert dem Theme `videoRef`, `playing` und `cancel()`. Der Trailer-Code (`player/trailer.ts`) wird erst beim Start nachgeladen. Er fragt PlaybackInfo mit höchstens 3 Mbit/s an, nutzt die normalen Engines und meldet nichts an den Server. Gestoppt wird nach mehr als 120 px Scrollen, bei verborgenem Tab, beim Wechsel des Hero-Titels und über `cancel()` (Classic: wenn der Fokus den Hero verlässt). „Touch“ ist das Kriterium für Smartphones und Tablets (`data-device`). Während der Trailer läuft, pausiert der automatische Wechsel des Hero-Karussells. Fehler (Autoplay verboten, kein Trailer) bleiben still, dann bleibt das Backdrop stehen.
+
 ### 9.14 Erkenntnisse aus Phase 3
 
 - **Route statt Ebene:** `/play/:itemId?start=<s>` ist eine eigene Vollbild-Route außerhalb der App-Shell (`app/routes/PlayerRoute.tsx`). Ohne `start` fragt sie nach dem Fortsetzen und löst Serien auf die nächste Folge auf. `usePlayer` (`player/usePlayer.ts`) erzeugt je Item einen `PlaybackController`; die Bühne mit `<video>` bleibt beim Folgenwechsel montiert.
@@ -742,22 +770,31 @@ Nutzt dieselbe Engine stumm, mit niedriger Bitrate und ohne Reporting. Sie start
 
 ## 10. Einstellungen und Persistenz
 
-| Einstellung                               | Speicherort am Server                                                                     | geräteübergreifend                                  |
-| ----------------------------------------- | ----------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| Theme, Farbschema                         | DisplayPreferences                                                                        | ja                                                  |
-| Sprache                                   | DisplayPreferences                                                                        | ja                                                  |
-| Reduzierte Bewegung (System/An/Aus)       | DisplayPreferences                                                                        | ja                                                  |
-| Trailer-Autoplay, UI-Sounds               | DisplayPreferences                                                                        | ja                                                  |
-| Nächste Folge automatisch                 | `UserConfiguration.EnableNextEpisodeAutoPlay`                                             | ja, auch mit anderen Jellyfin-Clients **[Frage 6]** |
-| Audio-/Untertitelsprache, Untertitelmodus | `UserConfiguration.AudioLanguagePreference`, `SubtitleLanguagePreference`, `SubtitleMode` | ja, auch mit anderen Jellyfin-Clients **[Frage 6]** |
-| Max. Streaming-Qualität                   | – (nur lokal)                                                                             | nein: hängt von Gerät und Netz ab **[Frage 7]**     |
-| Bedienmodus (Auto/Desktop/TV), Overscan   | – (nur lokal)                                                                             | nein                                                |
+| Einstellung                                | Speicherort am Server                                                                     | geräteübergreifend                                  |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| Theme, Farbschema                          | DisplayPreferences                                                                        | ja                                                  |
+| Sprache                                    | DisplayPreferences                                                                        | ja                                                  |
+| Reduzierte Bewegung (System/An/Aus)        | DisplayPreferences                                                                        | ja                                                  |
+| Trailer-Autoplay (UI-Sounds mit Neon Grid) | DisplayPreferences                                                                        | ja                                                  |
+| Nächste Folge automatisch                  | `UserConfiguration.EnableNextEpisodeAutoPlay`                                             | ja, auch mit anderen Jellyfin-Clients **[Frage 6]** |
+| Audio-/Untertitelsprache, Untertitelmodus  | `UserConfiguration.AudioLanguagePreference`, `SubtitleLanguagePreference`, `SubtitleMode` | ja, auch mit anderen Jellyfin-Clients **[Frage 6]** |
+| Max. Streaming-Qualität                    | – (nur lokal)                                                                             | nein: hängt von Gerät und Netz ab **[Frage 7]**     |
+| Bedienmodus (Auto/Desktop/TV), Overscan    | – (nur lokal)                                                                             | nein                                                |
 
 - **Lokal:** zustand mit `persist` in `localStorage`, Schlüssel je `serverId:userId`. Schreibt sofort.
 - **Server:** `DisplayPreferences` mit `displayPreferencesId: 'settings'`, `client: 'jellymorph'`. Eigene Werte als flache Schlüssel in `CustomPrefs` mit Schema-Version. Lesen–Ändern–Schreiben, gebündelt (1 s Debounce). Fehler beim Speichern führen zu einem Toast mit erneutem Versuch.
 - **Beim Login gewinnt der Server-Wert:** Nach dem Login werden die Server-Werte geladen, überschreiben die lokalen und werden angewendet (Theme-Wechsel mit Überblendung, falls abweichend).
 - **Vor dem Login:** zuletzt auf diesem Gerät benutztes Theme, sonst `DEFAULT_THEME`.
 - Ungültige Werte (z. B. unbekannte Theme-ID von einer neueren Version) werden ignoriert, nicht übernommen.
+
+**Umsetzung in Phase 4:**
+
+- **Geräte-Einstellungen** (`settings/store.ts`, Schlüssel `jellymorph.settings`): Sprache und Darstellung vor der Anmeldung, Bedienmodus, Overscan, Player (Qualität, Lautstärke, Stumm, Einbrennen).
+- **Benutzer-Einstellungen** (`settings/user-settings.ts`, Schlüssel `jellymorph.user.<serverId>:<userId>`): Theme, Farbschema, Sprache, Bewegung, Trailer-Autoplay. Gespeichert werden die Werte und ein Merker `pending`. Die zuletzt benutzten Werte werden zusätzlich als Geräte-Darstellung übernommen, damit Anmeldeseite und Profilauswahl im selben Theme erscheinen.
+- **Am Server** (`api/preferences.ts`, `hooks/useSettingsSync.ts`): DisplayPreferences `settings` / Client `jellymorph`, flache Schlüssel `jellymorph.version` (Schema 1), `jellymorph.theme`, `jellymorph.colorScheme`, `jellymorph.language`, `jellymorph.motion`, `jellymorph.trailerAutoplay`. Fremde Schlüssel im DTO bleiben erhalten, weil immer das zuletzt gelesene DTO als Grundlage dient. Ein Speichern braucht deshalb kein erneutes GET.
+- **Wer gewinnt:** Nach der Anmeldung (und bei jedem Start) wird gelesen. Die Server-Werte gewinnen, außer es gibt eine lokale Änderung, die den Server noch nicht erreicht hat (`pending`: offline, Fehler, Seite während der Wartezeit geschlossen), oder der Benutzer hat während des Ladens etwas geändert. Dann wird stattdessen gespeichert.
+- **Speichern:** 1 s nach der letzten Änderung. Beim Schließen der Seite (`pagehide`) wird ein offener Stand sofort mit `keepalive` gesendet. Ein Fehler zeigt einen Toast mit „Erneut versuchen“, der Status steht auch oben auf der Einstellungsseite.
+- **Wiedergabe-Einstellungen** (`hooks/usePlaybackPreferences.ts`): `UserConfiguration` wird als Ganzes gelesen und geschrieben (`POST /Users/Configuration`), mit sofortiger Anzeige und Rücknahme bei Fehlern. Die Sprachliste kommt von `/Localization/Cultures`, die Namen übersetzt `Intl.DisplayNames` in die UI-Sprache.
 
 ---
 
@@ -796,13 +833,15 @@ Definition: alles, was `index.html` statisch lädt (Entry-Chunk + statische Impo
 | axios + genutzte SDK-Teile                        | ~25 KB         |
 | i18next + react-i18next                           | ~18 KB         |
 | TanStack Query                                    | ~13 KB         |
-| Spatial Navigation (+ lodash-es-Teile)            | ~8 KB          |
+| Spatial Navigation (eigene, §8.1)                 | ~2 KB          |
 | motion (`LazyMotion` + `m`, Features asynchron)   | ~6 KB          |
 | zustand, blurhash                                 | ~2 KB          |
 | App-Code (Config, API, Hooks, Navigation, Router) | ~40 KB         |
 | **Summe**                                         | **~200 KB**    |
 
-Lazy: jedes Theme, Player inkl. hls.js (~140 KB gzip), Bibliothek (TanStack Virtual), Einstellungen, MSW, Sprachdateien, Motion-Features. Ein CI-Skript (`scripts/check-bundle.mjs`, ohne zusätzliche Abhängigkeit) liest das Vite-Manifest, summiert den Basis-Graphen per zlib-gzip und bricht über 250 KB ab. Theme-Chunks bekommen ein weiches Budget von 80 KB JS gzip (Warnung).
+Lazy: jedes Theme, Player inkl. hls.js (~140 KB gzip), Bibliothek (TanStack Virtual), Einstellungen, MSW, Sprachdateien, Motion-Features. Ein CI-Skript (`scripts/check-bundle.ts`, ohne zusätzliche Abhängigkeit) liest das Vite-Manifest, summiert den Basis-Graphen per zlib-gzip und bricht über 250 KB ab. Theme-Chunks bekommen ein weiches Budget von 80 KB JS gzip (Warnung).
+
+**Gemessen (Phase 4):** Basis-Bundle 179,7 KB gzip, Classic 36,2 KB JS + 13,8 KB CSS gzip.
 
 ### 13.2 LCP < 2,5 s (Desktop)
 

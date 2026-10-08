@@ -114,3 +114,14 @@ export function useHomeSections(): HomeSection[] {
     section.kind === 'genres' ? !isEmpty(section.genres) : !isEmpty(section.items),
   );
 }
+
+/** "Continue watching" on its own (e.g. for the theme live preview). */
+export function useResumeItems(): QueryResult<MediaItem[]> {
+  const { api, key } = useActiveSession();
+  return toQueryResult(
+    useQuery({
+      queryKey: queryKeys.resume(key),
+      queryFn: ({ signal }) => fetchResume(api, signal),
+    }),
+  );
+}

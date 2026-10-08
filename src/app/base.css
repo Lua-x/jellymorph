@@ -7,7 +7,8 @@
 }
 
 :root {
-  --page-gutter: clamp(1rem, 4vw, 3rem);
+  /* The gutter includes the TV overscan margin (0 elsewhere). */
+  --page-gutter: calc(clamp(1rem, 4vw, 3rem) + var(--overscan-x));
   --content-max-width: 120rem;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
@@ -153,4 +154,67 @@ p {
 
 .player-freeze[hidden] {
   display: none;
+}
+
+/* Theme live preview (themes/ThemePreview.tsx): laid out at desktop width, scaled to fit. */
+.theme-preview-frame {
+  --preview-scale: 0.4;
+
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  container-type: inline-size;
+}
+
+.theme-preview {
+  --page-gutter: 2.5rem;
+  --overscan-x: 0px;
+  --overscan-y: 0px;
+
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: grid;
+  gap: 2rem;
+  width: var(--preview-width);
+  min-height: calc(var(--preview-width) * 9 / 16);
+  padding: 2rem var(--page-gutter);
+  overflow: hidden;
+  container-type: inline-size;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  pointer-events: none;
+  transform: scale(var(--preview-scale));
+  transform-origin: 0 0;
+}
+
+/* Cross-fade without View Transitions (themes/transition.ts). */
+.theme-fade {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: var(--color-bg, #0d0f13);
+  pointer-events: none;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 260ms;
+}
+
+/* TV mode (§8): text scales with the screen (1920 px → 24 px, 3840 px → 48 px), overscan margin. */
+html {
+  --overscan-x: calc(var(--overscan, 0) * 100vw);
+  --overscan-y: calc(var(--overscan, 0) * 100vh);
+}
+
+html[data-device='tv'] {
+  font-size: clamp(16px, calc(100vw / 80), 48px);
+}
+
+/* Focused elements stay clear of sticky headers when the arrow keys scroll them into view. */
+:focus-visible {
+  scroll-margin-block: 6rem 3rem;
 }

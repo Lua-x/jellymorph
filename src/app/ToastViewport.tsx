@@ -13,6 +13,13 @@ export function ToastViewport() {
           props={{
             kind: toast.kind,
             message: toast.message,
+            action: toast.action && {
+              label: toast.action.label,
+              onAction: () => {
+                dismiss(toast.id);
+                toast.action?.onAction();
+              },
+            },
             onDismiss: () => {
               dismiss(toast.id);
             },

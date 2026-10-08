@@ -18,7 +18,7 @@ export interface MockOptions {
   storage: Storage | null;
   /**
    * Simulated failures for tests: 'directPlay' (the file cannot be decoded), 'transcode' (HLS
-   * fails), 'playbackInfo' (the server refuses). In demo mode also read from localStorage
+   * fails), 'playbackInfo' (the server refuses), 'preferences' (settings cannot be saved). In demo mode also read from localStorage
    * ('jellymorph.demo.faults', comma separated), so end-to-end tests can switch them on.
    */
   faults: readonly string[];
@@ -31,6 +31,33 @@ export interface PlaySession {
 
 const TOKEN_STORAGE_KEY = 'jellymorph.demo.tokens';
 const FAULTS_STORAGE_KEY = 'jellymorph.demo.faults';
+const PREFS_STORAGE_KEY = 'jellymorph.demo.preferences';
+
+/** Jellyfin user configuration fields the client reads and writes. */
+export type UserConfiguration = Record<string, unknown>;
+
+export const DEFAULT_USER_CONFIGURATION: UserConfiguration = {
+  AudioLanguagePreference: '',
+  PlayDefaultAudioTrack: true,
+  SubtitleLanguagePreference: '',
+  SubtitleMode: 'Default',
+  EnableNextEpisodeAutoPlay: true,
+  RememberAudioSelections: true,
+  RememberSubtitleSelections: true,
+  DisplayMissingEpisodes: false,
+  GroupedFolders: [],
+  OrderedViews: [],
+  MyMediaExcludes: [],
+  LatestItemsExcludes: [],
+  HidePlayedInLatest: true,
+  DisplayCollectionsView: false,
+  EnableLocalPassword: false,
+};
+
+interface StoredPreferences {
+  configurations: Record<string, UserConfiguration>;
+  displayPreferences: Record<string, Record<string, unknown>>;
+}
 
 /** Mutable state of the mock server: issued tokens and pending Quick Connect requests. */
 export class MockState {
@@ -45,6 +72,7 @@ export class MockState {
   /** Every report the server received, in order (for tests). */
   readonly reports: { kind: 'start' | 'progress' | 'stopped' | 'ping'; body: unknown }[] = [];
   private counter = 0;
+  private readonly preferences: StoredPreferences;
 
   constructor(options: Partial<MockOptions> = {}) {
     this.options = {
@@ -56,6 +84,7 @@ export class MockState {
       ...options,
     };
     this.tokens = new Map(this.loadTokens());
+    this.preferences = this.loadPreferences();
     this.library = new UserLibrary(this.options.storage);
   }
 
@@ -91,6 +120,69 @@ export class MockState {
       32,
       '0',
     );
+  }
+
+  private loadPreferences(): StoredPreferences {
+    try {
+      const raw = this.options.storage?.getItem(PREFS_STORAGE_KEY);
+      const parsed: unknown = raw ? JSON.parse(raw) : null;
+      if (typeof parsed === 'object' && parsed !== null) {
+        const value = parsed as Partial<StoredPreferences>;
+        return {
+          configurations: value.configurations ?? {},
+          displayPreferences: value.displayPreferences ?? {},
+        };
+      }
+    } catch {
+      // Demo persistence is best effort.
+    }
+    return { configurations: {}, displayPreferences: {} };
+  }
+
+  private savePreferences(): void {
+    try {
+      this.options.storage?.setItem(PREFS_STORAGE_KEY, JSON.stringify(this.preferences));
+    } catch {
+      // Demo persistence is best effort.
+    }
+  }
+
+  userConfiguration(userId: string): UserConfiguration {
+    return { ...DEFAULT_USER_CONFIGURATION, ...this.preferences.configurations[userId] };
+  }
+
+  setUserConfiguration(userId: string, configuration: UserConfiguration): void {
+    this.preferences.configurations[userId] = configuration;
+    this.savePreferences();
+  }
+
+  displayPreferences(userId: string, id: string, client: string): Record<string, unknown> {
+    return (
+      this.preferences.displayPreferences[`${userId}:${id}:${client}`] ?? {
+        Id: id,
+        Client: client,
+        SortBy: 'SortName',
+        RememberIndexing: false,
+        PrimaryImageHeight: 250,
+        PrimaryImageWidth: 250,
+        CustomPrefs: {},
+        ScrollDirection: 'Horizontal',
+        ShowBackdrop: true,
+        RememberSorting: false,
+        SortOrder: 'Ascending',
+        ShowSidebar: false,
+      }
+    );
+  }
+
+  setDisplayPreferences(
+    userId: string,
+    id: string,
+    client: string,
+    preferences: Record<string, unknown>,
+  ): void {
+    this.preferences.displayPreferences[`${userId}:${id}:${client}`] = preferences;
+    this.savePreferences();
   }
 
   hasFault(fault: string): boolean {

@@ -71,6 +71,7 @@ export function useNavModel(): NavModel {
       imageUrl: user.status === 'success' ? user.data.imageUrl : null,
     },
     serverName: server.name,
+    settings: paths.settings,
     switchProfile: () => {
       void endOrKeepSession().then(() => {
         leave(paths.login);

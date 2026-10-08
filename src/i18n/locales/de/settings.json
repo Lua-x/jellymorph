@@ -1,0 +1,96 @@
+{
+  "title": "Einstellungen",
+  "sections": {
+    "appearance": "Darstellung",
+    "playback": "Wiedergabe",
+    "general": "Sprache und Bedienung",
+    "account": "Konto"
+  },
+  "theme": {
+    "label": "Theme",
+    "hint": "Ein Theme verändert die ganze Oberfläche: Aufbau, Navigation, Karten und Player.",
+    "active": "Aktiv",
+    "apply": "Übernehmen",
+    "applyNamed": "{{name}} übernehmen",
+    "loading": "Wird geladen …",
+    "preview": "Live-Vorschau",
+    "previewOf": "Vorschau von {{name}} mit deinen Inhalten",
+    "previewScheme": "Farbschema der Vorschau",
+    "isActive": "Dieses Theme ist aktiv."
+  },
+  "colorScheme": {
+    "label": "Farbschema",
+    "auto": "Wie das System",
+    "dark": "Dunkel",
+    "light": "Hell",
+    "onlyOne": "Dieses Theme gibt es nur in einem Farbschema."
+  },
+  "motion": {
+    "label": "Bewegung",
+    "system": "Wie das System",
+    "reduced": "Reduziert",
+    "full": "Alle Animationen",
+    "hint": "„Reduziert“ schaltet Parallaxe, automatische Karussells und Trailer-Vorschauen ab."
+  },
+  "trailerAutoplay": {
+    "label": "Trailer automatisch abspielen",
+    "hint": "Startet stumm im großen Bereich ganz oben, wenn du dort kurz verweilst."
+  },
+  "language": {
+    "label": "Sprache der Oberfläche",
+    "hint": "Titel und Beschreibungen kommen in der Sprache, die der Server eingestellt hat."
+  },
+  "deviceMode": {
+    "label": "Bedienmodus",
+    "auto": "Automatisch",
+    "desktop": "Computer",
+    "tv": "Fernseher",
+    "detected": "Erkannt: {{device}}",
+    "devices": {
+      "desktop": "Computer",
+      "tv": "Fernseher",
+      "touch": "Touchscreen"
+    },
+    "hint": "Fernseher: größere Schrift und Fokusrahmen, Bedienung mit der Fernbedienung."
+  },
+  "overscan": {
+    "label": "Bildrand für Fernseher",
+    "value": "{{percent}} %",
+    "hint": "Manche Fernseher schneiden den Bildrand ab. Erhöhe den Wert, bis alles sichtbar ist."
+  },
+  "playback": {
+    "nextEpisode": "Nächste Folge automatisch abspielen",
+    "audioLanguage": "Bevorzugte Tonsprache",
+    "subtitleLanguage": "Bevorzugte Untertitelsprache",
+    "anyLanguage": "Keine Vorgabe",
+    "subtitleMode": "Untertitel anzeigen",
+    "subtitleModes": {
+      "default": "Wenn als Standard markiert",
+      "always": "Immer",
+      "onlyForced": "Nur erzwungene",
+      "none": "Nie",
+      "smart": "Wenn der Ton nicht in meiner Sprache ist"
+    },
+    "shared": "Diese Einstellungen gelten für alle Jellyfin-Apps deines Kontos.",
+    "quality": "Maximale Streaming-Qualität",
+    "qualityAuto": "Automatisch",
+    "qualityOption": "{{height}}p · {{mbps}} Mbit/s",
+    "burnIn": "Gestaltete Untertitel einbrennen",
+    "deviceOnly": "Gilt nur auf diesem Gerät.",
+    "loadFailed": "Die Wiedergabe-Einstellungen konnten nicht geladen werden.",
+    "saveFailed": "Die Wiedergabe-Einstellung konnte nicht gespeichert werden."
+  },
+  "account": {
+    "signedInAs": "Angemeldet als",
+    "server": "Server",
+    "version": "Jellyfin {{version}}"
+  },
+  "sync": {
+    "loading": "Einstellungen werden geladen …",
+    "saving": "Wird gespeichert …",
+    "saved": "Gespeichert – auch für deine anderen Geräte",
+    "error": "Nicht am Server gespeichert",
+    "retry": "Erneut versuchen",
+    "failed": "Deine Einstellungen konnten nicht am Server gespeichert werden."
+  }
+}

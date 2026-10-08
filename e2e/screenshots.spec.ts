@@ -172,6 +172,15 @@ test.describe('screenshots @shots', () => {
         await shoot(page, '17-resume-prompt');
       });
 
+      test('settings', async ({ page }) => {
+        await signInAs(page, 'Alex');
+        await page.goto('/settings');
+        await expect(page.getByRole('heading', { level: 1, name: 'Einstellungen' })).toBeVisible();
+        await expect(page.locator('.theme-preview section').first()).toBeVisible();
+        await shoot(page, '18-settings');
+        await shoot(page, '18-settings', '-full', true);
+      });
+
       test('server selection', async ({ page }) => {
         await page.route('**/config.js', (route) =>
           route.fulfill({
@@ -214,6 +223,37 @@ test.describe('screenshots @shots', () => {
     });
   }
 
+  for (const viewport of [
+    { width: 1920, height: 1080 },
+    { width: 3840, height: 2160 },
+  ]) {
+    test.describe(`TV ${String(viewport.width)}x${String(viewport.height)}`, () => {
+      test.use({ viewport });
+
+      test('TV mode', async ({ page }) => {
+        await page.addInitScript(() => {
+          const raw = localStorage.getItem('jellymorph.settings');
+          const settings = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+          localStorage.setItem(
+            'jellymorph.settings',
+            JSON.stringify({ ...settings, deviceMode: 'tv', overscan: 0.03 }),
+          );
+        });
+        await signInAs(page, 'Alex');
+        await expect(page.locator('html')).toHaveAttribute('data-device', 'tv');
+        await expect(
+          page.getByRole('region', { name: 'Weiterschauen' }).getByRole('link').first(),
+        ).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Abspielen' }).first()).toBeVisible();
+        await page.keyboard.press('ArrowDown');
+        await shoot(page, '19-tv-home');
+        await openFromSearch(page, 'Kupferherz', 'Filme');
+        await page.keyboard.press('ArrowDown');
+        await shoot(page, '19-tv-movie');
+      });
+    });
+  }
+
   test.describe('light color scheme', () => {
     test.use({ viewport: { width: 1280, height: 800 }, colorScheme: 'light' });
 
@@ -231,6 +271,9 @@ test.describe('screenshots @shots', () => {
       if (!movie) throw new Error('Missing demo title');
       await pausedPlayer(page, movie.Id, 22);
       await shoot(page, '13-player', '-light');
+      await page.goto('/settings');
+      await expect(page.locator('.theme-preview section').first()).toBeVisible();
+      await shoot(page, '18-settings', '-light');
     });
   });
 });

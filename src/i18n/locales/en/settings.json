@@ -1,0 +1,96 @@
+{
+  "title": "Settings",
+  "sections": {
+    "appearance": "Appearance",
+    "playback": "Playback",
+    "general": "Language and controls",
+    "account": "Account"
+  },
+  "theme": {
+    "label": "Theme",
+    "hint": "A theme changes the whole interface: layout, navigation, cards and player.",
+    "active": "Active",
+    "apply": "Apply",
+    "applyNamed": "Apply {{name}}",
+    "loading": "Loading …",
+    "preview": "Live preview",
+    "previewOf": "Preview of {{name}} with your content",
+    "previewScheme": "Color scheme of the preview",
+    "isActive": "This theme is active."
+  },
+  "colorScheme": {
+    "label": "Color scheme",
+    "auto": "Same as the system",
+    "dark": "Dark",
+    "light": "Light",
+    "onlyOne": "This theme comes in one color scheme only."
+  },
+  "motion": {
+    "label": "Motion",
+    "system": "Same as the system",
+    "reduced": "Reduced",
+    "full": "All animations",
+    "hint": "“Reduced” turns off parallax, automatic carousels and trailer previews."
+  },
+  "trailerAutoplay": {
+    "label": "Play trailers automatically",
+    "hint": "Starts muted in the large area at the top when you stay there for a moment."
+  },
+  "language": {
+    "label": "Interface language",
+    "hint": "Titles and descriptions come in the language set on the server."
+  },
+  "deviceMode": {
+    "label": "Control mode",
+    "auto": "Automatic",
+    "desktop": "Computer",
+    "tv": "TV",
+    "detected": "Detected: {{device}}",
+    "devices": {
+      "desktop": "Computer",
+      "tv": "TV",
+      "touch": "Touchscreen"
+    },
+    "hint": "TV: larger text and focus frames, operated with the remote control."
+  },
+  "overscan": {
+    "label": "Screen margin for TVs",
+    "value": "{{percent}} %",
+    "hint": "Some TVs cut off the edges of the picture. Increase the value until everything is visible."
+  },
+  "playback": {
+    "nextEpisode": "Play the next episode automatically",
+    "audioLanguage": "Preferred audio language",
+    "subtitleLanguage": "Preferred subtitle language",
+    "anyLanguage": "No preference",
+    "subtitleMode": "Show subtitles",
+    "subtitleModes": {
+      "default": "When marked as default",
+      "always": "Always",
+      "onlyForced": "Forced only",
+      "none": "Never",
+      "smart": "When the audio is not in my language"
+    },
+    "shared": "These settings apply to all Jellyfin apps of your account.",
+    "quality": "Maximum streaming quality",
+    "qualityAuto": "Automatic",
+    "qualityOption": "{{height}}p · {{mbps}} Mbit/s",
+    "burnIn": "Burn in styled subtitles",
+    "deviceOnly": "Applies to this device only.",
+    "loadFailed": "The playback settings could not be loaded.",
+    "saveFailed": "The playback setting could not be saved."
+  },
+  "account": {
+    "signedInAs": "Signed in as",
+    "server": "Server",
+    "version": "Jellyfin {{version}}"
+  },
+  "sync": {
+    "loading": "Loading settings …",
+    "saving": "Saving …",
+    "saved": "Saved – also for your other devices",
+    "error": "Not saved on the server",
+    "retry": "Try again",
+    "failed": "Your settings could not be saved on the server."
+  }
+}

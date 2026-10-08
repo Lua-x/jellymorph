@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { isPlayable, useMediaActions } from '@/hooks/useMediaActions';
+import { useTrailerPreview } from '@/player/useTrailerPreview';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { linkTo } from '@/navigation/paths';
 import { AppLink } from '@/ui/AppLink';
@@ -21,16 +22,22 @@ export function Hero({ items, context }: HeroProps) {
   const slides = items.status === 'success' ? items.data : [];
   const count = slides.length;
   const reduced = useReducedMotion();
+  const shownId = slides[Math.min(index, Math.max(0, count - 1))]?.id ?? null;
+  const {
+    videoRef: trailerRef,
+    playing: trailerPlaying,
+    cancel: cancelTrailer,
+  } = useTrailerPreview(context === 'page' ? shownId : null);
 
   useEffect(() => {
-    if (count < 2 || paused || reduced || context === 'preview') return;
+    if (count < 2 || paused || trailerPlaying || reduced || context === 'preview') return;
     const timer = setInterval(() => {
       setIndex((current) => (current + 1) % count);
     }, ROTATE_MS);
     return () => {
       clearInterval(timer);
     };
-  }, [count, paused, reduced, context]);
+  }, [count, paused, trailerPlaying, reduced, context]);
 
   if (items.status === 'pending') {
     return <div className={`${styles.hero} ${styles.skeleton}`} aria-hidden="true" />;
@@ -55,7 +62,10 @@ export function Hero({ items, context }: HeroProps) {
         setPaused(true);
       }}
       onBlur={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) setPaused(false);
+        if (event.currentTarget.contains(event.relatedTarget)) return;
+        setPaused(false);
+        // Focus moved on to the rows: the trailer would only distract.
+        if (event.relatedTarget) cancelTrailer();
       }}
     >
       {slides.map((item, slideIndex) => {
@@ -73,6 +83,17 @@ export function Hero({ items, context }: HeroProps) {
           </div>
         );
       })}
+      {context === 'page' && (
+        <video
+          ref={trailerRef}
+          className={styles.trailer}
+          data-playing={trailerPlaying}
+          muted
+          playsInline
+          aria-hidden="true"
+          tabIndex={-1}
+        />
+      )}
       <div className={styles.scrim} aria-hidden="true" />
       <div
         key={current.id}

@@ -71,3 +71,26 @@
 :global([data-motion='reduced']) .toast {
   animation: none;
 }
+
+.action {
+  flex: none;
+  min-height: 2.25rem;
+  padding: 0 0.75rem;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--color-accent-text);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.action:is(:hover, :focus-visible) {
+  background: var(--color-surface-hover);
+}
+
+.action:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}

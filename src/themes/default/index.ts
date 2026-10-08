@@ -16,6 +16,7 @@ import { ResumePrompt } from './components/ResumePrompt';
 import { Row } from './components/Row';
 import { SearchPage } from './components/SearchPage';
 import { SeriesPage } from './components/SeriesPage';
+import { SettingsPage } from './components/SettingsPage';
 import { EmptyState, ErrorState, LoadingState } from './components/States';
 import { Toast } from './components/Toast';
 
@@ -32,6 +33,7 @@ export const theme: CompleteThemeModule = {
     SeriesPage,
     SearchPage,
     FavoritesPage,
+    SettingsPage,
     PlayerOverlay,
     ResumePrompt,
     Hero,

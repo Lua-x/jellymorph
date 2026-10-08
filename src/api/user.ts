@@ -3,6 +3,7 @@ import type { BaseItemDto } from '@jellyfin/sdk/lib/generated-client/models/base
 import { getUserApi } from '@jellyfin/sdk/lib/utils/api/user-api';
 import { getUserViewApi } from '@jellyfin/sdk/lib/utils/api/user-view-api';
 import type { CurrentUser, Library, LibraryKind } from '@/domain/types';
+import { toPlaybackPreferences } from './preferences';
 import { itemImageUrl, userImageUrl } from './urls';
 
 /** Library types Jellymorph v1 can show. Music, books, photos, live TV and playlists stay hidden. */
@@ -28,7 +29,7 @@ export async function fetchCurrentUser(api: Api, signal?: AbortSignal): Promise<
       data.Id && data.PrimaryImageTag ? userImageUrl(api, data.Id, data.PrimaryImageTag) : null,
     isAdministrator: data.Policy?.IsAdministrator === true,
     latestExcludes: data.Configuration?.LatestItemsExcludes ?? [],
-    nextEpisodeAutoplay: data.Configuration?.EnableNextEpisodeAutoPlay ?? true,
+    playback: toPlaybackPreferences(data.Configuration),
   };
 }
 

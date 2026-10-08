@@ -16,6 +16,8 @@ export interface NavModel {
   items: NavItem[];
   user: { name: string; imageUrl: string | null };
   serverName: string;
+  /** Link to the settings page. */
+  settings: string;
   switchProfile: () => void;
   changeServer: (() => void) | null;
   signOut: () => void;
