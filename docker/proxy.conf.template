@@ -1,0 +1,35 @@
+# Same-origin reverse proxy to Jellyfin (JELLYFIN_PROXY_TARGET), rendered by docker/entrypoint.sh
+# into /tmp/jellymorph/proxy.conf. Placeholders: JM_PROXY_TARGET (scheme, host, port and an
+# optional base path, no trailing slash) and JM_RESOLVER_DIRECTIVE (resolver with the DNS servers
+# from /etc/resolv.conf; empty when the target is an IP address).
+#
+# The target is resolved per request (variable in proxy_pass + resolver), so the container also
+# starts while Jellyfin is still down, and it follows a Jellyfin container to a new address.
+
+location = /jellyfin {
+    return 301 /jellyfin/;
+}
+
+location /jellyfin/ {
+    ${JM_RESOLVER_DIRECTIVE}
+
+    proxy_pass ${JM_PROXY_TARGET}$jellyfin_rest;
+    proxy_http_version 1.1;
+    proxy_ssl_server_name on;
+
+    # WebSocket for live updates.
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $connection_upgrade;
+
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $forwarded_proto;
+    proxy_set_header X-Forwarded-Host $host;
+
+    # Streams, long transcodes and the WebSocket: no buffering, idle connections may last an hour.
+    proxy_buffering off;
+    proxy_request_buffering off;
+    proxy_read_timeout 1h;
+    proxy_send_timeout 1h;
+    client_max_body_size 100m;
+}

@@ -1,6 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const PORT = 4173;
+/** A running app to test instead of `vite preview`, e.g. the container (scripts/test-container.ts). */
+const EXTERNAL_BASE_URL = process.env.E2E_BASE_URL;
 
 /**
  * E2E tests run against the production build in demo mode (mock Jellyfin inside the page).
@@ -13,7 +15,7 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : [['list']],
   use: {
-    baseURL: `http://localhost:${PORT}`,
+    baseURL: EXTERNAL_BASE_URL ?? `http://localhost:${PORT}`,
     locale: 'de-DE',
     colorScheme: 'dark',
     trace: 'retain-on-failure',
@@ -27,11 +29,13 @@ export default defineConfig({
       grepInvert: /@desktop-only|@shots|@previews/,
     },
   ],
-  webServer: {
-    command: `npm run build && npm run preview -- --port ${PORT} --strictPort`,
-    port: PORT,
-    reuseExistingServer: !process.env.CI,
-    env: { DEMO_MODE: 'true' },
-    timeout: 180_000,
-  },
+  webServer: EXTERNAL_BASE_URL
+    ? undefined
+    : {
+        command: `npm run build && npm run preview -- --port ${PORT} --strictPort`,
+        port: PORT,
+        reuseExistingServer: !process.env.CI,
+        env: { DEMO_MODE: 'true' },
+        timeout: 180_000,
+      },
 });

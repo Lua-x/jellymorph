@@ -81,7 +81,7 @@ export default defineConfig(({ mode }) => {
     test: {
       environment: 'jsdom',
       setupFiles: ['./src/test/setup.ts'],
-      include: ['src/**/*.test.{ts,tsx}'],
+      include: ['src/**/*.test.{ts,tsx}', 'scripts/**/*.test.ts'],
       restoreMocks: true,
       // Theme token files are read as text by the contrast and scoping tests.
       css: { include: [/themes\/[\w-]+\/(tokens|global)\.css/] },

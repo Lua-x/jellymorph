@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 import { demoItems, directPlayable, expectNoA11yViolations, signInAs, unwatched } from './helpers';
 
 async function videoState(page: Page) {

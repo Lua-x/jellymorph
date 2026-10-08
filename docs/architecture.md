@@ -127,7 +127,7 @@ Chrome/Edge ≥ 111, Firefox ≥ 128 (ESR), Safari/iOS ≥ 16.4. Damit stehen Co
 
 ### 2.3 Bewusst **nicht** verwendet
 
-UI-Komponentenbibliotheken, CSS-in-JS, Tailwind, Datums-Bibliotheken (`Intl` reicht), `vite-plugin-pwa`/Workbox (Manifest und minimaler Service Worker sind von Hand schneller geschrieben als konfiguriert), JASSUB/libass (ASS-Rendering im Browser, mehrere MB WASM, siehe [Frage 9]), React Compiler (später möglich, aktuell kein Bedarf).
+UI-Komponentenbibliotheken, CSS-in-JS, Tailwind, Datums-Bibliotheken (`Intl` reicht), `vite-plugin-pwa`/Workbox (Manifest und Icons sind von Hand schneller erstellt als konfiguriert; einen Service Worker gibt es nicht, §15.1), JASSUB/libass (ASS-Rendering im Browser, mehrere MB WASM, siehe [Frage 9]), React Compiler (später möglich, aktuell kein Bedarf).
 
 ---
 
@@ -868,18 +868,37 @@ Theme- und Default-Chunk werden parallel zur Session-Wiederherstellung geladen. 
   `<JF>`: bei `LOCK_SERVER`+`JELLYFIN_URL` genau diese Origin; im Proxy-Modus nichts zusätzlich; sonst `https: http:` bzw. `wss: ws:`, weil der Benutzer beliebige Server hinzufügen darf. `worker-src blob:` braucht der hls.js-Worker. Inline-Styles über Reacts `style`-Prop setzen CSSOM-Eigenschaften und sind ohne `unsafe-inline` erlaubt.
 - Keine Secrets im Repo. `.env.local` steht in `.gitignore`. Demo-Daten enthalten keine echten Personen oder Marken.
 - `rel="noopener noreferrer"` für externe Links. `Referrer-Policy: strict-origin-when-cross-origin`. `Permissions-Policy` erlaubt nur `fullscreen`, `picture-in-picture`, `autoplay` und `screen-wake-lock` für `self`.
+- **Umsetzung (Phase 5):** Die CSP entsteht wie oben im Entrypoint. Demo-Modus und Proxy-Modus erlauben nur die eigene Origin, `LOCK_SERVER` genau die Origin aus `JELLYFIN_URL` (dazu `ws`/`wss` derselben Adresse), sonst `https: http:` bzw. `wss: ws:`. Dazu kommen `X-Content-Type-Options: nosniff`, `Cross-Origin-Opener-Policy: same-origin` und eine `Permissions-Policy`, die Kamera, Mikrofon, Standort, Zahlungen und USB ausdrücklich sperrt. **Geprüft** wird die CSP, indem die CI die komplette E2E-Suite gegen den laufenden Container im Demo-Modus ausführt. Ein Fixture (`e2e/fixtures.ts`) lässt jeden Test scheitern, der eine CSP-Verletzung auslöst.
 
 ---
 
-## 15. Docker und Betrieb (Ausblick Phase 5)
+## 15. Docker und Betrieb
+
+Plan aus Phase 0, umgesetzt in Phase 5 (Abweichungen und Details in §15.1):
 
 - **Build-Stage** `node:24-alpine` auf `$BUILDPLATFORM`: Das statische Ergebnis ist architekturunabhängig, nur die nginx-Stage wird pro Architektur gebaut. Das spart QEMU-Zeit für arm64.
-- **Laufzeit** `nginxinc/nginx-unprivileged:alpine`, Port 8080, Nicht-Root.
-- **Entrypoint:** validiert die Variablen (Theme-ID gegen Liste, Booleans, URL-Format), schreibt `config.js` mit JSON-Escaping, rendert `nginx.conf` (CSP, optionaler `/jellyfin/`-Proxy mit WebSocket-Upgrade) und `manifest.webmanifest` (Name aus `APP_TITLE`) nach `/tmp/app`.
+- **Laufzeit** `nginxinc/nginx-unprivileged:1.31-alpine`, Port 8080, Nicht-Root (UID 101).
+- **Entrypoint:** validiert die Variablen (Theme-ID gegen Liste, Booleans, URL-Format), schreibt `config.js` mit JSON-Escaping, rendert die nginx-Site (CSP, optionaler `/jellyfin/`-Proxy mit WebSocket-Upgrade) und `manifest.webmanifest` (Name aus `APP_TITLE`) nach `/tmp/jellymorph`.
 - **Read-only Root-FS:** einziger Schreibpfad `/tmp` (tmpfs), dokumentiert in README und Compose.
-- `/healthz` → 200 aus nginx. Docker-`HEALTHCHECK` mit `wget -q --spider`.
-- **PWA:** Manifest, Icons 192/512/maskable (per Skript aus SVG über Playwright erzeugt, keine neue Abhängigkeit), minimaler Service Worker **ohne** Caching von Medien und API. Er wird nur registriert, wenn ein sicherer Kontext besteht und kein Demo-Modus aktiv ist. Im Demo-Modus braucht MSW den Scope.
-- **Lokal:** Docker ist auf diesem Rechner nicht installiert. Den Container prüfe ich im CI (Build, Start read-only, `/healthz`, `config.js`, CSP-Header). **[Frage 12]**
+- `/healthz` → 200 aus nginx. Docker-`HEALTHCHECK` mit `wget`.
+- **PWA:** Manifest und Icons 192/512/maskable/Apple (per `scripts/render-icons.ts` aus dem SVG-Logo über Playwright erzeugt, keine neue Abhängigkeit). Kein Service Worker (§15.1).
+- **Lokal:** Docker ist auf diesem Rechner nicht installiert. Den Container prüft die CI (§15.1).
+
+### 15.1 Umsetzung (Phase 5)
+
+**Dateien:** `Dockerfile`, `.dockerignore`, `docker/nginx.conf` (Hauptkonfiguration: PID, Temp-Pfade und Logs nach `/tmp` bzw. stdout/stderr, gzip), `docker/nginx.conf.template` (Site), `docker/proxy.conf.template` (Proxy), `docker/entrypoint.sh`, `docker-compose.yml`, `public/manifest.webmanifest`, `public/icons/`.
+
+**Entrypoint** (POSIX-`sh`, BusyBox-tauglich): ersetzt den Entrypoint des Basis-Images, damit dessen Skripte nicht in `/etc/nginx` schreiben. Er liest und prüft alle Variablen und **bricht bei ungültigen Werten ab**, mit einer Meldung, die die Variable und die erlaubten Werte nennt. Die App selbst würde ungültige Werte zwar ignorieren (§4.1); ein Container, der mit einem Tippfehler still mit Standardwerten läuft, fällt aber erst viel später auf. Danach schreibt er nach `/tmp/jellymorph`: `config.js`, `manifest.webmanifest` (aus `public/manifest.webmanifest`, Name und Kurzname aus `APP_TITLE`), `headers.conf` (Sicherheits-Header, §14), `site.conf` (per `envsubst` mit fester Variablenliste, damit nginx-Variablen unberührt bleiben) und `proxy.conf` (leer ohne Proxy). Steuerzeichen in `APP_TITLE` werden entfernt, Backslash und Anführungszeichen für JSON maskiert. URLs dürfen nur Zeichen enthalten, die in JSON, CSP und nginx-Konfiguration ohne Maskierung sicher sind. Die Theme-Liste des Entrypoints gleicht ein Unit-Test mit `config/theme-ids.ts` ab.
+
+**Cache-Header:** `/assets/*` (Hash im Namen) `public, max-age=31536000, immutable`, fehlende Assets 404 (nie die App-Hülle, sonst bekäme ein veralteter Tab HTML statt JavaScript). `index.html`, `config.js`, `manifest.webmanifest` und `mockServiceWorker.js` `no-cache`. Übrige öffentliche Dateien (Icons) einen Tag. Alle anderen Pfade liefern `index.html` (SPA-Fallback). Versteckte Dateien sind 404, das Build-Manifest (`.vite/`) wird im Image ohnehin gelöscht.
+
+**Proxy:** `proxy_pass` mit Variable und `resolver` aus `/etc/resolv.conf`. Dadurch startet der Container auch, wenn Jellyfin noch nicht erreichbar ist (bis dahin 502), und er folgt einem Jellyfin-Container, der eine neue Adresse bekommt. Pfad und Query werden aus `$request_uri` unverändert weitergereicht, kodierte Zeichen wie `%2F` bleiben erhalten. WebSocket-Upgrade, `X-Forwarded-*`-Header (ein vorgelagerter TLS-Proxy behält sein `X-Forwarded-Proto`), keine Pufferung, Leerlauf-Timeouts von einer Stunde. Einschränkung: nginx nutzt keine Suchdomänen, in Kubernetes ist deshalb der volle DNS-Name nötig.
+
+**Kein Service Worker** (Abweichung vom Plan oben). Chrome bietet „App installieren“ seit Version 108 (Android) bzw. 112 (Desktop) auch ohne Service Worker an, leere Fetch-Handler ignoriert er ohnehin. Ein echter Fetch-Handler läge vor jeder API- und Medienanfrage (Range-Requests beim Spulen), ohne Offline-Funktionen, die die Spezifikation ausdrücklich nicht verlangt. Außerdem bräuchte der Demo-Modus denselben Scope für MSW. Der automatische Installationshinweis von Chrome entfällt damit; installiert wird über das Browser-Menü (Safari: „Zum Home-Bildschirm“).
+
+**Prüfung in der CI** (`scripts/test-container.ts`, Docker-Job in `ci.yml`): Build für amd64 und arm64, dann mit dem amd64-Image, jeweils `--read-only --tmpfs /tmp --cap-drop ALL`: Gesundheitsprüfung und `HEALTHCHECK`-Befehl, UID 101, `config.js` mit Standard- und Sonderwerten (Anführungszeichen, Backslash, Umlaut im Titel), CSP je Modus, Cache-Header, gzip, SPA-Fallback, 404 für fehlende Assets und versteckte Dateien, Manifest und Icons, beliebige UID (z. B. Kubernetes `runAsUser`), Abbruch bei sechs ungültigen Einstellungen, Proxy gegen einen kleinen Node-Server als Jellyfin-Ersatz (Start vor Jellyfin, danach Weiterleitung mit Pfad, Query und Headern, `/jellyfin` → `/jellyfin/`, WebSocket) und schließlich die komplette E2E-Suite im Demo-Modus unter der echten CSP.
+
+**Veröffentlichung** (`release.yml`): Bei Push auf `main` und bei Tags `v*` läuft zuerst die komplette CI (`ci.yml` per `workflow_call`; `ci.yml` selbst reagiert auf Pushes in andere Zweige und auf Pull Requests, damit `main` nicht doppelt geprüft wird). Danach baut `docker/build-push-action` das Multi-Arch-Image und schiebt es nach `ghcr.io/lua-x/jellymorph`, Tags über `docker/metadata-action`: `main` → `edge`; `v1.2.3` → `1.2.3`, `1.2`, `1` (nicht bei 0.x) und `latest` (nicht bei Vorabversionen wie `v1.0.0-rc.1`). Labels und Annotationen (auch am Image-Index) verknüpfen das Paket mit dem Repository. Bei Tags folgt ein GitHub-Release; die Notizen erzeugt `scripts/changelog.ts` aus den Conventional Commits seit dem letzten Tag (inkompatible Änderungen, Neu, Behoben, Schneller). **Dependabot** prüft wöchentlich npm (Tooling gebündelt), Docker-Basis-Images (ohne Node-Hauptversionen) und Actions.
 
 ---
 
@@ -894,7 +913,7 @@ Theme- und Default-Chunk werden parallel zur Session-Wiederherstellung geladen. 
 
 **Mock-Jellyfin:** MSW-Handler für alle genutzten Endpunkte mit zustandsbehafteten Fixtures (Favorit, gesehen und Fortschritt ändern sich wirklich). Die Fixtures erzeugt ein Skript: rund 60 Filme, 12 Serien mit Staffeln und Episoden, eine Anime-Bibliothek, Sammlungen, Genres, 3 öffentliche Profile, Segmente, Trickplay, Kapitel. **Bilder** sind generierte SVG-Verläufe mit erfundenem Titel. Die BlurHashes werden aus denselben Verlaufsdaten berechnet. **Demo-Video:** selbst erzeugtes Testbild mit Ton. Ohne ffmpeg auf diesem Rechner (§19, [Frage 13]).
 
-**CI (`ci.yml`, Phase 1):** `npm ci` → lint → typecheck → test → build → Bundle-Budget → Playwright (Chromium; WebKit und Firefox als Smoke-Test für Codec-Unterschiede) → Artefakte (Report, Screenshots). Ab Phase 5 zusätzlich ein Docker-Job.
+**CI (`ci.yml`, Phase 1):** `npm ci` → lint → typecheck → test → build → Bundle-Budget → Playwright (Chromium; WebKit und Firefox als Smoke-Test für Codec-Unterschiede) → Artefakte (Report, Screenshots). Ab Phase 5 zusätzlich ein Docker-Job (§15.1). Stand Phase 5: Playwright läuft mit Chromium (Desktop und Pixel 7); WebKit und Firefox sind noch nicht eingebunden.
 
 ---
 
@@ -929,7 +948,7 @@ Theme- und Default-Chunk werden parallel zur Session-Wiederherstellung geladen. 
 | R11 | Unsichere Kontexte (HTTP im LAN)                                                                   | kein Service Worker/PWA, kein Wake Lock, MSW-Demo nur auf localhost | Funktionen per Feature-Detection ausblenden, Hinweis in README                                                                               |
 | R12 | Autoplay-Richtlinien der Browser                                                                   | Trailer starten nicht                                               | Nur stumm, Fehler still ignorieren und Ken Burns zeigen                                                                                      |
 | R13 | Themes wirken zu nah an Markenoberflächen                                                          | rechtliches Risiko                                                  | Prüfliste §7.8, eigene Namen, eigene Icons, keine exakten Farben                                                                             |
-| R14 | Docker nicht lokal verfügbar                                                                       | Container-Fehler erst im CI sichtbar                                | Docker-Job im CI mit Laufzeittests ([Frage 12])                                                                                              |
+| R14 | Docker nicht lokal verfügbar                                                                       | Container-Fehler erst im CI sichtbar                                | Docker-Job im CI mit Laufzeittests ([Frage 12]); umgesetzt in Phase 5 (§15.1)                                                                |
 | R15 | Kein ffmpeg lokal                                                                                  | kein HLS-Testmaterial für den Demo-Modus                            | [Frage 13]                                                                                                                                   |
 
 ---

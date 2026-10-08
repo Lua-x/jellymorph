@@ -1,0 +1,30 @@
+# Example: Jellymorph in front of an existing Jellyfin server.
+# Start with `docker compose up -d`, then open http://<host>:8080.
+# All variables are described in the README (section "Docker").
+
+services:
+  jellymorph:
+    image: ghcr.io/lua-x/jellymorph:latest
+    container_name: jellymorph
+    restart: unless-stopped
+    ports:
+      - '8080:8080'
+    environment:
+      # Jellyfin is served under /jellyfin of this address (same origin, no CORS setup needed).
+      # Use the container name of Jellyfin in the same Docker network, or its address,
+      # e.g. http://192.168.1.10:8096.
+      JELLYFIN_PROXY_TARGET: http://jellyfin:8096
+      # Alternatively, without the proxy: pre-fill (or with LOCK_SERVER fix) the server address
+      # the browser connects to directly.
+      # JELLYFIN_URL: https://jellyfin.example.com
+      # LOCK_SERVER: "true"
+      DEFAULT_THEME: default
+      APP_TITLE: Jellymorph
+    # The container needs no write access outside /tmp and no extra privileges.
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true

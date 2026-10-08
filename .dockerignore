@@ -1,0 +1,15 @@
+# Only what the build needs; keeps local secrets and large outputs out of the build context.
+.git
+.github
+node_modules
+dist
+coverage
+artifacts
+playwright-report
+test-results
+.env
+.env.*
+!.env.example
+*.log
+Dockerfile
+docker-compose.yml
