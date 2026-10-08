@@ -1,0 +1,60 @@
+{
+  "hud": {
+    "systemTime": "Systemzeit",
+    "online": "Online",
+    "operator": "Operator"
+  },
+  "boot": {
+    "label": "Systemstart",
+    "title": "GRID-OS {{version}}",
+    "lines": {
+      "core": "Kernmodule laden",
+      "grid": "Neon-Raster kalibrieren",
+      "link": "Verbindung zum Medienknoten aufbauen",
+      "secure": "Zugangskanal sichern",
+      "ready": "System bereit"
+    },
+    "ok": "OK",
+    "skip": "Überspringen"
+  },
+  "auth": {
+    "terminal": "Zugangsterminal",
+    "operators": "Operator wählen",
+    "operatorsHint": "Wer greift auf das Raster zu?"
+  },
+  "home": {
+    "sectors": "Sektoren",
+    "channel": "Kanal {{number}}"
+  },
+  "data": {
+    "episode": "Episode",
+    "year": "Jahr",
+    "runtime": "Laufzeit",
+    "rating": "Freigabe",
+    "score": "Wertung",
+    "genres": "Genre",
+    "video": "Video",
+    "seasons": "Staffeln",
+    "status": "Status",
+    "continuing": "Läuft",
+    "ended": "Beendet",
+    "progress": "Fortschritt"
+  },
+  "search": {
+    "host": "grid@jellymorph",
+    "command": "suche",
+    "idle": "Warte auf Eingabe",
+    "output": "Ausgabe"
+  },
+  "player": {
+    "chapter": "Kapitel",
+    "audio": "Ton",
+    "subtitles": "UT",
+    "off": "aus",
+    "remaining": "Rest"
+  },
+  "states": {
+    "loading": "Daten werden übertragen",
+    "errorCode": "Fehlercode"
+  }
+}

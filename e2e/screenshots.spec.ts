@@ -2,6 +2,7 @@ import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import {
+  chooseTheme,
   demoItems,
   directPlayable,
   expectSignedIn,
@@ -51,6 +52,8 @@ async function shoot(page: Page, name: string, suffix = '', fullPage = false) {
     { timeout: 15_000 },
   );
   await page.waitForTimeout(600);
+  // Neon Grid titles decode themselves for a moment after they appear.
+  await page.waitForFunction(() => !document.querySelector('[data-active]'));
   await page.screenshot({
     path: join(OUTPUT, `${name}-${width}x${height}${suffix}.png`),
     fullPage,
@@ -250,6 +253,107 @@ test.describe('screenshots @shots', () => {
         await openFromSearch(page, 'Kupferherz', 'Filme');
         await page.keyboard.press('ArrowDown');
         await shoot(page, '19-tv-movie');
+      });
+    });
+  }
+
+  /** Theme Neon Grid (phase 6): every screen it designs, in all four sizes. */
+  for (const viewport of VIEWPORTS) {
+    test.describe(`neon-grid ${String(viewport.width)}x${String(viewport.height)}`, () => {
+      test.use({ viewport });
+
+      test('neon grid', async ({ page }) => {
+        test.setTimeout(120_000);
+        await signInAs(page, 'Alex');
+        await chooseTheme(page, 'Neon Grid', 'neon-grid');
+        await page.goto('/');
+        await expect(page.getByRole('region', { name: 'Weiterschauen' })).toBeVisible();
+        await shoot(page, '30-neon-home');
+        await shoot(page, '30-neon-home', '-full', true);
+
+        await page
+          .getByRole('region', { name: 'Bibliotheken' })
+          .getByRole('link', { name: /^Filme/ })
+          .click();
+        await expect(page.getByText('56 Titel')).toBeVisible();
+        await shoot(page, '31-neon-library');
+
+        await openFromSearch(page, 'Kupferherz', 'Filme');
+        await shoot(page, '32-neon-movie');
+        await shoot(page, '32-neon-movie', '-full', true);
+
+        await openFromSearch(page, 'Hafenviertel', 'Serien');
+        await shoot(page, '33-neon-series', '-full', true);
+
+        await page.goto('/search?q=or');
+        await expect(page.getByRole('region', { name: /^Filme/ })).toBeVisible();
+        await shoot(page, '34-neon-search');
+
+        const movie = (await demoItems(page, 'Movie')).find(directPlayable);
+        if (!movie) throw new Error('Missing demo title');
+        await pausedPlayer(page, movie.Id, 22);
+        await shoot(page, '35-neon-player');
+        await page.getByRole('button', { name: 'Audio und Untertitel' }).click();
+        await expect(page.getByRole('dialog', { name: 'Audio und Untertitel' })).toBeVisible();
+        await shoot(page, '36-neon-player-tracks');
+
+        await page.goto('/settings');
+        await expect(page.getByRole('heading', { level: 1, name: 'Einstellungen' })).toBeVisible();
+        await shoot(page, '37-neon-settings');
+
+        await page.goto('/');
+        await openUserMenu(page);
+        await page.getByRole('button', { name: 'Profil wechseln' }).click();
+        await expect(page.getByRole('main', { name: 'Systemstart' })).toBeVisible();
+        await page.waitForTimeout(1300);
+        await page.screenshot({
+          path: join(
+            OUTPUT,
+            `38-neon-boot-${String(viewport.width)}x${String(viewport.height)}.png`,
+          ),
+        });
+        await page.keyboard.press('Escape');
+        await expect(
+          page.getByRole('heading', { level: 1, name: 'Profil auswählen' }),
+        ).toBeVisible();
+        await shoot(page, '39-neon-profiles');
+        await page.getByRole('button', { name: /^Mika/ }).click();
+        await page.getByLabel('Passwort', { exact: true }).fill('falsch');
+        await page.keyboard.press('Enter');
+        await expect(page.getByText('Benutzername oder Passwort ist falsch.')).toBeVisible();
+        await shoot(page, '40-neon-password-error');
+      });
+    });
+  }
+
+  for (const viewport of [
+    { width: 1920, height: 1080 },
+    { width: 3840, height: 2160 },
+  ]) {
+    test.describe(`neon-grid TV ${String(viewport.width)}x${String(viewport.height)}`, () => {
+      test.use({ viewport });
+
+      test('neon grid TV mode', async ({ page }) => {
+        await page.addInitScript(() => {
+          const raw = localStorage.getItem('jellymorph.settings');
+          const settings = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+          localStorage.setItem(
+            'jellymorph.settings',
+            JSON.stringify({ ...settings, deviceMode: 'tv', overscan: 0.03 }),
+          );
+        });
+        await signInAs(page, 'Alex');
+        await chooseTheme(page, 'Neon Grid', 'neon-grid');
+        await page.goto('/');
+        await expect(page.locator('html')).toHaveAttribute('data-device', 'tv');
+        await expect(page.getByRole('button', { name: 'Abspielen' }).first()).toBeVisible();
+        await expect(
+          page.getByRole('region', { name: 'Weiterschauen' }).getByRole('link').first(),
+        ).toBeVisible();
+        await page.keyboard.press('ArrowDown');
+        await page.keyboard.press('ArrowDown');
+        await page.keyboard.press('ArrowDown');
+        await shoot(page, '41-neon-tv-home');
       });
     });
   }

@@ -1,0 +1,72 @@
+.prompt {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: calc(1.5rem + var(--overscan-y)) var(--page-gutter);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  opacity: 0.4;
+}
+
+.scanlines {
+  composes: scanlines from './neon.module.css';
+}
+
+.panel {
+  composes: panel flickerIn from './neon.module.css';
+
+  position: relative;
+  display: grid;
+  gap: 0.875rem;
+  width: min(100%, 38rem);
+  padding: 2rem;
+  box-shadow: var(--shadow-overlay);
+}
+
+.kicker {
+  composes: label from './neon.module.css';
+
+  margin: 0;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 1.1rem + 1.5vw, 2.25rem);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.15;
+  text-transform: uppercase;
+  text-shadow: var(--ng-text-glow);
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+}
+
+.progress {
+  display: grid;
+  gap: 0.375rem;
+}
+
+.progressText {
+  color: var(--ng-magenta);
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  letter-spacing: 0.08em;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { Chapter, PlayerModel } from '@/player/model';
 import { formatClock } from '@/ui/time';
 import { useScrubber } from '@/ui/useScrubber';
-import styles from './PlayerOverlay.module.css';
+import defaultStyles from './PlayerOverlay.module.css';
 
 function chapterAt(chapters: Chapter[], seconds: number): Chapter | null {
   let current: Chapter | null = null;
@@ -17,8 +17,20 @@ function chapterAt(chapters: Chapter[], seconds: number): Chapter | null {
 const ratio = (value: number, duration: number) =>
   duration > 0 ? Math.min(1, Math.max(0, value / duration)) : 0;
 
-/** Seek bar with buffered range, chapter marks and a trickplay preview while hovering. */
-export function PlayerTimeline({ player }: { player: PlayerModel }) {
+/** Class names the timeline uses; other themes pass their own CSS module with the same names. */
+export type PlayerClasses = Readonly<Record<string, string>>;
+
+/**
+ * Seek bar with buffered range, chapter marks and a trickplay preview while hovering.
+ * `classes` lets other themes reuse the behaviour with their own look.
+ */
+export function PlayerTimeline({
+  player,
+  classes: styles = defaultStyles,
+}: {
+  player: PlayerModel;
+  classes?: PlayerClasses;
+}) {
   const { t } = useTranslation('player');
   const { duration, currentTime, bufferedEnd, chapters, trickplay } = player;
   const [focused, setFocused] = useState(false);

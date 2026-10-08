@@ -1,0 +1,55 @@
+/*
+ * Neon Grid – design tokens (docs/architecture.md §7.4). Dark only: an almost black ground,
+ * neon magenta and cyan as the main accents, yellow for actions and warnings.
+ */
+
+[data-theme='neon-grid'] {
+  color-scheme: dark;
+
+  --color-bg: #07060d;
+  --color-surface: #0e0c18;
+  --color-surface-raised: #151225;
+  --color-surface-hover: #201b38;
+  --color-border: #2e2850;
+  --color-text: #ecf3ff;
+  --color-text-muted: #a9b3cf;
+  --color-accent: #ffd23f;
+  --color-on-accent: #0b0a10;
+  --color-accent-text: #3ff2ff;
+  --color-focus: #3ff2ff;
+  --color-danger: #ff6f8a;
+  --color-success: #3dffb0;
+  --color-progress: #ff3bdc;
+  --color-overlay: rgb(4 3 9 / 82%);
+
+  --font-body: 'Rajdhani', 'Share Tech Mono', system-ui, sans-serif;
+  --font-display: 'Orbitron Variable', 'Rajdhani', system-ui, sans-serif;
+  --font-mono: 'Share Tech Mono', ui-monospace, 'Cascadia Mono', monospace;
+
+  --radius-card: 0;
+  --radius-control: 0;
+  --shadow-card: 0 0 0 1px rgb(63 242 255 / 14%), 0 0.75rem 2rem rgb(0 0 0 / 65%);
+  --shadow-overlay: 0 0 0 1px rgb(255 59 220 / 28%), 0 1.5rem 4rem rgb(0 0 0 / 75%);
+
+  --duration-fast: 110ms;
+  --duration-base: 200ms;
+  --duration-slow: 420ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --focus-ring:
+    0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-focus), 0 0 1.25rem rgb(63 242 255 / 55%);
+
+  /* Theme-own tokens */
+  --ng-magenta: #ff3bdc;
+  --ng-cyan: #3ff2ff;
+  --ng-yellow: #ffd23f;
+  --ng-line: rgb(63 242 255 / 24%);
+  --ng-line-strong: rgb(63 242 255 / 55%);
+  --ng-cut: 0.875rem;
+  --ng-glow-cyan: 0 0 0.9rem rgb(63 242 255 / 45%);
+  --ng-glow-magenta: 0 0 0.9rem rgb(255 59 220 / 45%);
+  --ng-glow-yellow: 0 0 1rem rgb(255 210 63 / 45%);
+  --ng-text-glow: 0 0 0.55rem rgb(63 242 255 / 60%);
+  --ng-text-glow-magenta: 0 0 0.55rem rgb(255 59 220 / 65%);
+}

@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import type { PlayerModel, PlayerTrack } from '@/player/model';
 import { formatClock } from '@/ui/time';
 import { Icon } from './icons';
-import styles from './PlayerOverlay.module.css';
+import defaultStyles from './PlayerOverlay.module.css';
+import type { PlayerClasses } from './PlayerTimeline';
 
 export type PlayerMenuKind = 'tracks' | 'settings' | 'chapters';
 
@@ -15,7 +16,15 @@ interface Option {
   onSelect: () => void;
 }
 
-function OptionGroup({ title, options }: { title: string; options: Option[] }) {
+function OptionGroup({
+  title,
+  options,
+  styles,
+}: {
+  title: string;
+  options: Option[];
+  styles: PlayerClasses;
+}) {
   const headingId = useId();
   return (
     <section className={styles.menuGroup} aria-labelledby={headingId}>
@@ -55,13 +64,14 @@ function trackDetail(
   return notes.length > 0 ? notes.join(' · ') : undefined;
 }
 
-function TracksMenu({ player }: { player: PlayerModel }) {
+function TracksMenu({ player, styles }: { player: PlayerModel; styles: PlayerClasses }) {
   const { t } = useTranslation('player');
   const hasStyled = player.subtitleTracks.some((track) => track.styled);
   return (
     <>
       {player.audioTracks.length > 0 && (
         <OptionGroup
+          styles={styles}
           title={t('audio')}
           options={player.audioTracks.map((track) => ({
             key: String(track.index),
@@ -74,6 +84,7 @@ function TracksMenu({ player }: { player: PlayerModel }) {
         />
       )}
       <OptionGroup
+        styles={styles}
         title={t('subtitles')}
         options={[
           {
@@ -118,11 +129,12 @@ function TracksMenu({ player }: { player: PlayerModel }) {
   );
 }
 
-function SettingsMenu({ player }: { player: PlayerModel }) {
+function SettingsMenu({ player, styles }: { player: PlayerModel; styles: PlayerClasses }) {
   const { t } = useTranslation('player');
   return (
     <>
       <OptionGroup
+        styles={styles}
         title={t('quality')}
         options={player.qualities.map((quality) => ({
           key: String(quality.maxBitrate ?? 'auto'),
@@ -140,6 +152,7 @@ function SettingsMenu({ player }: { player: PlayerModel }) {
         }))}
       />
       <OptionGroup
+        styles={styles}
         title={t('speed')}
         options={player.rates.map((rate) => ({
           key: String(rate),
@@ -157,7 +170,15 @@ function SettingsMenu({ player }: { player: PlayerModel }) {
   );
 }
 
-function ChaptersMenu({ player, onDone }: { player: PlayerModel; onDone: () => void }) {
+function ChaptersMenu({
+  player,
+  onDone,
+  styles,
+}: {
+  player: PlayerModel;
+  onDone: () => void;
+  styles: PlayerClasses;
+}) {
   const { t } = useTranslation('player');
   const currentIndex = player.chapters.findLastIndex(
     (chapter) => chapter.start <= player.currentTime,
@@ -196,10 +217,13 @@ export function PlayerMenu({
   kind,
   player,
   onClose,
+  classes: styles = defaultStyles,
 }: {
   kind: PlayerMenuKind;
   player: PlayerModel;
   onClose: () => void;
+  /** Class names for other themes reusing the menus (see PlayerTimeline). */
+  classes?: PlayerClasses;
 }) {
   const { t } = useTranslation('player');
   const panelRef = useRef<HTMLDivElement>(null);
@@ -223,9 +247,9 @@ export function PlayerMenu({
   };
 
   let content: ReactNode;
-  if (kind === 'tracks') content = <TracksMenu player={player} />;
-  else if (kind === 'settings') content = <SettingsMenu player={player} />;
-  else content = <ChaptersMenu player={player} onDone={onClose} />;
+  if (kind === 'tracks') content = <TracksMenu player={player} styles={styles} />;
+  else if (kind === 'settings') content = <SettingsMenu player={player} styles={styles} />;
+  else content = <ChaptersMenu player={player} onDone={onClose} styles={styles} />;
 
   return (
     // Escape closes the dialog (WAI-ARIA dialog pattern) before the player sees the key.

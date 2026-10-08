@@ -1,0 +1,161 @@
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  min-width: 0;
+}
+
+.title {
+  composes: heading from './neon.module.css';
+
+  min-width: 0;
+}
+
+.count {
+  flex: none;
+  color: var(--ng-magenta);
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+}
+
+/* Thin line that fills the rest of the header, fading out to the right. */
+.line {
+  flex: 1;
+  min-width: 2rem;
+  height: 1px;
+  background: linear-gradient(90deg, var(--ng-line-strong), transparent);
+}
+
+.seeAll {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 0.25rem;
+  min-height: 2.25rem;
+  padding: 0 0.625rem;
+  color: var(--ng-cyan);
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.seeAll:is(:hover, :focus-visible) {
+  background: rgb(63 242 255 / 12%);
+  box-shadow: inset 0 -2px 0 var(--ng-cyan);
+  text-shadow: var(--ng-text-glow);
+}
+
+.seeAll:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.viewport {
+  position: relative;
+  margin: 0 calc(var(--page-gutter) * -1);
+}
+
+.track {
+  display: flex;
+  gap: 1.125rem;
+  margin: 0;
+  padding: 0.75rem var(--page-gutter) 0.75rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-padding-inline: var(--page-gutter);
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  list-style: none;
+}
+
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+.slot {
+  flex: 0 0 clamp(8.5rem, 13cqi, 12rem);
+  min-width: 0;
+  scroll-snap-align: start;
+}
+
+.wide {
+  flex-basis: clamp(14rem, 22cqi, 21rem);
+}
+
+.arrow {
+  position: absolute;
+  top: 0.75rem;
+  bottom: 3.75rem;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: calc(var(--page-gutter) + 0.5rem);
+  min-width: 2.5rem;
+  border: 0;
+  background: rgb(7 6 13 / 82%);
+  color: var(--ng-cyan);
+  font-size: 1.75rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--duration-base) var(--ease-standard);
+}
+
+.arrow > svg {
+  filter: drop-shadow(0 0 0.4rem rgb(63 242 255 / 80%));
+}
+
+.previous {
+  left: 0;
+  box-shadow: inset -1px 0 0 var(--ng-line);
+}
+
+.next {
+  right: 0;
+  box-shadow: inset 1px 0 0 var(--ng-line);
+}
+
+.viewport:hover .arrow {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .arrow {
+    display: none;
+  }
+}
+
+:global([data-motion='reduced']) .arrow {
+  transition: none;
+}
+
+/* Phones: the title gets the room; "see all" shrinks to its arrow (the text stays readable for
+   screen readers). */
+@media (max-width: 40rem) {
+  .line {
+    display: none;
+  }
+
+  .seeAll {
+    min-width: 2.75rem;
+    margin-left: auto;
+    justify-content: center;
+  }
+
+  .seeAllText {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}

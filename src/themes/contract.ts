@@ -11,6 +11,7 @@
  */
 import type { ComponentType, ReactNode } from 'react';
 import type { ThemeId } from '@/config/theme-ids';
+import type { Language } from '@/i18n';
 import type {
   AppError,
   CurrentUser,
@@ -44,8 +45,18 @@ export interface ThemeManifest {
   preview: Partial<Record<ColorScheme, string>>;
   /** Supported color schemes; the first one is the default. */
   colorSchemes: readonly [ColorScheme, ...ColorScheme[]];
+  /** Optional abilities the settings offer switches for. */
+  features?: ThemeFeatures;
   load: () => Promise<ThemeModule>;
 }
+
+export interface ThemeFeatures {
+  /** The theme plays interface sounds when the user turns them on (useUiSounds). */
+  uiSounds?: boolean;
+}
+
+/** Texts of a theme, registered as i18next namespace `theme-<id>` when the chunk loads. */
+export type ThemeTexts = Partial<Record<Language, Record<string, unknown>>>;
 
 export interface ThemeOptions {
   /** How item and series details open: as a page or as a modal above the previous page. */
@@ -58,6 +69,8 @@ export interface ThemeModule {
   contractVersion: typeof THEME_CONTRACT_VERSION;
   components: Partial<ThemeComponents>;
   options?: Partial<ThemeOptions>;
+  /** Own wording (both languages ship with the chunk); see docs/themes.md. */
+  texts?: ThemeTexts;
 }
 
 /** The default theme must implement every slot because it is the fallback for all others. */

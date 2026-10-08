@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from './fixtures';
-import { expectNoA11yViolations, signInAs } from './helpers';
+import { expectNoA11yViolations, layoutAnimations, signInAs } from './helpers';
 
 test.beforeEach(async ({ page }) => {
   await signInAs(page, 'Alex');
@@ -165,41 +165,5 @@ test('animations and transitions only touch transform, opacity and filter @deskt
   await expect(page.getByRole('heading', { level: 1, name: 'Kupferherz' })).toBeVisible();
   await openSettings(page);
 
-  const offenders = await page.evaluate(() => {
-    const allowed = new Set(['transform', 'opacity', 'filter', 'translate', 'scale', 'rotate']);
-    const found: string[] = [];
-    const visit = (rules: CSSRuleList) => {
-      for (const rule of rules) {
-        if (rule instanceof CSSKeyframesRule) {
-          for (const frame of rule.cssRules) {
-            const style = (frame as CSSKeyframeRule).style;
-            for (let index = 0; index < style.length; index += 1) {
-              const property = style.item(index);
-              if (!allowed.has(property)) found.push(`@keyframes ${rule.name}: ${property}`);
-            }
-          }
-        } else if (rule instanceof CSSStyleRule) {
-          const properties = rule.style.transitionProperty;
-          if (properties && rule.style.transitionDuration !== '0s') {
-            for (const property of properties.split(',').map((value) => value.trim())) {
-              if (property && !allowed.has(property) && property !== 'none')
-                found.push(`${rule.selectorText}: transition ${property}`);
-            }
-          }
-        }
-        if ('cssRules' in rule && !(rule instanceof CSSKeyframesRule)) {
-          visit((rule as CSSGroupingRule).cssRules);
-        }
-      }
-    };
-    for (const sheet of document.styleSheets) {
-      try {
-        visit(sheet.cssRules);
-      } catch {
-        // Cross-origin sheets (fonts) cannot be read and contain no animations.
-      }
-    }
-    return found;
-  });
-  expect(offenders).toEqual([]);
+  expect(await layoutAnimations(page)).toEqual([]);
 });

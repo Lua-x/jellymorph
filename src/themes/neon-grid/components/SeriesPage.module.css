@@ -1,0 +1,259 @@
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2.75rem;
+}
+
+.nextName {
+  margin-left: 0.25rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.seasons {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.sectionTitle {
+  composes: heading from './neon.module.css';
+}
+
+/* --- Season tabs ---------------------------------------------------------------------------- */
+
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--ng-line);
+  scrollbar-width: none;
+}
+
+.tab {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 2.75rem;
+  padding: 0 1rem;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.tab::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  background: var(--ng-magenta);
+  box-shadow: var(--ng-glow-magenta);
+  content: '';
+  opacity: 0;
+}
+
+.tab[aria-selected='true'] {
+  color: var(--color-text);
+}
+
+.tab[aria-selected='true']::after {
+  opacity: 1;
+}
+
+.tab:is(:hover, :focus-visible) {
+  background: rgb(63 242 255 / 10%);
+  color: var(--ng-cyan);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.tabCheck {
+  color: var(--color-success);
+}
+
+/* --- Episode log ---------------------------------------------------------------------------- */
+
+.episodes {
+  display: grid;
+  gap: 0.5rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.episode {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  border: 1px solid var(--ng-line);
+  background: rgb(14 12 24 / 88%);
+}
+
+.next {
+  border-color: rgb(255 59 220 / 60%);
+  box-shadow: inset 3px 0 0 var(--ng-magenta);
+}
+
+.number {
+  color: var(--ng-magenta);
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  font-weight: 800;
+  text-align: center;
+  text-shadow: var(--ng-text-glow-magenta);
+}
+
+.episodeLink {
+  display: grid;
+  grid-template-columns: minmax(8rem, 14rem) minmax(0, 1fr);
+  align-items: start;
+  gap: 1rem;
+  padding: 0.25rem;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.still {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--color-surface-raised);
+  clip-path: polygon(
+    0.6rem 0,
+    100% 0,
+    100% calc(100% - 0.6rem),
+    calc(100% - 0.6rem) 100%,
+    0 100%,
+    0 0.6rem
+  );
+}
+
+.episodeText {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.episodeTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.episodeMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+}
+
+.nextBadge {
+  padding: 0.0625rem 0.5rem;
+  background: var(--ng-magenta);
+  color: #19001a;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.episodeOverview {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--color-text-muted);
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.progress {
+  max-width: 18rem;
+  margin-top: 0.25rem;
+}
+
+.episodeLink:is(:hover, :focus-visible) .episodeTitle {
+  color: var(--ng-cyan);
+}
+
+.episodeLink:is(:hover, :focus-visible) .still {
+  filter: url('#ng-aberration');
+}
+
+.episodeLink:is(:hover, :focus-visible) {
+  background: rgb(63 242 255 / 8%);
+}
+
+.episodeLink:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 0;
+}
+
+.episodeActions {
+  display: flex;
+  gap: 0.375rem;
+  padding-right: 0.25rem;
+}
+
+.iconButton {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--ng-line);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 1.125rem;
+  cursor: pointer;
+}
+
+.iconButton:is(:hover, :focus-visible) {
+  border-color: var(--ng-cyan);
+  background: rgb(63 242 255 / 12%);
+  color: var(--ng-cyan);
+}
+
+.iconButton:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.iconButton[aria-pressed='true'] {
+  border-color: rgb(61 255 176 / 60%);
+  color: var(--color-success);
+}
+
+:global([data-device='tv']) .episodeLink:is(:hover, :focus-visible) .still {
+  filter: none;
+}
+
+@media (max-width: 40rem) {
+  .episode {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .number {
+    display: none;
+  }
+
+  .episodeLink {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

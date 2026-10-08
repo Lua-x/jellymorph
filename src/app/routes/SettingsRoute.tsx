@@ -27,6 +27,7 @@ export function SettingsRoute() {
   const player = useDeviceSettings((state) => state.player);
   const sync = useUserSettings((state) => state.sync);
   const trailerAutoplay = useUserSettings((state) => state.values?.trailerAutoplay ?? true);
+  const uiSounds = useUserSettings((state) => state.values?.uiSounds ?? false);
   const playback = usePlaybackPreferences();
   const audioLanguages = useLanguageOptions();
   const nav = useNavModel();
@@ -41,6 +42,7 @@ export function SettingsRoute() {
     description: t(manifest.descriptionKey, { ns: 'themes' }),
     preview: manifest.preview,
     colorSchemes: manifest.colorSchemes,
+    uiSounds: manifest.features?.uiSounds ?? false,
   }));
 
   const settings: SettingsModel = {
@@ -60,6 +62,10 @@ export function SettingsRoute() {
     trailerAutoplay,
     setTrailerAutoplay: (trailerAutoplay) => {
       update({ trailerAutoplay });
+    },
+    uiSounds,
+    setUiSounds: (uiSounds) => {
+      update({ uiSounds });
     },
     language: language.language,
     languages: language.languages,

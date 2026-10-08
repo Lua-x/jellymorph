@@ -4,6 +4,11 @@ const files = import.meta.glob<Record<string, unknown>>('./locales/*/*.json', {
   eager: true,
   import: 'default',
 });
+/** Texts that ship with a theme chunk (namespace theme-<id>), see themes/contract.ts. */
+const themeFiles = import.meta.glob<Record<string, unknown>>('../themes/*/i18n/*.json', {
+  eager: true,
+  import: 'default',
+});
 
 function keys(value: unknown, prefix = ''): string[] {
   if (typeof value !== 'object' || value === null) return [prefix];
@@ -17,6 +22,10 @@ function namespaces(language: string): Map<string, Record<string, unknown>> {
   for (const [path, content] of Object.entries(files)) {
     const match = /\.\/locales\/(\w+)\/(\w+)\.json$/.exec(path);
     if (match?.[1] === language && match[2]) result.set(match[2], content);
+  }
+  for (const [path, content] of Object.entries(themeFiles)) {
+    const match = /\/themes\/([\w-]+)\/i18n\/(\w+)\.json$/.exec(path);
+    if (match?.[2] === language && match[1]) result.set(`theme-${match[1]}`, content);
   }
   return result;
 }

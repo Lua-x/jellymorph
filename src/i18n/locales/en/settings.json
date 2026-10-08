@@ -36,6 +36,10 @@
     "label": "Play trailers automatically",
     "hint": "Starts muted in the large area at the top when you stay there for a moment."
   },
+  "uiSounds": {
+    "label": "Interface sounds",
+    "hint": "Quiet signals when the focus moves and when you select something."
+  },
   "language": {
     "label": "Interface language",
     "hint": "Titles and descriptions come in the language set on the server."

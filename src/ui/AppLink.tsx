@@ -1,7 +1,12 @@
-import type { ReactNode } from 'react';
+import type { AnchorHTMLAttributes, ReactNode } from 'react';
 import { Link, NavLink } from 'react-router';
 
-interface AppLinkProps {
+type AnchorProps = Omit<
+  AnchorHTMLAttributes<HTMLAnchorElement>,
+  'href' | 'className' | 'children' | 'onClick'
+>;
+
+interface AppLinkProps extends AnchorProps {
   to: string;
   className?: string;
   children: ReactNode;
@@ -22,16 +27,18 @@ export function AppLink({
   end,
   activeClassName,
   onClick,
+  ...rest
 }: AppLinkProps) {
   if (!nav) {
     return (
-      <Link to={to} className={className} onClick={onClick}>
+      <Link {...rest} to={to} className={className} onClick={onClick}>
         {children}
       </Link>
     );
   }
   return (
     <NavLink
+      {...rest}
       to={to}
       end={end}
       onClick={onClick}

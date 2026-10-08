@@ -1,0 +1,915 @@
+/*
+ * Neon Grid player HUD. Class names for the timeline and the menus match the Classic module,
+ * because both are reused with this module (PlayerTimeline/PlayerMenu `classes`).
+ */
+.overlay {
+  --player-text: #ffffff;
+  --player-muted: rgb(236 243 255 / 75%);
+  --player-panel: rgb(10 9 18 / 95%);
+  --player-hover: rgb(63 242 255 / 16%);
+
+  position: absolute;
+  inset: 0;
+  color: var(--player-text);
+  font-family: var(--font-body);
+}
+
+.surface {
+  position: absolute;
+  inset: 0;
+}
+
+.scrimTop,
+.scrimBottom,
+.hudFrame {
+  position: absolute;
+  pointer-events: none;
+  transition: opacity var(--duration-slow) var(--ease-standard);
+}
+
+.scrimTop {
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 9rem;
+  background: linear-gradient(rgb(7 6 13 / 80%), transparent);
+}
+
+.scrimBottom {
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 15rem;
+  background: linear-gradient(transparent, rgb(7 6 13 / 90%));
+}
+
+/* Corner markers around the whole picture. */
+.hudFrame {
+  composes: frame from './neon.module.css';
+
+  --frame-length: 2rem;
+  --frame-color: rgb(63 242 255 / 70%);
+
+  inset: calc(0.75rem + var(--overscan-y)) calc(0.75rem + var(--overscan-x));
+}
+
+.top,
+.bottom {
+  position: absolute;
+  right: 0;
+  left: 0;
+  padding-inline: max(var(--page-gutter), env(safe-area-inset-left))
+    max(var(--page-gutter), env(safe-area-inset-right));
+  transition:
+    opacity var(--duration-slow) var(--ease-standard),
+    transform var(--duration-slow) var(--ease-standard);
+}
+
+.top {
+  top: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding-top: max(calc(1.5rem + var(--overscan-y)), env(safe-area-inset-top));
+}
+
+.bottom {
+  bottom: 0;
+  display: grid;
+  gap: 0.25rem;
+  padding-bottom: max(calc(1.25rem + var(--overscan-y)), env(safe-area-inset-bottom));
+}
+
+.overlay[data-visible='false'] :is(.top, .bottom, .scrimTop, .scrimBottom, .hudFrame) {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.overlay[data-visible='false'] .top {
+  transform: translateY(-0.5rem);
+}
+
+.overlay[data-visible='false'] .bottom {
+  transform: translateY(0.5rem);
+}
+
+.title {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  padding-top: 0.25rem;
+}
+
+.titleMain {
+  overflow: hidden;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-overflow: ellipsis;
+  text-shadow: var(--ng-text-glow);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.titleSub {
+  overflow: hidden;
+  color: var(--player-muted);
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* HUD readouts, top right. */
+.readouts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.readouts > div {
+  display: grid;
+  min-width: 5rem;
+  padding: 0.25rem 0.625rem;
+  border: 1px solid var(--ng-line);
+  background: rgb(7 6 13 / 70%);
+}
+
+.readouts dt {
+  color: var(--ng-magenta);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.readouts dd {
+  max-width: 12rem;
+  margin: 0;
+  overflow: hidden;
+  color: var(--ng-cyan);
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- Buttons -------------------------------------------------------------------------------- */
+
+.iconButton {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid transparent;
+  background: transparent;
+  color: inherit;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.iconButton:is(:hover, :focus-visible) {
+  border-color: var(--ng-cyan);
+  background: var(--player-hover);
+  color: var(--ng-cyan);
+}
+
+.iconButton:is(:hover, :focus-visible) > svg {
+  filter: drop-shadow(0 0 0.35rem rgb(63 242 255 / 80%));
+}
+
+.iconButton:focus-visible,
+.track:focus-visible,
+.volumeSlider:focus-visible,
+.skip:focus-visible,
+.nextPlay:focus-visible,
+.nextCancel:focus-visible,
+.menuOption:focus-visible,
+.menuSwitch:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.iconButton[aria-pressed='true'],
+.iconButton[aria-expanded='true'] {
+  border-color: var(--ng-magenta);
+  color: var(--ng-magenta);
+}
+
+.large {
+  width: 5.5rem;
+  height: 5.5rem;
+  border-color: var(--ng-line-strong);
+  background: rgb(7 6 13 / 60%);
+  font-size: 2.5rem;
+  clip-path: polygon(
+    1rem 0,
+    100% 0,
+    100% calc(100% - 1rem),
+    calc(100% - 1rem) 100%,
+    0 100%,
+    0 1rem
+  );
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+
+.large:is(:hover, :focus-visible) {
+  transform: scale(1.06);
+}
+
+/* --- Center --------------------------------------------------------------------------------- */
+
+.center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.center > * {
+  pointer-events: auto;
+}
+
+.busy {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+}
+
+.busyText {
+  padding: 0.375rem 0.875rem;
+  border: 1px solid var(--ng-line);
+  background: rgb(7 6 13 / 75%);
+  color: var(--ng-cyan);
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  animation: fade-in var(--duration-base) var(--ease-standard) both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* --- Timeline (used by PlayerTimeline) ------------------------------------------------------ */
+
+.timeRow {
+  display: flex;
+  justify-content: space-between;
+  color: var(--ng-cyan);
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+}
+
+.timeRest {
+  color: var(--player-muted);
+}
+
+.timeline {
+  position: relative;
+}
+
+.track {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 1.75rem;
+  cursor: pointer;
+  touch-action: none;
+}
+
+/* Segmented energy rail. */
+.rail {
+  position: relative;
+  flex: 1;
+  height: 0.5rem;
+  overflow: hidden;
+  background: rgb(255 255 255 / 16%);
+  -webkit-mask-image: var(--segments);
+  mask-image: var(--segments);
+  transition: transform var(--duration-fast) var(--ease-standard);
+
+  --segments: repeating-linear-gradient(90deg, #000 0, #000 6px, transparent 6px, transparent 8px);
+}
+
+.track:is(:hover, :focus-visible) .rail {
+  transform: scaleY(1.4);
+}
+
+.buffered,
+.played {
+  position: absolute;
+  inset: 0;
+  transform-origin: left center;
+}
+
+.buffered {
+  background: rgb(63 242 255 / 30%);
+}
+
+.played {
+  background: linear-gradient(90deg, var(--ng-magenta), #ff79e9);
+}
+
+.chapterMark {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--x);
+  width: 3px;
+  background: var(--ng-cyan);
+}
+
+.knobTrack {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.knob {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 0.25rem;
+  height: 1.375rem;
+  margin: -0.6875rem 0 0 -0.125rem;
+  background: #ffffff;
+  box-shadow: 0 0 0.6rem var(--ng-magenta);
+  opacity: 0;
+  transform: scaleY(0.6);
+  transition:
+    opacity var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
+}
+
+.track:is(:hover, :focus-visible) .knob {
+  opacity: 1;
+  transform: none;
+}
+
+.preview {
+  --frame-width: 13.5rem;
+
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  left: clamp(calc(var(--frame-width) / 2), var(--x), calc(100% - var(--frame-width) / 2));
+  display: grid;
+  justify-items: center;
+  gap: 0.25rem;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.previewFrame {
+  width: var(--frame-width);
+  height: calc(var(--frame-width) * var(--fh) / var(--fw));
+  border: 2px solid var(--ng-cyan);
+  background-color: #000000;
+  background-repeat: no-repeat;
+  background-size: calc(var(--frame-width) * var(--sw) / var(--fw))
+    calc(var(--frame-width) * var(--sh) / var(--fw));
+  background-position: calc(var(--frame-width) * var(--sx) / var(--fw) * -1)
+    calc(var(--frame-width) * var(--sy) / var(--fw) * -1);
+  box-shadow: var(--ng-glow-cyan);
+}
+
+.previewChapter {
+  max-width: var(--frame-width);
+  overflow: hidden;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 3px rgb(0 0 0 / 80%);
+  white-space: nowrap;
+}
+
+.previewTime {
+  padding: 0.125rem 0.5rem;
+  background: var(--ng-magenta);
+  color: #19001a;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Control bar ---------------------------------------------------------------------------- */
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.volume {
+  display: flex;
+  align-items: center;
+}
+
+.volumeSlider {
+  width: 6rem;
+  height: 1.75rem;
+  margin: 0 0.25rem;
+  background: transparent;
+  accent-color: var(--ng-cyan);
+  appearance: none;
+  cursor: pointer;
+}
+
+.volumeSlider::-webkit-slider-runnable-track {
+  height: 0.3rem;
+  background: linear-gradient(
+    to right,
+    var(--ng-cyan) var(--value),
+    rgb(255 255 255 / 22%) var(--value)
+  );
+}
+
+.volumeSlider::-moz-range-track {
+  height: 0.3rem;
+  background: linear-gradient(
+    to right,
+    var(--ng-cyan) var(--value),
+    rgb(255 255 255 / 22%) var(--value)
+  );
+}
+
+.volumeSlider::-webkit-slider-thumb {
+  width: 0.4rem;
+  height: 1rem;
+  margin-top: -0.35rem;
+  border: 0;
+  background: #ffffff;
+  appearance: none;
+}
+
+.volumeSlider::-moz-range-thumb {
+  width: 0.4rem;
+  height: 1rem;
+  border: 0;
+  border-radius: 0;
+  background: #ffffff;
+}
+
+/* --- Skip and next episode ------------------------------------------------------------------ */
+
+.corner {
+  position: absolute;
+  right: max(var(--page-gutter), env(safe-area-inset-right));
+  bottom: 8rem;
+  display: grid;
+  justify-items: end;
+  gap: 0.75rem;
+  pointer-events: none;
+}
+
+.corner > * {
+  pointer-events: auto;
+}
+
+.skip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  padding: 0 1.25rem;
+  border: 1px solid var(--ng-yellow);
+  background: rgb(7 6 13 / 82%);
+  color: var(--ng-yellow);
+  font: inherit;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  clip-path: polygon(
+    0.6rem 0,
+    100% 0,
+    100% calc(100% - 0.6rem),
+    calc(100% - 0.6rem) 100%,
+    0 100%,
+    0 0.6rem
+  );
+  animation: rise var(--duration-base) var(--ease-emphasized) both;
+}
+
+.skip:is(:hover, :focus-visible) {
+  background: var(--ng-yellow);
+  color: var(--color-on-accent);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}
+
+.nextUp {
+  composes: panel from './neon.module.css';
+
+  display: grid;
+  grid-template-columns: 10rem minmax(0, 1fr);
+  gap: 0.75rem 1rem;
+  width: min(30rem, calc(100vw - 2 * var(--page-gutter)));
+  padding: 0.875rem;
+  box-shadow: var(--shadow-overlay);
+  animation: rise var(--duration-slow) var(--ease-emphasized) both;
+}
+
+.nextImage {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #000000;
+}
+
+.countdownBar {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 0.3rem;
+  background: var(--ng-magenta);
+  transform: scaleX(var(--progress));
+  transform-origin: left center;
+  transition: transform 1s linear;
+}
+
+.nextText {
+  display: grid;
+  align-content: center;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.nextLabel {
+  color: var(--ng-magenta);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.nextName {
+  display: -webkit-box;
+  overflow: hidden;
+  font-weight: 700;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.nextCountdown {
+  color: var(--ng-cyan);
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+}
+
+.nextActions {
+  display: flex;
+  grid-column: 1 / -1;
+  gap: 0.5rem;
+}
+
+.nextPlay,
+.nextCancel {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  border: 1px solid transparent;
+  font: inherit;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.nextPlay {
+  background: var(--ng-yellow);
+  color: var(--color-on-accent);
+}
+
+.nextPlay:is(:hover, :focus-visible) {
+  border-color: #ffffff;
+  box-shadow: var(--ng-glow-yellow);
+}
+
+.nextCancel {
+  border-color: var(--ng-line);
+  background: transparent;
+  color: var(--player-text);
+}
+
+.nextCancel:is(:hover, :focus-visible) {
+  border-color: var(--ng-cyan);
+  background: var(--player-hover);
+}
+
+/* --- Menus (used by PlayerMenu) ------------------------------------------------------------- */
+
+.menu {
+  composes: panel from './neon.module.css';
+
+  position: absolute;
+  right: max(var(--page-gutter), env(safe-area-inset-right));
+  bottom: 6.5rem;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: min(26rem, calc(100vw - 2 * var(--page-gutter)));
+  max-height: min(34rem, calc(100dvh - 10rem));
+  overflow: hidden;
+  box-shadow: var(--shadow-overlay);
+  animation: rise var(--duration-base) var(--ease-emphasized) both;
+}
+
+.menuHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0.5rem 0.25rem 1.25rem;
+  border-bottom: 1px solid var(--ng-line);
+}
+
+.menuTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.menuBody {
+  display: grid;
+  gap: 1rem;
+  padding: 0.75rem 0.5rem 1rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.menuGroup {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.menuHeading {
+  margin: 0;
+  padding: 0 0.75rem;
+  color: var(--ng-magenta);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.menuOptions {
+  display: grid;
+}
+
+.menuOption {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0 0.75rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 1.0625rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.chapterList .menuOption {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.menuOption:is(:hover, :focus-visible) {
+  background: var(--player-hover);
+  box-shadow: inset 2px 0 0 var(--ng-cyan);
+  color: var(--ng-cyan);
+}
+
+.menuOption[aria-checked='true'],
+.menuOption[aria-current='true'] {
+  font-weight: 700;
+}
+
+.menuCheck {
+  display: grid;
+  place-items: center;
+  color: var(--ng-magenta);
+  font-size: 1.25rem;
+}
+
+.menuLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menuDetail {
+  color: var(--player-muted);
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+}
+
+.menuSwitchRow {
+  display: grid;
+  gap: 0.25rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid var(--ng-line);
+}
+
+.menuSwitch {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+  padding: 0 0.75rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menuSwitch:is(:hover, :focus-visible) {
+  background: var(--player-hover);
+}
+
+.switchTrack {
+  position: relative;
+  flex: none;
+  width: 2.5rem;
+  height: 1.375rem;
+  border: 1px solid var(--ng-line-strong);
+  background: rgb(255 255 255 / 10%);
+}
+
+.switchThumb {
+  position: absolute;
+  top: 0.1875rem;
+  left: 0.1875rem;
+  width: 0.875rem;
+  height: 0.875rem;
+  background: #ffffff;
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+
+.menuSwitch[aria-checked='true'] .switchTrack {
+  border-color: var(--ng-magenta);
+  background: rgb(255 59 220 / 35%);
+}
+
+.menuSwitch[aria-checked='true'] .switchThumb {
+  transform: translateX(1.125rem);
+}
+
+.menuHint,
+.menuFooter {
+  margin: 0;
+  padding: 0 0.75rem;
+  color: var(--player-muted);
+  font-size: 0.9375rem;
+}
+
+.chapterList {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* --- Error ---------------------------------------------------------------------------------- */
+
+.errorPanel {
+  composes: panel from './neon.module.css';
+
+  --frame-color: var(--color-danger);
+
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+  width: min(30rem, calc(100vw - 2 * var(--page-gutter)));
+  padding: 2rem 1.5rem;
+  box-shadow: var(--shadow-overlay);
+  text-align: center;
+  transform: translate(-50%, -50%);
+}
+
+.errorCode {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-danger);
+  font-family: var(--font-mono);
+  letter-spacing: 0.14em;
+}
+
+.errorTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.errorMessage {
+  margin: 0;
+  color: var(--player-muted);
+}
+
+.errorActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+/* --- Small screens and preferences ---------------------------------------------------------- */
+
+@media (max-width: 40rem) {
+  .titleMain {
+    font-size: 1.0625rem;
+  }
+
+  .readouts,
+  .timeRest,
+  .volume,
+  .wideOnly,
+  .hudFrame {
+    display: none;
+  }
+
+  .controls {
+    gap: 0;
+  }
+
+  .controls .iconButton {
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.375rem;
+  }
+
+  .menu {
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: auto;
+    max-height: 70dvh;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .corner {
+    bottom: 8.5rem;
+  }
+
+  .nextUp {
+    grid-template-columns: 7rem minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 64rem) {
+  .readouts > div:nth-child(n + 3) {
+    display: none;
+  }
+}
+
+@media (hover: none) {
+  .volumeSlider {
+    display: none;
+  }
+}
+
+:global([data-motion='reduced']) :is(.overlay *, .overlay) {
+  animation: none !important;
+  transition: none !important;
+}

@@ -6,6 +6,7 @@ import type errors from './locales/de/errors.json';
 import type player from './locales/de/player.json';
 import type settings from './locales/de/settings.json';
 import type themes from './locales/de/themes.json';
+import type neonGrid from '../themes/neon-grid/i18n/de.json';
 
 declare module 'i18next' {
   interface CustomTypeOptions {
@@ -18,6 +19,7 @@ declare module 'i18next' {
       settings: typeof settings;
       errors: typeof errors;
       themes: typeof themes;
+      'theme-neon-grid': typeof neonGrid;
     };
   }
 }

@@ -19,6 +19,8 @@ export interface ThemeChoice {
   /** Screenshot per color scheme (asset URLs). */
   preview: Partial<Record<ColorScheme, string>>;
   colorSchemes: readonly ColorScheme[];
+  /** The theme has interface sounds (offer the switch). */
+  uiSounds: boolean;
 }
 
 export interface AccountModel {
@@ -44,6 +46,8 @@ export interface SettingsModel {
   setMotion: (motion: MotionPreference) => void;
   trailerAutoplay: boolean;
   setTrailerAutoplay: (enabled: boolean) => void;
+  uiSounds: boolean;
+  setUiSounds: (enabled: boolean) => void;
   language: Language;
   languages: readonly Language[];
   setLanguage: (language: Language) => void;

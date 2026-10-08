@@ -1,0 +1,46 @@
+/*
+ * Neon Grid – global styles. Every selector starts with the theme scope; :where() keeps the
+ * specificity at element level so component styles always win. Keyframes and media queries live
+ * in the CSS modules (components/effects.module.css).
+ */
+
+[data-theme='neon-grid'] body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-weight: 500;
+  /* Rajdhani has a small x-height; this keeps body text as legible as in the other themes. */
+  font-size-adjust: 0.52;
+  letter-spacing: 0.01em;
+}
+
+:where([data-theme='neon-grid']) ::selection {
+  background: rgb(255 59 220 / 45%);
+  color: var(--color-text);
+}
+
+:where([data-theme='neon-grid']) :focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Headings, also those of Classic pages used as fallback: display face, capitals, glow. */
+:where([data-theme='neon-grid']) h1,
+:where([data-theme='neon-grid']) h2,
+:where([data-theme='neon-grid']) h3 {
+  font-family: var(--font-display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+:where([data-theme='neon-grid']) h1 {
+  text-shadow: var(--ng-text-glow);
+}
+
+:where([data-theme='neon-grid']) a {
+  color: var(--color-accent-text);
+}
+
+:where([data-theme='neon-grid']) * {
+  scrollbar-color: rgb(63 242 255 / 35%) transparent;
+}

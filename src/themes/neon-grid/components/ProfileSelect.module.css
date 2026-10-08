@@ -1,0 +1,173 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Every card reserves the row for "Forget", so all cards have the same height. */
+.item {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) 2rem;
+  justify-items: center;
+  gap: 0.375rem;
+}
+
+/* ID card: chamfered frame, number, picture, name. */
+.profile {
+  position: relative;
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  padding: 1.25rem 0.75rem 1rem;
+  border: 1px solid var(--ng-line);
+  background: rgb(7 6 13 / 60%);
+  color: var(--color-text);
+  font: inherit;
+  cursor: pointer;
+  clip-path: polygon(
+    0.75rem 0,
+    100% 0,
+    100% calc(100% - 0.75rem),
+    calc(100% - 0.75rem) 100%,
+    0 100%,
+    0 0.75rem
+  );
+  transition: transform var(--duration-base) var(--ease-emphasized);
+}
+
+.profile:is(:hover, :focus-visible):not(:disabled) {
+  border-color: var(--ng-cyan);
+  background: rgb(63 242 255 / 10%);
+  transform: translateY(-0.1875rem);
+}
+
+.profile:focus-visible {
+  outline: none;
+  box-shadow:
+    inset 0 0 0 1px var(--ng-cyan),
+    inset 0 0 1.5rem rgb(63 242 255 / 25%);
+}
+
+.profile:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.number {
+  position: absolute;
+  top: 0.375rem;
+  right: 0.625rem;
+  color: var(--ng-magenta);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.1em;
+}
+
+.avatarFrame {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 5.5rem;
+  height: 5.5rem;
+  padding: 0.25rem;
+  background:
+    linear-gradient(var(--ng-cyan), var(--ng-cyan)) top left / 0.75rem 2px no-repeat,
+    linear-gradient(var(--ng-cyan), var(--ng-cyan)) top left / 2px 0.75rem no-repeat,
+    linear-gradient(var(--ng-cyan), var(--ng-cyan)) bottom right / 0.75rem 2px no-repeat,
+    linear-gradient(var(--ng-cyan), var(--ng-cyan)) bottom right / 2px 0.75rem no-repeat;
+}
+
+span.avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  font-size: 1.75rem;
+  clip-path: polygon(
+    0.6rem 0,
+    100% 0,
+    100% calc(100% - 0.6rem),
+    calc(100% - 0.6rem) 100%,
+    0 100%,
+    0 0.6rem
+  );
+}
+
+.profile:is(:hover, :focus-visible):not(:disabled) span.avatar {
+  filter: url('#ng-aberration');
+}
+
+.add {
+  color: var(--ng-cyan);
+  font-size: 2rem;
+}
+
+.pending {
+  position: absolute;
+  inset: 0.25rem;
+  display: grid;
+  place-items: center;
+  background: rgb(7 6 13 / 70%);
+}
+
+.name {
+  max-width: 100%;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.profile:is(:hover, :focus-visible):not(:disabled) .name {
+  color: var(--ng-cyan);
+}
+
+.badge {
+  position: absolute;
+  top: 0.375rem;
+  left: 0.625rem;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.forget {
+  min-height: 2rem;
+  padding: 0 0.625rem;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.forget:is(:hover, :focus-visible):not(:disabled) {
+  background: rgb(63 242 255 / 10%);
+  color: var(--ng-cyan);
+}
+
+.forget:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.error {
+  margin-top: 1.25rem;
+}
+
+:global([data-motion='reduced']) .profile {
+  transition: none;
+}
+
+:global([data-device='tv']) .profile:is(:hover, :focus-visible):not(:disabled) span.avatar {
+  filter: none;
+}

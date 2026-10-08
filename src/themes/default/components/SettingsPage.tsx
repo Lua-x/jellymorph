@@ -346,6 +346,14 @@ export function SettingsPage({ settings }: SettingsPageProps) {
           checked={settings.trailerAutoplay}
           onChange={settings.setTrailerAutoplay}
         />
+        {settings.themes.find((theme) => theme.id === settings.theme)?.uiSounds && (
+          <Toggle
+            label={t('uiSounds.label')}
+            hint={t('uiSounds.hint')}
+            checked={settings.uiSounds}
+            onChange={settings.setUiSounds}
+          />
+        )}
       </Section>
 
       <Section title={t('sections.playback')}>

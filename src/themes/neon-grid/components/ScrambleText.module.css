@@ -1,0 +1,25 @@
+.root {
+  position: relative;
+  display: inline;
+}
+
+.layer {
+  display: none;
+}
+
+/* While decoding, the real text keeps the layout (transparent) and the layer draws over it. */
+.root[data-active] > .text {
+  color: transparent;
+  text-shadow: none;
+}
+
+.root[data-active] > .layer {
+  position: absolute;
+  inset: 0 auto auto 0;
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  color: var(--ng-cyan);
+  text-shadow: var(--ng-text-glow);
+  white-space: inherit;
+}

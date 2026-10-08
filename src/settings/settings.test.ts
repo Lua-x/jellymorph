@@ -15,13 +15,23 @@ describe('settings schema', () => {
     colorScheme: 'light' as const,
     language: 'en' as const,
     trailerAutoplay: false,
+    uiSounds: true,
   };
 
   it('round-trips through DisplayPreferences custom prefs', () => {
     const prefs = toCustomPrefs(settings);
     expect(prefs['jellymorph.version']).toBe(String(SCHEMA_VERSION));
     expect(prefs['jellymorph.trailerAutoplay']).toBe('false');
+    expect(prefs['jellymorph.uiSounds']).toBe('true');
     expect(fromCustomPrefs(prefs)).toEqual(settings);
+  });
+
+  it('keeps interface sounds off unless the user turned them on', () => {
+    expect(defaultUserSettings('neon-grid').uiSounds).toBe(false);
+    // Preferences saved before the switch existed simply have no value for it.
+    const older: Record<string, string> = { ...toCustomPrefs(settings) };
+    delete older['jellymorph.uiSounds'];
+    expect(fromCustomPrefs(older)).not.toHaveProperty('uiSounds');
   });
 
   it('ignores invalid values instead of applying them', () => {

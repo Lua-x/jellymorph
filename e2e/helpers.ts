@@ -91,3 +91,58 @@ export function directPlayable(item: DemoItem): boolean {
 
 export const unwatched = (item: DemoItem) =>
   item.UserData?.PlaybackPositionTicks === 0 && !item.UserData.Played;
+
+/** Picks a theme in the settings and waits until the whole app runs in it. */
+export async function chooseTheme(page: Page, name: string, id: string): Promise<void> {
+  await openUserMenu(page);
+  await page.getByRole('link', { name: 'Einstellungen' }).click();
+  await page
+    .getByRole('radiogroup', { name: 'Theme' })
+    .getByRole('radio', { name: new RegExp(name) })
+    .click();
+  await page.getByRole('button', { name: `${name} übernehmen` }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', id);
+}
+
+/**
+ * Every keyframe or transition in the loaded style sheets that animates something other than
+ * transform, opacity or filter (architecture §7.7). Visit the pages first so their styles load.
+ */
+export async function layoutAnimations(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const allowed = new Set(['transform', 'opacity', 'filter', 'translate', 'scale', 'rotate']);
+    const found: string[] = [];
+    const visit = (rules: CSSRuleList) => {
+      for (const rule of rules) {
+        if (rule instanceof CSSKeyframesRule) {
+          for (const frame of rule.cssRules) {
+            const style = (frame as CSSKeyframeRule).style;
+            for (let index = 0; index < style.length; index += 1) {
+              const property = style.item(index);
+              if (!allowed.has(property)) found.push(`@keyframes ${rule.name}: ${property}`);
+            }
+          }
+        } else if (rule instanceof CSSStyleRule) {
+          const properties = rule.style.transitionProperty;
+          if (properties && rule.style.transitionDuration !== '0s') {
+            for (const property of properties.split(',').map((value) => value.trim())) {
+              if (property && !allowed.has(property) && property !== 'none')
+                found.push(`${rule.selectorText}: transition ${property}`);
+            }
+          }
+        }
+        if ('cssRules' in rule && !(rule instanceof CSSKeyframesRule)) {
+          visit((rule as CSSGroupingRule).cssRules);
+        }
+      }
+    };
+    for (const sheet of document.styleSheets) {
+      try {
+        visit(sheet.cssRules);
+      } catch {
+        // Cross-origin sheets (fonts) cannot be read and contain no animations.
+      }
+    }
+    return found;
+  });
+}

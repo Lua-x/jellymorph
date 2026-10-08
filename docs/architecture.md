@@ -569,7 +569,7 @@ themes/crimson/
   preview-light.jpg
 ```
 
-Stand Phase 4: Die IDs aller geplanten Themes stehen in `config/theme-ids.ts` (auch für `DEFAULT_THEME`), Name und Beschreibung im Namespace `themes`. `registry.ts` enthält bisher nur Classic. Eine gespeicherte ID ohne Registry-Eintrag fällt auf Classic zurück.
+Stand Phase 4: Die IDs aller geplanten Themes stehen in `config/theme-ids.ts` (auch für `DEFAULT_THEME`), Name und Beschreibung im Namespace `themes`. Eine gespeicherte ID ohne Registry-Eintrag fällt auf Classic zurück. Stand Phase 6: `registry.ts` enthält Classic und Neon Grid. Neu im Vertrag (beide optional): `ThemeManifest.features` (z. B. `uiSounds`) und `ThemeModule.texts` (eigene Texte, registriert als Namespace `theme-<id>`, §11).
 
 ### 7.3 Fallback
 
@@ -770,16 +770,16 @@ Umsetzung (Phase 4): `useTrailerPreview(itemId)` in `player/useTrailerPreview.ts
 
 ## 10. Einstellungen und Persistenz
 
-| Einstellung                                | Speicherort am Server                                                                     | geräteübergreifend                                  |
-| ------------------------------------------ | ----------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| Theme, Farbschema                          | DisplayPreferences                                                                        | ja                                                  |
-| Sprache                                    | DisplayPreferences                                                                        | ja                                                  |
-| Reduzierte Bewegung (System/An/Aus)        | DisplayPreferences                                                                        | ja                                                  |
-| Trailer-Autoplay (UI-Sounds mit Neon Grid) | DisplayPreferences                                                                        | ja                                                  |
-| Nächste Folge automatisch                  | `UserConfiguration.EnableNextEpisodeAutoPlay`                                             | ja, auch mit anderen Jellyfin-Clients **[Frage 6]** |
-| Audio-/Untertitelsprache, Untertitelmodus  | `UserConfiguration.AudioLanguagePreference`, `SubtitleLanguagePreference`, `SubtitleMode` | ja, auch mit anderen Jellyfin-Clients **[Frage 6]** |
-| Max. Streaming-Qualität                    | – (nur lokal)                                                                             | nein: hängt von Gerät und Netz ab **[Frage 7]**     |
-| Bedienmodus (Auto/Desktop/TV), Overscan    | – (nur lokal)                                                                             | nein                                                |
+| Einstellung                               | Speicherort am Server                                                                     | geräteübergreifend                                  |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| Theme, Farbschema                         | DisplayPreferences                                                                        | ja                                                  |
+| Sprache                                   | DisplayPreferences                                                                        | ja                                                  |
+| Reduzierte Bewegung (System/An/Aus)       | DisplayPreferences                                                                        | ja                                                  |
+| Trailer-Autoplay, UI-Sounds               | DisplayPreferences                                                                        | ja                                                  |
+| Nächste Folge automatisch                 | `UserConfiguration.EnableNextEpisodeAutoPlay`                                             | ja, auch mit anderen Jellyfin-Clients **[Frage 6]** |
+| Audio-/Untertitelsprache, Untertitelmodus | `UserConfiguration.AudioLanguagePreference`, `SubtitleLanguagePreference`, `SubtitleMode` | ja, auch mit anderen Jellyfin-Clients **[Frage 6]** |
+| Max. Streaming-Qualität                   | – (nur lokal)                                                                             | nein: hängt von Gerät und Netz ab **[Frage 7]**     |
+| Bedienmodus (Auto/Desktop/TV), Overscan   | – (nur lokal)                                                                             | nein                                                |
 
 - **Lokal:** zustand mit `persist` in `localStorage`, Schlüssel je `serverId:userId`. Schreibt sofort.
 - **Server:** `DisplayPreferences` mit `displayPreferencesId: 'settings'`, `client: 'jellymorph'`. Eigene Werte als flache Schlüssel in `CustomPrefs` mit Schema-Version. Lesen–Ändern–Schreiben, gebündelt (1 s Debounce). Fehler beim Speichern führen zu einem Toast mit erneutem Versuch.
@@ -800,7 +800,7 @@ Umsetzung (Phase 4): `useTrailerPreview(itemId)` in `player/useTrailerPreview.ts
 
 ## 11. Internationalisierung
 
-- i18next mit Namespaces (`common`, `auth`, `home`, `library`, `item`, `search`, `player`, `settings`, `errors`) plus einem Namespace je Theme (`theme-neon-grid` …), der mit dem Theme-Chunk geladen wird.
+- i18next mit Namespaces (`common`, `auth`, `home`, `library`, `item`, `search`, `player`, `settings`, `errors`) plus einem Namespace je Theme (`theme-neon-grid` …), der mit dem Theme-Chunk geladen wird. Umgesetzt in Phase 6: Das Theme bringt `i18n/de.json` und `i18n/en.json` mit (beide Sprachen im Chunk, wenige hundert Byte), `themes/loader.ts` registriert sie per `addResourceBundle` vor dem ersten Rendern des Themes.
 - Nur die aktive Sprache wird geladen (dynamischer Import). Deutsch ist Standard, Englisch ist wählbar.
 - Typisierte Schlüssel über `CustomTypeOptions` mit den deutschen Dateien als Quelle. Ein Test prüft, dass `en` genau dieselben Schlüssel wie `de` hat.
 - Datum, Laufzeit und Zahlen über `Intl`. Mehrzahl über i18next-Plural (`_one`/`_other`).

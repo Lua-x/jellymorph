@@ -1,0 +1,60 @@
+{
+  "hud": {
+    "systemTime": "System time",
+    "online": "Online",
+    "operator": "Operator"
+  },
+  "boot": {
+    "label": "System start",
+    "title": "GRID-OS {{version}}",
+    "lines": {
+      "core": "Loading core modules",
+      "grid": "Calibrating the neon grid",
+      "link": "Connecting to the media node",
+      "secure": "Securing the access channel",
+      "ready": "System ready"
+    },
+    "ok": "OK",
+    "skip": "Skip"
+  },
+  "auth": {
+    "terminal": "Access terminal",
+    "operators": "Choose operator",
+    "operatorsHint": "Who is entering the grid?"
+  },
+  "home": {
+    "sectors": "Sectors",
+    "channel": "Channel {{number}}"
+  },
+  "data": {
+    "episode": "Episode",
+    "year": "Year",
+    "runtime": "Runtime",
+    "rating": "Rating",
+    "score": "Score",
+    "genres": "Genre",
+    "video": "Video",
+    "seasons": "Seasons",
+    "status": "Status",
+    "continuing": "Running",
+    "ended": "Ended",
+    "progress": "Progress"
+  },
+  "search": {
+    "host": "grid@jellymorph",
+    "command": "search",
+    "idle": "Waiting for input",
+    "output": "Output"
+  },
+  "player": {
+    "chapter": "Chapter",
+    "audio": "Audio",
+    "subtitles": "Sub",
+    "off": "off",
+    "remaining": "Left"
+  },
+  "states": {
+    "loading": "Transferring data",
+    "errorCode": "Error code"
+  }
+}

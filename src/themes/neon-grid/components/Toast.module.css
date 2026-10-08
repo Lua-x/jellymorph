@@ -1,0 +1,94 @@
+.toast {
+  --tone: var(--ng-cyan);
+
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: min(22rem, calc(100vw - 2rem));
+  max-width: 32rem;
+  padding: 0.75rem 0.5rem 0.75rem 1rem;
+  border: 1px solid var(--ng-line);
+  background: rgb(14 12 24 / 96%);
+  box-shadow:
+    inset 3px 0 0 var(--tone),
+    var(--shadow-overlay);
+  color: var(--color-text);
+  clip-path: polygon(
+    0.6rem 0,
+    100% 0,
+    100% calc(100% - 0.6rem),
+    calc(100% - 0.6rem) 100%,
+    0 100%,
+    0 0.6rem
+  );
+  animation: toast-in var(--duration-base) var(--ease-emphasized) both;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(1rem);
+  }
+}
+
+.success {
+  --tone: var(--color-success);
+}
+
+.error {
+  --tone: var(--color-danger);
+}
+
+.icon {
+  flex: none;
+  color: var(--tone);
+  font-size: 1.25rem;
+}
+
+.message {
+  flex: 1;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.action,
+.close {
+  flex: none;
+  min-height: 2.5rem;
+  border: 0;
+  background: transparent;
+  color: var(--ng-cyan);
+  font: inherit;
+  cursor: pointer;
+}
+
+.action {
+  padding: 0 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  color: var(--color-text-muted);
+  font-size: 1.125rem;
+}
+
+.action:is(:hover, :focus-visible),
+.close:is(:hover, :focus-visible) {
+  background: rgb(63 242 255 / 12%);
+  color: var(--ng-cyan);
+}
+
+.action:focus-visible,
+.close:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+:global([data-motion='reduced']) .toast {
+  animation: none;
+}

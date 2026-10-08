@@ -1,0 +1,202 @@
+.field {
+  display: grid;
+  gap: 0.375rem;
+}
+
+.labelRow {
+  display: flex;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+}
+
+.label {
+  color: var(--ng-cyan);
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.prompt {
+  color: var(--ng-magenta);
+}
+
+.control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--ng-line);
+  border-bottom: 2px solid var(--ng-line-strong);
+  background: rgb(7 6 13 / 70%);
+}
+
+.control:hover {
+  border-color: var(--ng-line-strong);
+}
+
+/* Focus: the whole field lights up (it is also the only hover feedback a text field has). */
+.control:focus-within {
+  border-color: var(--ng-cyan);
+  background: rgb(63 242 255 / 8%);
+  box-shadow: 0 0.35rem 0.9rem -0.4rem rgb(63 242 255 / 65%);
+}
+
+.control[data-invalid] {
+  border-bottom-color: var(--color-danger);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  min-height: 2.875rem;
+  padding: 0 0.875rem;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-family: var(--font-mono);
+  font-size: 1.0625rem;
+  caret-color: var(--ng-cyan);
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+.reveal {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 1.125rem;
+  cursor: pointer;
+}
+
+.reveal:is(:hover, :focus-visible) {
+  background: rgb(63 242 255 / 12%);
+  color: var(--ng-cyan);
+}
+
+.reveal:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.hint {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}
+
+.error {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.375rem;
+  margin: 0;
+  color: var(--color-danger);
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}
+
+.error > svg {
+  flex: none;
+  margin-top: 0.125rem;
+}
+
+/* --- Checkbox ------------------------------------------------------------------------------- */
+
+.checkboxRow {
+  position: relative;
+}
+
+.checkbox {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.box {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.0625rem;
+  border: 1.5px solid var(--ng-line-strong);
+  color: transparent;
+  font-size: 0.875rem;
+}
+
+.checkbox:checked + .checkboxLabel .box {
+  border-color: var(--ng-magenta);
+  background: var(--ng-magenta);
+  color: #19001a;
+  box-shadow: var(--ng-glow-magenta);
+}
+
+.checkboxLabel:hover .box,
+.checkbox:focus-visible + .checkboxLabel .box {
+  border-color: var(--ng-cyan);
+  box-shadow: var(--ng-glow-cyan);
+}
+
+.checkbox:focus-visible + .checkboxLabel {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 4px;
+}
+
+.checkboxHint {
+  display: block;
+  margin-top: 0.125rem;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+/* --- Notice --------------------------------------------------------------------------------- */
+
+.notice {
+  --tone: var(--ng-cyan);
+
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid var(--ng-line);
+  background: rgb(63 242 255 / 6%);
+  box-shadow: inset 3px 0 0 var(--tone);
+  line-height: 1.45;
+}
+
+.noticeError {
+  --tone: var(--color-danger);
+
+  background: rgb(255 111 138 / 8%);
+  color: var(--color-text);
+}
+
+.noticeSuccess {
+  --tone: var(--color-success);
+}
+
+.noticeIcon {
+  flex: none;
+  margin-top: 0.125rem;
+  color: var(--tone);
+  font-size: 1.125rem;
+}

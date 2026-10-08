@@ -1,0 +1,233 @@
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2rem;
+}
+
+/* --- Terminal window ------------------------------------------------------------------------ */
+
+.terminal {
+  composes: panel from './neon.module.css';
+
+  display: grid;
+  max-width: 56rem;
+  font-family: var(--font-mono);
+}
+
+.titleBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--ng-line);
+  background: rgb(63 242 255 / 7%);
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.lights {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.lights > span {
+  width: 0.625rem;
+  height: 0.625rem;
+  background: var(--ng-magenta);
+}
+
+.lights > span:nth-child(2) {
+  background: var(--ng-yellow);
+}
+
+.lights > span:nth-child(3) {
+  background: var(--ng-cyan);
+}
+
+.promptLine {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.625rem;
+  padding: 1.25rem 1rem 0.5rem;
+  font-size: 1.25rem;
+}
+
+.prompt {
+  flex: none;
+  color: var(--color-success);
+  white-space: pre;
+}
+
+.command {
+  color: var(--ng-magenta);
+}
+
+.inputWrap {
+  position: relative;
+  display: grid;
+  flex: 1;
+  min-width: min(100%, 14rem);
+}
+
+.input {
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  caret-color: transparent;
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+.input::-webkit-search-cancel-button {
+  display: none;
+}
+
+/* The focus shows as the lit prompt line and the blinking cursor. */
+.promptLine:focus-within {
+  background: rgb(63 242 255 / 6%);
+  box-shadow: inset 2px 0 0 var(--ng-cyan);
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  pointer-events: none;
+  white-space: pre;
+}
+
+.mirror {
+  visibility: hidden;
+}
+
+.cursor {
+  composes: blink from './neon.module.css';
+
+  display: inline-block;
+  width: 0.62em;
+  height: 1.2em;
+  background: var(--ng-cyan);
+  box-shadow: var(--ng-glow-cyan);
+  opacity: 0.85;
+}
+
+.inputWrap:not(:focus-within) .cursor {
+  opacity: 0.4;
+  animation: none;
+}
+
+.clear {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--ng-line);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 1.125rem;
+  cursor: pointer;
+}
+
+.clear:is(:hover, :focus-visible) {
+  border-color: var(--ng-cyan);
+  background: rgb(63 242 255 / 12%);
+  color: var(--ng-cyan);
+}
+
+.clear:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.status {
+  margin: 0;
+  padding: 0.25rem 1rem 1rem 1rem;
+  color: var(--ng-cyan);
+  font-size: 0.9375rem;
+  letter-spacing: 0.06em;
+}
+
+/* --- Output --------------------------------------------------------------------------------- */
+
+.groups {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2.5rem;
+  transition: opacity var(--duration-base) var(--ease-standard);
+}
+
+.refreshing {
+  opacity: 0.6;
+}
+
+.group {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.groupTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 1.125rem;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.bracket {
+  color: var(--ng-magenta);
+}
+
+.groupCount {
+  margin-left: 0.5rem;
+  color: var(--ng-cyan);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr));
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wide {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+}
+
+:global([data-motion='reduced']) .groups {
+  transition: none;
+}
+
+@media (max-width: 40rem) {
+  .promptLine {
+    font-size: 1.0625rem;
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .wide {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

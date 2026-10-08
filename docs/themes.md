@@ -25,6 +25,7 @@ src/themes/<id>/
   index.ts             # ThemeModule: importiert Schriften, tokens.css, global.css, Komponenten
   tokens.css           # Design-Tokens unter [data-theme='<id>']
   global.css           # globale Regeln, jede beginnt mit dem Theme-Scope
+  i18n/de.json, en.json # eigene Texte (Namespace theme-<id>), optional
   preview-dark.jpg     # Vorschaubilder für die Theme-Auswahl (npm run previews)
   preview-light.jpg    # nur, wenn das Theme ein helles Schema hat
   components/          # React-Komponenten + CSS Modules
@@ -43,6 +44,7 @@ export const neonGridManifest: ThemeManifest = {
   descriptionKey: 'neon-grid.description',
   preview: { dark: previewDark },
   colorSchemes: ['dark'], // das erste Schema ist der Standard
+  features: { uiSounds: true }, // optional, siehe §5
   load: () => import('./index').then((module) => module.theme),
 };
 ```
@@ -55,11 +57,14 @@ import './global.css';
 import { THEME_CONTRACT_VERSION, type ThemeModule } from '../contract';
 import { Hero } from './components/Hero';
 import { MediaCard } from './components/MediaCard';
+import de from './i18n/de.json';
+import en from './i18n/en.json';
 
 export const theme: ThemeModule = {
   contractVersion: THEME_CONTRACT_VERSION,
   components: { Hero, MediaCard }, // alles Weitere kommt von Classic
   options: { heroItemCount: 8 },
+  texts: { de, en }, // optional, siehe §9
 };
 ```
 
@@ -76,7 +81,7 @@ export const theme: ThemeModule = {
 2. Ordner `src/themes/<id>/` mit `manifest.ts`, `index.ts`, `tokens.css` und `global.css` anlegen.
 3. Das Manifest in `src/themes/registry.ts` in `THEMES` eintragen. Die Reihenfolge dort ist die Reihenfolge in den Einstellungen.
 4. Name und Beschreibung in `src/i18n/locales/de/themes.json` und `en/themes.json` (Schlüssel `<id>.name`, `<id>.description`). Für Classic und die geplanten Themes sind sie schon da.
-5. Das Theme in `e2e/previews.spec.ts` eintragen und `npm run previews` ausführen. Das Skript schreibt `preview-<schema>.jpg` in den Theme-Ordner. Bisher gibt es dort nur Classic; mit dem zweiten Theme wählt die Aufnahme das Theme vorher in den Einstellungen aus.
+5. Das Theme mit ID, Anzeigename und Farbschemata in `e2e/previews.spec.ts` eintragen und `npm run previews` ausführen. Die Aufnahme wählt das Theme in den Einstellungen und schreibt `preview-<schema>.jpg` in den Theme-Ordner.
 6. `npm test` prüft automatisch: Manifest registriert, Modul lädt mit der richtigen Vertragsversion, Vorschaubild je Farbschema, alle Pflicht-Tokens je Farbschema, WCAG-Kontraste, Scoping von `global.css`.
 7. Screenshots mit `npm run shots` in allen vier Auflösungen erzeugen und ansehen.
 
@@ -142,6 +147,8 @@ Alle Werte stehen als CSS Custom Properties unter dem Theme-Scope. Theme-CSS ble
 
 **Theme-neutrale Größen** liegen in `src/app/base.css` und gelten für alle Themes: `--page-gutter` (Seitenrand inklusive TV-Overscan), `--overscan-x`/`--overscan-y`, z-Index-Stufen, Safe-Area.
 
+**Gemeinsame CSS-Bausteine:** Wer Klassen eines gemeinsamen Moduls per `composes` übernimmt (z. B. Rahmen mit Eckmarkierungen), sollte deren Grundwerte als `var(--name, Standard)` lesen und Positionierung mit `:where()` setzen. Sonst entscheidet die Ladereihenfolge der CSS-Dateien, ob die Komponente ihre eigenen Werte durchsetzt.
+
 **Seiten-Grids** brauchen `grid-template-columns: minmax(0, 1fr)`. Sonst wächst eine Spalte mit einer langen Kartenreihe mit und die Seite scrollt seitlich. Ein E2E-Test prüft das.
 
 ## 5. Daten, Hooks und Bausteine
@@ -152,20 +159,27 @@ Themes rufen nie selbst den Server. ESLint verbietet in `src/themes/**` Importe 
 
 **Gemeinsame Hooks und Bausteine:**
 
-| Baustein                                       | Wofür                                                                            |
-| ---------------------------------------------- | -------------------------------------------------------------------------------- |
-| `useMediaActions()` (`@/hooks`)                | Abspielen, Favorit, gesehen – optimistisch, mit Toast bei Fehlern                |
-| `useMotionPreference()` / `useReducedMotion()` | `'full' \| 'reduced'` aus Einstellung und System                                 |
-| `useTrailerPreview(itemId)` (`@/player`)       | Stummer Trailer im Hero: `videoRef`, `playing`, `cancel()` (siehe §8 unten)      |
-| `useScrubber()` (`@/ui`)                       | Zeitleiste des Players mit Zeiger, Touch und Tastatur                            |
-| `<JellyImage>` (`@/ui`)                        | Bilder vom Server in passender Größe, mit BlurHash, lazy außerhalb des Viewports |
-| `<VirtualGrid>` (`@/ui`)                       | Virtualisiertes Raster mit eigener Pfeiltasten-Logik                             |
-| `<AppLink>` (`@/ui`)                           | Interne Links, ohne direkte Abhängigkeit von der Router-API                      |
-| `<ThemePreview>` (`@/themes/ThemePreview`)     | Live-Vorschau eines Themes in der Einstellungsseite                              |
-| `formatClock()` (`@/ui/time`)                  | Zeitangaben im Player                                                            |
-| `paths` (`@/navigation/paths`)                 | URLs für Seiten und Player                                                       |
+| Baustein                                       | Wofür                                                                             |
+| ---------------------------------------------- | --------------------------------------------------------------------------------- |
+| `useMediaActions()` (`@/hooks`)                | Abspielen, Favorit, gesehen – optimistisch, mit Toast bei Fehlern                 |
+| `useMotionPreference()` / `useReducedMotion()` | `'full' \| 'reduced'` aus Einstellung und System                                  |
+| `useTrailerPreview(itemId)` (`@/player`)       | Stummer Trailer im Hero: `videoRef`, `playing`, `cancel()` (siehe §8 unten)       |
+| `useScrubber()` (`@/ui`)                       | Zeitleiste des Players mit Zeiger, Touch und Tastatur                             |
+| `<JellyImage>` (`@/ui`)                        | Bilder vom Server in passender Größe, mit BlurHash, lazy außerhalb des Viewports  |
+| `<VirtualGrid>` (`@/ui`)                       | Virtualisiertes Raster mit eigener Pfeiltasten-Logik                              |
+| `<AppLink>` (`@/ui`)                           | Interne Links, ohne direkte Abhängigkeit von der Router-API                       |
+| `<ThemePreview>` (`@/themes/ThemePreview`)     | Live-Vorschau eines Themes in der Einstellungsseite                               |
+| `formatClock()` (`@/ui/time`)                  | Zeitangaben im Player                                                             |
+| `paths` (`@/navigation/paths`)                 | URLs für Seiten und Player                                                        |
+| `useRouteKey()` (`@/navigation`)               | Wechselt mit jeder Seite, z. B. als `key` für Seitenübergänge                     |
+| `useSessionFlag(key)` (`@/ui`)                 | Merker für die Browser-Sitzung, z. B. „Startsequenz schon gezeigt“                |
+| `useUiSounds()` (`@/hooks`)                    | Ob der Benutzer Oberflächenklänge eingeschaltet hat (nur mit `features.uiSounds`) |
 
 Der Player gehört der App. `PlayerOverlay` bekommt ein `PlayerModel` mit Zustand und Befehlen (`togglePlay`, `seek`, `selectAudio`, `skipSegment` …) und sieht nie hls.js, URLs oder PlaybackInfo. Das `<video>`-Element liegt unter dem Overlay.
+
+**Bausteine von Classic wiederverwenden:** Themes dürfen aus `src/themes/default/components` importieren (Icons, `meta.ts`, `text.ts`, `Avatar`). Zeitleiste und Spur-/Kapitelmenüs des Players haben eine geprüfte Bedienlogik (Ziehen, Tastatur, Dialog-Fokus). `PlayerTimeline` und `PlayerMenu` nehmen deshalb ein `classes`-Objekt: ein CSS-Modul mit denselben Klassennamen wie `default/components/PlayerOverlay.module.css`. Neon Grid nutzt das für seinen HUD-Player.
+
+**Oberflächenklänge:** Ein Theme mit `features: { uiSounds: true }` bekommt in den Einstellungen den Schalter „Klänge der Oberfläche“ (standardmäßig aus, pro Benutzer am Server gespeichert). Das Theme erzeugt die Klänge selbst und spielt sie nur, solange `useUiSounds()` `true` liefert.
 
 ## 6. Fokus, Fernbedienung und TV
 
@@ -202,7 +216,9 @@ Daraus folgt für `Hero`, `Row` und `MediaCard`:
 
 ## 9. Texte
 
-- Jeder sichtbare Text kommt aus i18next. Classic nutzt die gemeinsamen Namespaces (`common`, `content`, `player`, `settings`, `errors`). Ein eigener Namespace je Theme, der mit dem Theme-Chunk geladen wird, kommt mit dem ersten Theme, das eigene Texte braucht.
+- Jeder sichtbare Text kommt aus i18next. Wo es passt, nutzt ein Theme die gemeinsamen Namespaces (`common`, `content`, `player`, `settings`, `errors`).
+- Eigene Formulierungen (z. B. „Sektoren“, „Systemzeit“) stehen in `i18n/de.json` und `i18n/en.json` im Theme-Ordner und kommen über `texts: { de, en }` ins `ThemeModule`. Sie reisen mit dem Theme-Chunk und werden beim Laden als Namespace `theme-<id>` registriert: `useTranslation('theme-neon-grid')`. Für die Typprüfung den Namespace in `src/i18n/i18next.d.ts` eintragen.
+- Barrierefreie Namen bleiben die gemeinsamen Begriffe, wo Tests und Screenreader-Nutzer sie erwarten: Neon Grid zeigt „Sektoren“, die Region heißt für Screenreader weiter „Bibliotheken“.
 - Deutsch in Du-Form, Englisch gleichwertig. Ein Test prüft, dass beide Sprachen dieselben Schlüssel haben.
 - Zahlen, Daten und Laufzeiten über `Intl` bzw. `formatClock()`.
 
@@ -213,6 +229,6 @@ Daraus folgt für `Hero`, `Row` und `MediaCard`:
 - [ ] `npm run test:e2e` grün, inklusive axe-Prüfung in jedem Farbschema
 - [ ] `npm run shots`: 1920×1080, 3840×2160, 1280×800, 390×844 angesehen; TV-Modus 1080p und 4K
 - [ ] Alle Seiten nur mit Pfeiltasten, Enter und Zurück bedienbar; Fokus = Hover
-- [ ] Reduzierte Bewegung geprüft
+- [ ] Reduzierte Bewegung geprüft; Effekte nur über Bildern und Überschriften, nie über Fließtext
 - [ ] `npm run previews` ausgeführt, Vorschaubilder eingecheckt
 - [ ] **Rechtliches:** keine Logos, Markennamen, Original-Schriften oder Icons von Streaming-Anbietern – weder im Code noch in Dateinamen, Kommentaren oder Texten. Farben nur in ähnlicher Stimmung, keine exakten Markenfarben. Schriften frei lizenziert über `@fontsource`. Icons selbst gezeichnet. Kein „im Stil von …“ im UI.

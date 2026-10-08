@@ -36,6 +36,10 @@
     "label": "Trailer automatisch abspielen",
     "hint": "Startet stumm im großen Bereich ganz oben, wenn du dort kurz verweilst."
   },
+  "uiSounds": {
+    "label": "Klänge der Oberfläche",
+    "hint": "Leise Signale beim Bewegen des Fokus und beim Auswählen."
+  },
   "language": {
     "label": "Sprache der Oberfläche",
     "hint": "Titel und Beschreibungen kommen in der Sprache, die der Server eingestellt hat."

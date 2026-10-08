@@ -1,0 +1,41 @@
+/* Segments come from a repeating mask; the fill scales from the left (transform only). */
+.bar {
+  --tone: var(--ng-magenta);
+  --gap: 2px;
+
+  position: relative;
+  display: block;
+  height: 0.375rem;
+  overflow: hidden;
+  background: rgb(255 255 255 / 12%);
+  /* Prefixed for Chrome below 120 (browser baseline: 111). */
+  -webkit-mask-image: var(--segment-mask);
+  mask-image: var(--segment-mask);
+  --segment-mask: repeating-linear-gradient(
+    90deg,
+    #000 0,
+    #000 calc(100% / var(--segments) - var(--gap)),
+    transparent calc(100% / var(--segments) - var(--gap)),
+    transparent calc(100% / var(--segments))
+  );
+}
+
+.fill {
+  position: absolute;
+  inset: 0;
+  background: var(--tone);
+  transform-origin: left center;
+  transition: transform var(--duration-base) var(--ease-standard);
+}
+
+.cyan {
+  --tone: var(--ng-cyan);
+}
+
+.yellow {
+  --tone: var(--ng-yellow);
+}
+
+.magenta {
+  --tone: var(--ng-magenta);
+}

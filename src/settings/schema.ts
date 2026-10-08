@@ -17,6 +17,8 @@ export interface UserSettings {
   language: Language;
   motion: MotionPreference;
   trailerAutoplay: boolean;
+  /** Interface sounds of themes that have them (off by default). */
+  uiSounds: boolean;
 }
 
 export const COLOR_SCHEME_PREFERENCES = ['auto', 'dark', 'light'] as const;
@@ -30,6 +32,7 @@ export function defaultUserSettings(theme: ThemeId): UserSettings {
     language: DEFAULT_LANGUAGE,
     motion: 'system',
     trailerAutoplay: true,
+    uiSounds: false,
   };
 }
 
@@ -46,6 +49,7 @@ export function parseUserSettings(raw: unknown): Partial<UserSettings> {
   if (isLanguage(value.language)) result.language = value.language;
   if (includes(MOTION_PREFERENCES, value.motion)) result.motion = value.motion;
   if (typeof value.trailerAutoplay === 'boolean') result.trailerAutoplay = value.trailerAutoplay;
+  if (typeof value.uiSounds === 'boolean') result.uiSounds = value.uiSounds;
   return result;
 }
 
@@ -61,6 +65,7 @@ export function toCustomPrefs(settings: UserSettings): Record<string, string> {
     [`${PREFIX}language`]: settings.language,
     [`${PREFIX}motion`]: settings.motion,
     [`${PREFIX}trailerAutoplay`]: String(settings.trailerAutoplay),
+    [`${PREFIX}uiSounds`]: String(settings.uiSounds),
   };
 }
 
@@ -73,12 +78,16 @@ export function fromCustomPrefs(
 ): Partial<UserSettings> | null {
   const version = Number(prefs?.[`${PREFIX}version`]);
   if (!prefs || !Number.isInteger(version) || version < 1 || version > SCHEMA_VERSION) return null;
-  const trailer = prefs[`${PREFIX}trailerAutoplay`];
+  const flag = (key: string) => {
+    const raw = prefs[`${PREFIX}${key}`];
+    return raw === 'true' ? true : raw === 'false' ? false : undefined;
+  };
   return parseUserSettings({
     theme: prefs[`${PREFIX}theme`],
     colorScheme: prefs[`${PREFIX}colorScheme`],
     language: prefs[`${PREFIX}language`],
     motion: prefs[`${PREFIX}motion`],
-    trailerAutoplay: trailer === 'true' ? true : trailer === 'false' ? false : undefined,
+    trailerAutoplay: flag('trailerAutoplay'),
+    uiSounds: flag('uiSounds'),
   });
 }
