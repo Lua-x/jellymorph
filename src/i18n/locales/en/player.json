@@ -1,0 +1,104 @@
+{
+  "player": "Video player",
+  "close": "Close player",
+  "play": "Play",
+  "pause": "Pause",
+  "replay": "Play again",
+  "seekBack": "Back 10 seconds",
+  "seekForward": "Forward 10 seconds",
+  "mute": "Mute",
+  "unmute": "Unmute",
+  "volume": "Volume",
+  "volumeValue": "{{percent}} %",
+  "timeline": "Timeline",
+  "timePosition": "{{current}} of {{total}}",
+  "remaining": "{{time}} left",
+  "fullscreen": "Full screen",
+  "exitFullscreen": "Exit full screen",
+  "pictureInPicture": "Picture in picture",
+  "exitPictureInPicture": "Exit picture in picture",
+  "loading": "Loading video …",
+  "buffering": "Buffering …",
+  "adapting": "Adjusting playback …",
+  "episodeCode": "S{{season}} · E{{episode}}",
+  "menus": {
+    "tracks": "Audio and subtitles",
+    "settings": "Playback settings",
+    "chapters": "Chapters",
+    "closeMenu": "Close menu"
+  },
+  "audio": "Audio",
+  "subtitles": "Subtitles",
+  "subtitlesOff": "Off",
+  "forced": "forced",
+  "burnedIn": "burned in",
+  "burnInStyled": "Burn in styled subtitles",
+  "burnInStyledHint": "Shows fonts, colors and positions like the original. The server has to convert the video for this.",
+  "quality": "Quality",
+  "qualityAuto": "Automatic",
+  "qualityOption": "{{height}}p · {{mbps}} Mbit/s",
+  "speed": "Speed",
+  "speedNormal": "Normal",
+  "speedValue": "{{rate}}×",
+  "playMethod": {
+    "directPlay": "Direct play",
+    "directStream": "Direct stream",
+    "transcode": "Converted by the server"
+  },
+  "skip": {
+    "intro": "Skip intro",
+    "recap": "Skip recap",
+    "outro": "Skip credits",
+    "preview": "Skip preview",
+    "commercial": "Skip commercial"
+  },
+  "nextUp": {
+    "title": "Next episode",
+    "startsIn_one": "Starts in {{count}} second",
+    "startsIn_other": "Starts in {{count}} seconds",
+    "playNow": "Play now",
+    "cancel": "Cancel"
+  },
+  "errors": {
+    "retry": "Try again",
+    "network": {
+      "title": "Connection lost",
+      "message": "The video could not be loaded. Check your network connection."
+    },
+    "format": {
+      "title": "Format not playable",
+      "message": "Neither this browser nor the server's conversion could play the video."
+    },
+    "notAllowed": {
+      "title": "Playback not allowed",
+      "message": "Your account is not allowed to play this video."
+    },
+    "rateLimit": {
+      "title": "Too many streams",
+      "message": "The server does not allow another stream right now. Try again later."
+    },
+    "auth": {
+      "title": "Sign-in expired",
+      "message": "Please sign in again."
+    },
+    "notFound": {
+      "title": "Video not found",
+      "message": "The video no longer exists or was moved."
+    },
+    "server": {
+      "title": "Server error",
+      "message": "The server could not prepare playback. Try again later."
+    },
+    "unknown": {
+      "title": "Playback failed",
+      "message": "An unexpected error occurred."
+    }
+  },
+  "resume": {
+    "title": "Continue watching?",
+    "watched": "{{percent}} % watched",
+    "resumeFrom": "Resume from {{time}}",
+    "restart": "Start over",
+    "cancel": "Cancel"
+  }
+}

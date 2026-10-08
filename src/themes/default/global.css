@@ -38,3 +38,12 @@
 :where([data-theme='default']) ::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* Subtitles in the player: readable on any picture, larger on big screens. */
+:where([data-theme='default']) .player-video::cue {
+  background: rgb(0 0 0 / 72%);
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: clamp(1.125rem, 3.4vh, 2.75rem);
+  line-height: 1.35;
+}

@@ -10,7 +10,9 @@ import { ItemDetailPage } from './components/ItemDetailPage';
 import { LibraryPage } from './components/LibraryPage';
 import { LoginPage } from './components/LoginPage';
 import { MediaCard } from './components/MediaCard';
+import { PlayerOverlay } from './components/PlayerOverlay';
 import { ProfileSelect } from './components/ProfileSelect';
+import { ResumePrompt } from './components/ResumePrompt';
 import { Row } from './components/Row';
 import { SearchPage } from './components/SearchPage';
 import { SeriesPage } from './components/SeriesPage';
@@ -30,6 +32,8 @@ export const theme: CompleteThemeModule = {
     SeriesPage,
     SearchPage,
     FavoritesPage,
+    PlayerOverlay,
+    ResumePrompt,
     Hero,
     Row,
     MediaCard,

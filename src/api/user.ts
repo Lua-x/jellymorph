@@ -28,6 +28,7 @@ export async function fetchCurrentUser(api: Api, signal?: AbortSignal): Promise<
       data.Id && data.PrimaryImageTag ? userImageUrl(api, data.Id, data.PrimaryImageTag) : null,
     isAdministrator: data.Policy?.IsAdministrator === true,
     latestExcludes: data.Configuration?.LatestItemsExcludes ?? [],
+    nextEpisodeAutoplay: data.Configuration?.EnableNextEpisodeAutoPlay ?? true,
   };
 }
 

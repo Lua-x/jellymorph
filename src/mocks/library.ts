@@ -5,6 +5,7 @@
 import { blurHashFor } from './artwork';
 import {
   allItems,
+  CLIP_TICKS,
   collections,
   episodes,
   GENRE_IDS,
@@ -19,6 +20,7 @@ import {
   type SeedUserData,
 } from './catalog';
 import { DEMO_SERVER } from './fixtures';
+import { chaptersDto, isPlayableItem, mediaStreamsDto, trickplayDto } from './playback';
 
 const blurHashes = new Map<string, string>();
 function hashFor(item: MockItem, type: MockImageType): string {
@@ -112,7 +114,8 @@ export function userDataDto(library: UserLibrary, userId: string, item: MockItem
   const data = library.get(userId, item.id);
   const children = episodesOf(item);
   const unplayed = children.filter((episode) => !library.get(userId, episode.id).played).length;
-  const runtime = item.runtimeTicks ?? 0;
+  // Saved positions refer to the demo clip every title plays.
+  const runtime = CLIP_TICKS;
   return {
     Key: item.id,
     ItemId: item.id,
@@ -234,18 +237,27 @@ export function itemDto(library: UserLibrary, userId: string, item: MockItem) {
       };
     }),
     Studios: item.studios.map((name) => ({ Name: name })),
-    MediaStreams: item.streams.map((stream, index) => ({
-      Index: index,
-      Type: stream.type,
-      Language: stream.language ?? undefined,
-      Codec: stream.codec,
-      DisplayTitle: stream.title,
-      IsDefault: stream.isDefault,
-      IsForced: false,
-      IsExternal: false,
-      Width: stream.width,
-      VideoRangeType: stream.rangeType,
-    })),
+    MediaStreams: mediaStreamsDto(item),
+    ...(isPlayableItem(item)
+      ? {
+          MediaType: 'Video',
+          LocationType: 'FileSystem',
+          Container: item.container,
+          MediaSources: [
+            {
+              Id: item.id,
+              Protocol: 'File',
+              Type: 'Default',
+              Container: item.container,
+              Name: item.name,
+              RunTimeTicks: CLIP_TICKS,
+              MediaStreams: mediaStreamsDto(item),
+            },
+          ],
+          Chapters: chaptersDto(),
+          Trickplay: trickplayDto(item),
+        }
+      : {}),
   };
 }
 
@@ -415,6 +427,11 @@ function ordered(list: MockItem[]): MockItem[] {
       (a.parentIndexNumber ?? 0) - (b.parentIndexNumber ?? 0) ||
       (a.indexNumber ?? 0) - (b.indexNumber ?? 0),
   );
+}
+
+/** All episodes of a series in viewing order. */
+export function seriesEpisodes(seriesId: string): MockItem[] {
+  return ordered(episodes.filter((episode) => episode.seriesId === seriesId));
 }
 
 export function nextUp(

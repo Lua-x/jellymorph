@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router';
 import { paths } from '@/navigation/paths';
+import { registerPreload } from '@/navigation/preload';
 import { BootSplash } from './BootSplash';
 import { LoginRoute, PasswordRoute, QuickConnectRoute, ServerRoute } from './routes/AuthRoutes';
 import { HomeRoute } from './routes/HomeRoute';
@@ -10,6 +11,10 @@ import { ShellLayout } from './routes/ShellLayout';
 
 /** Content pages other than home are separate chunks; the home page is the landing page. */
 const browse = () => import('./routes/LibraryRoute');
+const player = () => import('./routes/PlayerRoute');
+
+// "Play" buttons load the player (and hls.js for transcoded streams) when they get focus.
+registerPreload('player', () => Promise.all([player(), import('@/player/engines/hlsjs')]));
 
 export function createAppRouter() {
   return createBrowserRouter([
@@ -28,6 +33,10 @@ export function createAppRouter() {
             {
               element: <SessionGuard />,
               children: [
+                {
+                  path: '/play/:itemId',
+                  lazy: async () => ({ Component: (await player()).PlayerRoute }),
+                },
                 {
                   element: <ShellLayout />,
                   children: [

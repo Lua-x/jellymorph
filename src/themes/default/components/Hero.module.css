@@ -86,34 +86,35 @@
   margin-top: 0.5rem;
 }
 
-.primaryLink {
+.detailsLink {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   min-height: 3.25rem;
   padding: 0 1.5rem;
   border-radius: var(--radius-control);
-  background: var(--color-accent);
-  color: var(--color-on-accent);
+  background: color-mix(in srgb, var(--color-surface-raised) 80%, transparent);
+  color: var(--color-text);
   font-weight: 650;
   text-decoration: none;
+  backdrop-filter: blur(8px);
   transition: transform var(--duration-fast) var(--ease-standard);
 }
 
-.primaryLink > svg {
+.detailsLink > svg {
   font-size: 1.25rem;
 }
 
-.primaryLink:is(:hover, :focus-visible) {
-  background: color-mix(in srgb, var(--color-accent) 86%, white);
+.detailsLink:is(:hover, :focus-visible) {
+  background: var(--color-surface-hover);
 }
 
-.primaryLink:focus-visible {
+.detailsLink:focus-visible {
   outline: none;
   box-shadow: var(--focus-ring);
 }
 
-.primaryLink:active {
+.detailsLink:active {
   transform: scale(0.98);
 }
 

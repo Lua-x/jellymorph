@@ -663,7 +663,7 @@ sequenceDiagram
 ### 9.4 Quelle wählen
 
 1. `SupportsDirectPlay` und keine Untertitel mit Burn-in → Direct Play über statische Stream-URL, `PlayMethod: DirectPlay`.
-2. Sonst `TranscodingUrl` (Remux/Transcode, vom Server entschieden) → `PlayMethod: Transcode` bzw. `DirectStream`. Die genaue Zuordnung prüfe ich in Phase 3 gegen das Verhalten von jellyfin-web.
+2. Sonst `TranscodingUrl` (Remux/Transcode, vom Server entschieden) → `PlayMethod: Transcode`. **Geprüft gegen jellyfin-web (Phase 3):** `SupportsDirectStream` ohne `SupportsDirectPlay` nutzt ebenfalls die statische Datei, gemeldet als `DirectStream`. Ab Fallback-Stufe 1 nimmt der Player immer die `TranscodingUrl`.
 3. `PlaybackInfo.ErrorCode` (`NotAllowed`, `NoCompatibleStream`, `RateLimitExceeded`) → verständliche Meldung.
 
 ### 9.5 Engines
@@ -683,7 +683,7 @@ sequenceDiagram
 - **Audio:** Browser können Audiospuren in MKV/MP4 praktisch nicht umschalten (`audioTracks` gibt es nur in Safari). Deshalb gilt immer: neuer PlaybackInfo-Aufruf mit `AudioStreamIndex` und `StartTimeTicks` = aktuelle Position, neuer Stream. Der Server remuxt dann in der Regel nur.
 - **Untertitel:** Text → nur `<track>` tauschen, kein neuer Stream. Bild → neuer Stream mit Burn-in.
 - **Qualität:** neuer PlaybackInfo-Aufruf mit `MaxStreamingBitrate`.
-- **Alten Transcode beenden:** `DELETE /Videos/ActiveEncodings?deviceId=…&playSessionId=…` über `api.axiosInstance`. Der Endpunkt fehlt im SDK-1.0-Client, existiert in 10.10/10.11 und wird in Phase 3 auf 12.0 geprüft. Fallback: Der Server beendet verwaiste Transcodes von selbst.
+- **Alten Transcode beenden:** `DELETE /Videos/ActiveEncodings?deviceId=…&playSessionId=…` über `api.axiosInstance`. Der Endpunkt fehlt im SDK-1.0-Client, weil der `HlsSegmentController` per `IgnoreApi` aus der OpenAPI ausgeblendet ist. Er existiert in 10.10 bis 12.x (in Phase 3 im Jellyfin-Quelltext geprüft). Fallback: Der Server beendet verwaiste Transcodes von selbst.
 - **Geschwindigkeit** (0,5–2×): rein clientseitig über `playbackRate`.
 - Während des Wechsels bleibt das letzte Bild stehen und ein Ladeindikator erscheint. Die Position springt nicht zurück.
 
@@ -728,6 +728,15 @@ Auslöser sind `MediaError` (Code 3/4), fatale hls.js-Fehler und ein Stillstand 
 ### 9.13 Trailer-Vorschau im Hero
 
 Nutzt dieselbe Engine stumm, mit niedriger Bitrate und ohne Reporting. Sie startet nur nach 3 s Ruhe auf dem Hero, wenn die Einstellung „Trailer-Autoplay“ an ist, die Bewegung nicht reduziert ist, `saveData` nicht gesetzt ist und das Gerät kein Smartphone ist. Sie stoppt bei Scrollen, Fokuswechsel oder verborgenem Tab.
+
+### 9.14 Erkenntnisse aus Phase 3
+
+- **Route statt Ebene:** `/play/:itemId?start=<s>` ist eine eigene Vollbild-Route außerhalb der App-Shell (`app/routes/PlayerRoute.tsx`). Ohne `start` fragt sie nach dem Fortsetzen und löst Serien auf die nächste Folge auf. `usePlayer` (`player/usePlayer.ts`) erzeugt je Item einen `PlaybackController`; die Bühne mit `<video>` bleibt beim Folgenwechsel montiert.
+- **Engine-Wahl:** Safari → natives HLS; sonst hls.js (Light-Build), sobald MSE da ist. Chrome meldet seit Version 142 auch natives HLS; hls.js bleibt dort trotzdem die erste Wahl.
+- **Dauer:** `MediaSource.RunTimeTicks` gilt. `video.duration` dient nur als Ersatz, wenn der Server keine Laufzeit liefert.
+- **Wettläufe:** Jeder Stream-Wechsel bekommt ein Token; ältere Ladevorgänge verfallen nach jedem `await`. Wird während eines Wechsels die Untertitelspur geändert, startet ein neuer Wechsel mit der aktuellen Auswahl. Ob danach weiter abgespielt wird, merkt sich der Controller, weil das Element während des Wechsels pausiert ist.
+- **Demo-Server:** Range-Anfragen von `<video>` verlieren im MSW-Worker den Range-Header (no-cors-Request, neue Headers). Der Handler beantwortet sie deshalb selbst mit 206. hls.js-Anfragen sind nicht betroffen.
+- **Tests:** `player/controller.test.ts` prüft den Controller mit einer Test-Engine gegen den Mock-Server (Direct Play, Spurwechsel, Fallback-Kette, Fehler, Untertitel, Stop-Meldung, nächste Folge, Intro). `e2e/player.spec.ts` spielt den echten Clip in Chromium ab (Direct Play, hls.js, Fallback, Fehlerpanel, Fortsetzen, Barrierefreiheit).
 
 ---
 
@@ -869,7 +878,7 @@ Theme- und Default-Chunk werden parallel zur Session-Wiederherstellung geladen. 
 | #   | Risiko                                                                                             | Auswirkung                                                          | Gegenmaßnahme                                                                                                                                |
 | --- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | R1  | SDK 1.0.0 ist gegen 12.0 generiert; das Verhalten (nicht die Pfade) kann auf 10.10/10.11 abweichen | falsche Ergebnisse, z. B. Filter                                    | Pfade verifiziert (§1.2). Mapper tolerant gegenüber fehlenden Feldern. Manuelle Smoke-Tests gegen echte 10.10/10.11/12.0-Server ([Frage 2]). |
-| R2  | `ActiveEncodings` fehlt im SDK                                                                     | verwaiste Transcodes beim Spurwechsel                               | Handgeschriebener Aufruf über SDK-Axios (§9.7), in Phase 3 auf 12.0 prüfen                                                                   |
+| R2  | `ActiveEncodings` fehlt im SDK                                                                     | verwaiste Transcodes beim Spurwechsel                               | Handgeschriebener Aufruf über SDK-Axios (§9.7); in Phase 3 bestätigt: Endpunkt existiert in 12.x                                             |
 | R3  | Codec-Erkennung im Browser ungenau (HEVC unter Windows nur mit Erweiterung, mkv-Sonderfall, HDR)   | Direct Play schlägt fehl                                            | Fallback-Kette (§9.11), Fähigkeits-Fixtures pro Browser                                                                                      |
 | R4  | Audiospurwechsel bei Direct Play unmöglich                                                         | Spurwechsel braucht neuen Stream                                    | Bewusst immer neuer Stream an derselben Position (§9.7)                                                                                      |
 | R5  | CORS/Mixed Content ohne Proxy (HTTPS-Client + HTTP-Server, Server ohne CORS-Freigabe)              | Login schlägt fehl                                                  | Klare Fehlermeldung mit Hinweis auf `JELLYFIN_PROXY_TARGET`; Proxy-Modus in Compose als Standard empfohlen                                   |

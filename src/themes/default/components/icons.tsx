@@ -26,7 +26,20 @@ type IconName =
   | 'arrowUp'
   | 'arrowDown'
   | 'star'
-  | 'play';
+  | 'play'
+  | 'pause'
+  | 'volume'
+  | 'volumeMuted'
+  | 'fullscreen'
+  | 'fullscreenExit'
+  | 'pictureInPicture'
+  | 'sliders'
+  | 'subtitles'
+  | 'rewind'
+  | 'forward'
+  | 'chapters'
+  | 'skipNext'
+  | 'arrowLeft';
 
 const HEART =
   'M12 20s-7.5-4.6-9.2-9.4C1.6 7.2 3.8 4 7 4c2.1 0 3.5 1.1 5 3 1.5-1.9 2.9-3 5-3 3.2 0 5.4 3.2 4.2 6.6C19.5 15.4 12 20 12 20z';
@@ -41,6 +54,21 @@ const paths: Record<IconName, string> = {
   arrowDown: 'M12 5v14M6 13l6 6 6-6',
   star: 'M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z',
   play: 'M8 5.5v13l10-6.5z',
+  pause: 'M7 5h3.2v14H7zM13.8 5H17v14h-3.2z',
+  volume: 'M4 9.5h3.5L12 6v12l-4.5-3.5H4zM15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11',
+  volumeMuted: 'M4 9.5h3.5L12 6v12l-4.5-3.5H4zM16 9.5l5 5M21 9.5l-5 5',
+  fullscreen: 'M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5',
+  fullscreenExit: 'M9 4v5H4M15 4v5h5M15 20v-5h5M9 20v-5H4',
+  pictureInPicture:
+    'M3 6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM12.5 12.5H18V17h-5.5z',
+  sliders: 'M4 7h9M17 7h3M15 5v4M4 17h3M11 17h9M9 15v4',
+  subtitles:
+    'M3 6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM7 15h4M14 15h3M7 11h2M12 11h5',
+  rewind: 'M11.5 6.5 6 12l5.5 5.5M18 6.5 12.5 12l5.5 5.5',
+  forward: 'M12.5 6.5 18 12l-5.5 5.5M6 6.5l5.5 5.5L6 17.5',
+  chapters: 'M4 6h16M4 12h16M4 18h9',
+  skipNext: 'M6 5.5v13l9-6.5zM18 5v14',
+  arrowLeft: 'M19 12H5M11 6l-6 6 6 6',
   home: 'M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z',
   movies:
     'M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zM8 4v16M16 4v16M4 9h4M4 15h4M16 9h4M16 15h4',

@@ -1,5 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchEpisodes, fetchItem, fetchNextUp, fetchSeasons, fetchSimilar } from '@/api/items';
+import {
+  fetchEpisodes,
+  fetchItem,
+  fetchNextUp,
+  fetchSeasons,
+  fetchSeriesStartEpisode,
+  fetchSimilar,
+} from '@/api/items';
 import type { ItemDetail, MediaItem, QueryResult, Season } from '@/domain/types';
 import { queryKeys } from './query-keys';
 import { toQueryResult } from './query-result';
@@ -79,4 +86,20 @@ export function useSeries(seriesId: string, requestedSeasonId: string | null): S
           : toQueryResult(episodes),
     nextUp: toQueryResult(nextUp),
   };
+}
+
+/** The episode "Play" starts for a series (next up, otherwise the first one). */
+export function useSeriesStartEpisode(
+  seriesId: string,
+  enabled: boolean,
+): QueryResult<MediaItem | null> {
+  const { api, key } = useActiveSession();
+  return toQueryResult(
+    useQuery({
+      queryKey: queryKeys.seriesStart(key, seriesId),
+      queryFn: ({ signal }) => fetchSeriesStartEpisode(api, seriesId, signal),
+      enabled,
+      staleTime: 0,
+    }),
+  );
 }

@@ -3,8 +3,13 @@
  * (svg.ts). The catalog is deterministic so tests and screenshots are stable.
  */
 import { DEMO_VIEWS } from './fixtures';
+import { CLIP_SECONDS } from './media/timeline';
 
-export type MockItemType = 'Movie' | 'Series' | 'Season' | 'Episode' | 'BoxSet' | 'Person';
+/** Length of the demo clip in ticks; saved positions refer to it (every title plays the clip). */
+export const CLIP_TICKS = CLIP_SECONDS * 10_000_000;
+
+export type MockItemType =
+  'Movie' | 'Series' | 'Season' | 'Episode' | 'BoxSet' | 'Person' | 'Trailer';
 export type MockImageType = 'Primary' | 'Backdrop' | 'Thumb' | 'Logo';
 
 export interface MockPersonRef {
@@ -20,7 +25,12 @@ export interface MockStream {
   title: string;
   isDefault: boolean;
   width?: number;
+  height?: number;
   rangeType?: string;
+  profile?: string;
+  level?: number;
+  channels?: number;
+  bitrate?: number;
 }
 
 export interface MockItem {
@@ -52,6 +62,8 @@ export interface MockItem {
   people: MockPersonRef[];
   studios: string[];
   streams: MockStream[];
+  /** File container of a movie or episode. */
+  container: 'mkv' | 'mp4';
   memberIds: string[];
   localTrailerCount: number;
 }
@@ -76,6 +88,8 @@ function random(seed: number): () => number {
 }
 
 const rand = random(20261007);
+/** Separate generator for media details, so the rest of the catalog stays the same. */
+const mediaRand = random(4242);
 const pick = <T>(list: readonly T[]): T => list[Math.floor(rand() * list.length)] as T;
 const between = (min: number, max: number) => Math.floor(min + rand() * (max - min + 1));
 const chance = (probability: number) => rand() < probability;
@@ -223,6 +237,7 @@ function baseItem(type: MockItemType, name: string, prefix: string): MockItem {
     people: [],
     studios: [],
     streams: [],
+    container: 'mkv',
     memberIds: [],
     localTrailerCount: 0,
   };
@@ -251,7 +266,11 @@ function castFor(count: number): MockPersonRef[] {
   ];
 }
 
-function streamsFor(): MockStream[] {
+/**
+ * Streams as Jellyfin would probe them. 1080p titles are H.264 with AAC (direct play in most
+ * browsers), 4K titles HEVC with E-AC3 (usually transcoded). Anime has styled ASS subtitles.
+ */
+function streamsFor(anime = false): MockStream[] {
   const fourK = chance(0.3);
   const streams: MockStream[] = [
     {
@@ -261,21 +280,29 @@ function streamsFor(): MockStream[] {
       title: fourK ? '4K HEVC' : '1080p H264',
       isDefault: true,
       width: fourK ? 3840 : 1920,
+      height: fourK ? 2160 : 1080,
       rangeType: fourK && chance(0.6) ? 'HDR10' : 'SDR',
+      profile: fourK ? 'Main 10' : 'High',
+      level: fourK ? 153 : 41,
+      bitrate: fourK ? 42_000_000 : 9_000_000,
     },
     {
       type: 'Audio',
       language: 'ger',
-      codec: 'eac3',
-      title: 'Deutsch - E-AC3 5.1',
+      codec: fourK ? 'eac3' : 'aac',
+      title: fourK ? 'Deutsch - E-AC3 5.1' : 'Deutsch - AAC 5.1',
       isDefault: true,
+      channels: 6,
+      bitrate: 640_000,
     },
     {
       type: 'Audio',
-      language: 'eng',
+      language: anime ? 'jpn' : 'eng',
       codec: 'aac',
-      title: 'English - AAC Stereo',
+      title: anime ? '日本語 - AAC Stereo' : 'English - AAC Stereo',
       isDefault: false,
+      channels: 2,
+      bitrate: 192_000,
     },
     {
       type: 'Subtitle',
@@ -301,7 +328,20 @@ function streamsFor(): MockStream[] {
       isDefault: false,
     });
   }
+  if (anime) {
+    streams.push({
+      type: 'Subtitle',
+      language: 'ger',
+      codec: 'ass',
+      title: 'Deutsch - ASS (gestaltet)',
+      isDefault: true,
+    });
+  }
   return streams;
+}
+
+function containerFor(): 'mkv' | 'mp4' {
+  return mediaRand() < 0.35 ? 'mp4' : 'mkv';
 }
 
 const RATINGS = ['FSK-0', 'FSK-6', 'FSK-12', 'FSK-12', 'FSK-16', 'FSK-16', 'FSK-18'];
@@ -434,6 +474,7 @@ export const movies: MockItem[] = MOVIE_TITLES.map((title, index) => {
     people: castFor(between(4, 7)),
     studios: [pick(STUDIOS)],
     streams: streamsFor(),
+    container: containerFor(),
     localTrailerCount: chance(0.4) ? 1 : 0,
   });
   return movie;
@@ -629,7 +670,8 @@ SERIES_PLANS.forEach((plan, planIndex) => {
         ).toISOString(),
         hue: show.hue,
         hue2: (show.hue2 + number * 11) % 360,
-        streams: streamsFor(),
+        streams: streamsFor(plan.library === LIBRARY.anime),
+        container: containerFor(),
       });
       episodes.push(episode);
     }
@@ -687,7 +729,22 @@ export const allItems: MockItem[] = [
   ...collections,
   ...people,
 ];
-export const itemsById = new Map(allItems.map((item) => [item.id, item]));
+/** Local trailers of movies; reachable by id, but not listed in libraries. */
+export const trailers: MockItem[] = movies
+  .filter((movie) => movie.localTrailerCount > 0)
+  .map((movie) => ({
+    ...movie,
+    id: `t${movie.id.slice(1)}`,
+    type: 'Trailer' as const,
+    name: `${movie.name} – Trailer`,
+    sortName: `${movie.sortName} trailer`,
+    libraryId: null,
+    parentId: movie.id,
+    people: [],
+    localTrailerCount: 0,
+  }));
+
+export const itemsById = new Map([...allItems, ...trailers].map((item) => [item.id, item]));
 
 /** Initial watch state shared by all demo users (each user's changes are kept separately). */
 export interface SeedUserData {
@@ -719,7 +776,7 @@ export function seedUserData(): Map<string, SeedUserData> {
       });
     else if (roll < 0.34) {
       set(movie.id, {
-        positionTicks: Math.round((movie.runtimeTicks ?? 0) * (0.15 + seed() * 0.6)),
+        positionTicks: Math.round(CLIP_TICKS * (0.15 + seed() * 0.6)),
         lastPlayed: new Date(BASE_DATE - index * 3_600_000).toISOString(),
       });
     }
@@ -746,7 +803,7 @@ export function seedUserData(): Map<string, SeedUserData> {
         set(episode.id, { played: true, lastPlayed });
       } else if (season === seasonNumber && number === episodeNumber + 1 && nextProgress > 0) {
         set(episode.id, {
-          positionTicks: Math.round((episode.runtimeTicks ?? 0) * nextProgress),
+          positionTicks: Math.round(CLIP_TICKS * nextProgress),
           lastPlayed,
         });
       }

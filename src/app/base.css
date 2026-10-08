@@ -125,3 +125,32 @@ p {
   margin: 0.5rem auto;
   color: #9ea7b6;
 }
+
+/* Player: full screen stage with the video; the theme's overlay sits on top. */
+.player-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  overflow: hidden;
+  background: #000000;
+  color: #ffffff;
+  outline: none;
+}
+
+.player-stage[data-controls='hidden'] {
+  cursor: none;
+}
+
+.player-video,
+.player-freeze {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: contain;
+}
+
+.player-freeze[hidden] {
+  display: none;
+}

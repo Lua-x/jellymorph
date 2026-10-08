@@ -16,9 +16,21 @@ export interface MockOptions {
   latencyMs: number;
   /** Keeps tokens and watch state across page loads (demo mode), like a real server would. */
   storage: Storage | null;
+  /**
+   * Simulated failures for tests: 'directPlay' (the file cannot be decoded), 'transcode' (HLS
+   * fails), 'playbackInfo' (the server refuses). In demo mode also read from localStorage
+   * ('jellymorph.demo.faults', comma separated), so end-to-end tests can switch them on.
+   */
+  faults: readonly string[];
+}
+
+export interface PlaySession {
+  userId: string;
+  itemId: string;
 }
 
 const TOKEN_STORAGE_KEY = 'jellymorph.demo.tokens';
+const FAULTS_STORAGE_KEY = 'jellymorph.demo.faults';
 
 /** Mutable state of the mock server: issued tokens and pending Quick Connect requests. */
 export class MockState {
@@ -28,6 +40,10 @@ export class MockState {
   readonly library: UserLibrary;
   private readonly tokens: Map<string, string>;
   private readonly quickConnect = new Map<string, QuickConnectRequest>();
+  /** Active playbacks by PlaySessionId. */
+  readonly playSessions = new Map<string, PlaySession>();
+  /** Every report the server received, in order (for tests). */
+  readonly reports: { kind: 'start' | 'progress' | 'stopped' | 'ping'; body: unknown }[] = [];
   private counter = 0;
 
   constructor(options: Partial<MockOptions> = {}) {
@@ -36,6 +52,7 @@ export class MockState {
       quickConnectEnabled: true,
       latencyMs: 0,
       storage: null,
+      faults: [],
       ...options,
     };
     this.tokens = new Map(this.loadTokens());
@@ -74,6 +91,20 @@ export class MockState {
       32,
       '0',
     );
+  }
+
+  hasFault(fault: string): boolean {
+    if (this.options.faults.includes(fault)) return true;
+    try {
+      const stored = this.options.storage?.getItem(FAULTS_STORAGE_KEY) ?? '';
+      return stored.split(',').includes(fault);
+    } catch {
+      return false;
+    }
+  }
+
+  newPlaySessionId(): string {
+    return this.nextId();
   }
 
   issueToken(userId: string): string {

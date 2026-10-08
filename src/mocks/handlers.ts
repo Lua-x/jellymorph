@@ -2,15 +2,9 @@ import { delay, http, HttpResponse, type HttpResponseResolver } from 'msw';
 import { DEMO_SERVER, DEMO_VIEWS, type MockUser } from './fixtures';
 import { createContentHandlers } from './content-handlers';
 import { avatarSvg, svgResponseInit } from './images';
+import { createPlaybackHandlers } from './playback-handlers';
 import type { MockState } from './state';
-
-/** Reads the token from `Authorization: MediaBrowser …, Token="…"` or the ApiKey parameter. */
-function tokenOf(request: Request): string | null {
-  const header = request.headers.get('Authorization') ?? '';
-  const fromHeader = /Token="([^"]*)"/.exec(header)?.[1];
-  if (fromHeader) return fromHeader;
-  return new URL(request.url).searchParams.get('ApiKey');
-}
+import { tokenOf } from './token';
 
 function userDto(user: MockUser) {
   return {
@@ -45,6 +39,14 @@ function authResult(state: MockState, user: MockUser) {
 }
 
 const unauthorized = () => new HttpResponse(null, { status: 401 });
+
+export type Authed = (
+  resolver: (
+    user: MockUser,
+    request: Request,
+    params: Record<string, string>,
+  ) => Response | Promise<Response>,
+) => HttpResponseResolver<Record<string, string>>;
 
 /**
  * Request handlers emulating the Jellyfin endpoints the client uses. Paths start with `*` so
@@ -168,5 +170,6 @@ export function createHandlers(state: MockState) {
     }),
 
     ...createContentHandlers(state, authed),
+    ...createPlaybackHandlers(state, authed),
   ];
 }

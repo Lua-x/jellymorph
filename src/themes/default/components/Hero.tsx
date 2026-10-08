@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useMediaActions } from '@/hooks/useMediaActions';
+import { isPlayable, useMediaActions } from '@/hooks/useMediaActions';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { linkTo } from '@/navigation/paths';
 import { AppLink } from '@/ui/AppLink';
@@ -97,8 +97,22 @@ export function Hero({ items, context }: HeroProps) {
         <MetaLine item={current} />
         {current.overview && <p className={styles.overview}>{current.overview}</p>}
         <div className={styles.actions}>
+          {isPlayable(current) && (
+            <Button
+              size="lg"
+              icon={<Icon name="play" filled />}
+              onFocus={actions.preparePlayback}
+              onPointerEnter={actions.preparePlayback}
+              onClick={() => {
+                actions.play(current, 'ask');
+              }}
+              tabIndex={context === 'preview' ? -1 : undefined}
+            >
+              {t('actions.play')}
+            </Button>
+          )}
           {context === 'page' ? (
-            <AppLink to={linkTo(current)} className={styles.primaryLink}>
+            <AppLink to={linkTo(current)} className={styles.detailsLink}>
               <Icon name="info" />
               {t('actions.details')}
             </AppLink>

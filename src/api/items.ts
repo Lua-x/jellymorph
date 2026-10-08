@@ -415,3 +415,31 @@ export async function updateUserData(
   }
   return {};
 }
+
+/**
+ * The episode "Play" starts for a series: the next one to watch (including one in progress),
+ * otherwise the first episode.
+ */
+export async function fetchSeriesStartEpisode(
+  api: Api,
+  seriesId: string,
+  signal?: AbortSignal,
+): Promise<MediaItem | null> {
+  const [next] = await fetchNextUp(api, { seriesId, limit: 1, includeResumable: true }, signal);
+  if (next) return next;
+  const { data } = await getShowApi(api).getEpisodes(
+    { ...cardQuery, seriesId, limit: 1 },
+    { signal },
+  );
+  return mapItems(api, data.Items)[0] ?? null;
+}
+
+/** The first local trailer of an item, or null. */
+export async function fetchLocalTrailerId(
+  api: Api,
+  itemId: string,
+  signal?: AbortSignal,
+): Promise<string | null> {
+  const { data } = await getLibraryApi(api).getLocalTrailers({ itemId }, { signal });
+  return data[0]?.Id ?? null;
+}

@@ -58,6 +58,44 @@ window.scrollTo = () => undefined;
 Element.prototype.scrollIntoView = () => undefined;
 Element.prototype.scrollBy = () => undefined;
 
+// Media playback: jsdom keeps currentTime but cannot play. play()/pause() switch a paused flag
+// and fire the events a browser would; engines are replaced by test doubles.
+const pausedState = new WeakMap<HTMLMediaElement, boolean>();
+Object.defineProperty(HTMLMediaElement.prototype, 'paused', {
+  configurable: true,
+  get(this: HTMLMediaElement) {
+    return pausedState.get(this) ?? true;
+  },
+});
+HTMLMediaElement.prototype.play = function play(this: HTMLMediaElement) {
+  if (pausedState.get(this) === false) return Promise.resolve();
+  pausedState.set(this, false);
+  this.dispatchEvent(new Event('play'));
+  this.dispatchEvent(new Event('playing'));
+  return Promise.resolve();
+};
+HTMLMediaElement.prototype.pause = function pause(this: HTMLMediaElement) {
+  if (pausedState.get(this) === false) {
+    pausedState.set(this, true);
+    this.dispatchEvent(new Event('pause'));
+  }
+};
+HTMLMediaElement.prototype.load = function load(this: HTMLMediaElement) {
+  pausedState.set(this, true);
+};
+const textTracks = new WeakMap<HTMLTrackElement, { mode: TextTrackMode }>();
+Object.defineProperty(HTMLTrackElement.prototype, 'track', {
+  configurable: true,
+  get(this: HTMLTrackElement) {
+    let track = textTracks.get(this);
+    if (!track) {
+      track = { mode: 'disabled' };
+      textTracks.set(this, track);
+    }
+    return track;
+  },
+});
+
 beforeAll(() => {
   server.listen({ onUnhandledFrame: 'error' });
 });

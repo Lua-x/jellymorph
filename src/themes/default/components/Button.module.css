@@ -78,7 +78,8 @@
 }
 
 .primary:is(:hover, :focus-visible):not(:disabled) {
-  background: color-mix(in srgb, var(--color-accent) 86%, white);
+  /* Darker, not lighter: white text keeps its contrast (WCAG AA) on hover and focus. */
+  background: color-mix(in srgb, var(--color-accent) 82%, black);
 }
 
 .secondary {

@@ -16,6 +16,8 @@ export const queryKeys = {
   featured: (key: SessionKey, count: number) => [...user(key), 'featured', count] as const,
   resume: (key: SessionKey) => [...user(key), 'resume'] as const,
   nextUp: (key: SessionKey, seriesId: string | null) => [...user(key), 'nextUp', seriesId] as const,
+  seriesStart: (key: SessionKey, seriesId: string) =>
+    [...user(key), 'seriesStart', seriesId] as const,
   latest: (key: SessionKey, libraryId: string) => [...user(key), 'latest', libraryId] as const,
   favoritesPreview: (key: SessionKey) => [...user(key), 'favoritesPreview'] as const,
   collections: (key: SessionKey) => [...user(key), 'collections'] as const,

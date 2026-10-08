@@ -1,68 +1,10 @@
-import { act, render, screen, waitFor, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { screen, within } from '@testing-library/react';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { useSessionStore } from '@/api/session-store';
-import { DEFAULT_APP_CONFIG, type AppConfig } from '@/config/app-config';
-import { initI18n } from '@/i18n';
 import { collections, LIBRARY, movies, series } from '@/mocks/catalog';
-import { DEMO_SERVER, DEMO_USERS } from '@/mocks/fixtures';
-import { mockState, TEST_SERVER_URL } from '@/mocks/node';
-import { loadDefaultTheme, loadThemeModule } from '@/themes/loader';
-import { getThemeManifest } from '@/themes/registry';
-import { App } from './App';
+import { mockState } from '@/mocks/node';
+import { alex, byName, openAs, prepareApp, TIMEOUT } from '@/test/app';
 
-const config: AppConfig = { ...DEFAULT_APP_CONFIG, jellyfinUrl: TEST_SERVER_URL, lockServer: true };
-const alex = DEMO_USERS[0];
-const TIMEOUT = { timeout: 4000 };
-
-function byName<T extends { name: string }>(list: readonly T[], name: string): T {
-  const found = list.find((entry) => entry.name === name);
-  if (!found) throw new Error(`Missing demo item ${name}`);
-  return found;
-}
-
-/** Signs Alex in directly and opens `path`. */
-async function openAs(path: string) {
-  const token = mockState.issueToken(alex?.id ?? '');
-  useSessionStore.setState({
-    servers: [
-      {
-        id: DEMO_SERVER.Id,
-        name: DEMO_SERVER.ServerName,
-        url: TEST_SERVER_URL,
-        version: DEMO_SERVER.Version,
-        fixed: true,
-        lastUsedAt: 1,
-      },
-    ],
-    currentServerId: DEMO_SERVER.Id,
-    sessions: [],
-    active: null,
-    api: null,
-    notice: null,
-  });
-  useSessionStore.getState().signIn({
-    serverId: DEMO_SERVER.Id,
-    userId: alex?.id ?? '',
-    userName: 'Alex',
-    accessToken: token,
-    imageTag: null,
-    remembered: true,
-    signedInAt: 1,
-  });
-  window.history.replaceState(null, '', path);
-  const user = userEvent.setup();
-  await act(async () => {
-    render(<App config={config} />);
-    await Promise.resolve();
-  });
-  return user;
-}
-
-beforeAll(async () => {
-  await initI18n('de');
-  await Promise.all([loadDefaultTheme(), loadThemeModule(getThemeManifest('default'))]);
-});
+beforeAll(prepareApp);
 
 beforeEach(() => {
   window.history.replaceState(null, '', '/');
@@ -124,7 +66,8 @@ describe('details', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Nebelstadt' }, TIMEOUT),
     ).toBeInTheDocument();
-    expect(screen.getByText(/Deutsch - E-AC3 5\.1/)).toBeInTheDocument();
+    const audio = movie.streams.find((stream) => stream.type === 'Audio')?.title ?? '';
+    expect(screen.getByText(audio, { exact: false })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Besetzung' })).toBeInTheDocument();
 
     const wasFavorite = mockState.library.get(alex?.id ?? '', movie.id).favorite;
@@ -154,11 +97,11 @@ describe('details', () => {
     expect(
       await screen.findByRole('tab', { name: 'Staffel 2', selected: true }, TIMEOUT),
     ).toBeInTheDocument();
-    // Once in the header link, once as badge on the episode in the list.
-    await waitFor(() => {
-      expect(screen.getAllByText('Als Nächstes')).toHaveLength(2);
-    }, TIMEOUT);
-    const nextEpisode = screen.getAllByText('Als Nächstes')[1]?.closest('li');
+    // The started fourth episode: "Resume" in the header, a badge in the episode list.
+    expect(
+      await screen.findByRole('button', { name: /^Fortsetzen S2 · F4/ }, TIMEOUT),
+    ).toBeInTheDocument();
+    const nextEpisode = (await screen.findByText('Als Nächstes', undefined, TIMEOUT)).closest('li');
     expect(nextEpisode).toHaveTextContent(/^4./);
 
     await user.click(screen.getByRole('tab', { name: 'Staffel 3' }));

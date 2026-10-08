@@ -8,7 +8,13 @@
     "details": "Details",
     "seeAll": "Alle anzeigen",
     "scrollLeft": "Zurückblättern",
-    "scrollRight": "Weiterblättern"
+    "scrollRight": "Weiterblättern",
+    "play": "Abspielen",
+    "resumeFrom": "Fortsetzen ab {{time}}",
+    "restart": "Von vorne",
+    "playEpisode": "„{{name}}“ abspielen",
+    "trailer": "Trailer",
+    "trailerFailed": "Der Trailer konnte nicht geladen werden."
   },
   "meta": {
     "played": "Gesehen",
@@ -100,7 +106,9 @@
     "nextUp": "Als Nächstes",
     "episodeShort": "S{{season}} · F{{episode}} · {{name}}",
     "markEpisodePlayed": "„{{name}}“ als gesehen markieren",
-    "markEpisodeUnplayed": "„{{name}}“ als ungesehen markieren"
+    "markEpisodeUnplayed": "„{{name}}“ als ungesehen markieren",
+    "resume": "Fortsetzen",
+    "startSeries": "Ab der ersten Folge"
   },
   "search": {
     "title": "Suche",

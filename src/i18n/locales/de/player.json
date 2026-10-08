@@ -1,0 +1,104 @@
+{
+  "player": "Videoplayer",
+  "close": "Player schließen",
+  "play": "Abspielen",
+  "pause": "Pause",
+  "replay": "Noch einmal abspielen",
+  "seekBack": "10 Sekunden zurück",
+  "seekForward": "10 Sekunden vor",
+  "mute": "Ton aus",
+  "unmute": "Ton an",
+  "volume": "Lautstärke",
+  "volumeValue": "{{percent}} %",
+  "timeline": "Zeitleiste",
+  "timePosition": "{{current}} von {{total}}",
+  "remaining": "noch {{time}}",
+  "fullscreen": "Vollbild",
+  "exitFullscreen": "Vollbild beenden",
+  "pictureInPicture": "Bild-in-Bild",
+  "exitPictureInPicture": "Bild-in-Bild beenden",
+  "loading": "Video wird geladen …",
+  "buffering": "Wird gepuffert …",
+  "adapting": "Wiedergabe wird angepasst …",
+  "episodeCode": "S{{season}} · F{{episode}}",
+  "menus": {
+    "tracks": "Audio und Untertitel",
+    "settings": "Wiedergabe-Einstellungen",
+    "chapters": "Kapitel",
+    "closeMenu": "Menü schließen"
+  },
+  "audio": "Audio",
+  "subtitles": "Untertitel",
+  "subtitlesOff": "Aus",
+  "forced": "erzwungen",
+  "burnedIn": "eingebrannt",
+  "burnInStyled": "Gestaltete Untertitel einbrennen",
+  "burnInStyledHint": "Zeigt Schrift, Farben und Position wie im Original. Der Server muss dafür das Video umwandeln.",
+  "quality": "Qualität",
+  "qualityAuto": "Automatisch",
+  "qualityOption": "{{height}}p · {{mbps}} Mbit/s",
+  "speed": "Geschwindigkeit",
+  "speedNormal": "Normal",
+  "speedValue": "{{rate}}×",
+  "playMethod": {
+    "directPlay": "Direkte Wiedergabe",
+    "directStream": "Direkter Stream",
+    "transcode": "Umgewandelt vom Server"
+  },
+  "skip": {
+    "intro": "Intro überspringen",
+    "recap": "Rückblick überspringen",
+    "outro": "Abspann überspringen",
+    "preview": "Vorschau überspringen",
+    "commercial": "Werbung überspringen"
+  },
+  "nextUp": {
+    "title": "Nächste Folge",
+    "startsIn_one": "Startet in {{count}} Sekunde",
+    "startsIn_other": "Startet in {{count}} Sekunden",
+    "playNow": "Jetzt abspielen",
+    "cancel": "Abbrechen"
+  },
+  "errors": {
+    "retry": "Erneut versuchen",
+    "network": {
+      "title": "Verbindung unterbrochen",
+      "message": "Das Video konnte nicht geladen werden. Prüfe deine Netzwerkverbindung."
+    },
+    "format": {
+      "title": "Format nicht abspielbar",
+      "message": "Weder dieser Browser noch die Umwandlung durch den Server konnten das Video abspielen."
+    },
+    "notAllowed": {
+      "title": "Wiedergabe nicht erlaubt",
+      "message": "Dein Benutzerkonto darf dieses Video nicht abspielen."
+    },
+    "rateLimit": {
+      "title": "Zu viele Wiedergaben",
+      "message": "Der Server lässt gerade keine weitere Wiedergabe zu. Versuche es später erneut."
+    },
+    "auth": {
+      "title": "Anmeldung abgelaufen",
+      "message": "Bitte melde dich erneut an."
+    },
+    "notFound": {
+      "title": "Video nicht gefunden",
+      "message": "Das Video existiert nicht mehr oder wurde verschoben."
+    },
+    "server": {
+      "title": "Serverfehler",
+      "message": "Der Server konnte die Wiedergabe nicht vorbereiten. Versuche es später erneut."
+    },
+    "unknown": {
+      "title": "Wiedergabe fehlgeschlagen",
+      "message": "Ein unerwarteter Fehler ist aufgetreten."
+    }
+  },
+  "resume": {
+    "title": "Weiterschauen?",
+    "watched": "{{percent}} % gesehen",
+    "resumeFrom": "Fortsetzen ab {{time}}",
+    "restart": "Von vorne",
+    "cancel": "Abbrechen"
+  }
+}

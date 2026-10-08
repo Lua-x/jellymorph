@@ -1,7 +1,14 @@
 import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
-import { expectSignedIn, openApp, openUserMenu, signInAs } from './helpers';
+import {
+  demoItems,
+  directPlayable,
+  expectSignedIn,
+  openApp,
+  openUserMenu,
+  signInAs,
+} from './helpers';
 
 /**
  * Review screenshots for the Definition of Done (CLAUDE.md §9). Not part of the normal E2E run:
@@ -58,6 +65,21 @@ async function openFromSearch(page: Page, term: string, group: string) {
     .first()
     .click();
   await expect(page.getByRole('heading', { level: 1, name: term })).toBeVisible();
+}
+
+/** Opens the player paused at `seconds` with the controls showing. */
+async function pausedPlayer(page: Page, itemId: string, seconds: number) {
+  await page.goto(`/play/${itemId}?start=${String(seconds)}`);
+  const player = page.getByRole('group', { name: 'Videoplayer' });
+  await expect(player).toBeVisible();
+  await expect
+    .poll(() => page.locator('video').evaluate((video: HTMLVideoElement) => video.readyState))
+    .toBeGreaterThanOrEqual(2);
+  await page.locator('video').evaluate(async (video: HTMLVideoElement) => {
+    video.pause();
+    await new Promise((resolve) => setTimeout(resolve, 300));
+  });
+  await expect(player).toHaveAttribute('data-status', 'paused');
 }
 
 test.describe('screenshots @shots', () => {
@@ -119,6 +141,37 @@ test.describe('screenshots @shots', () => {
         await shoot(page, '12-favorites');
       });
 
+      test('player', async ({ page }) => {
+        await signInAs(page, 'Alex');
+        const movie = (await demoItems(page, 'Movie')).find(directPlayable);
+        const episode = (await demoItems(page, 'Episode')).find(directPlayable);
+        const started = (await demoItems(page, 'Movie')).find(
+          (item) => (item.UserData?.PlaybackPositionTicks ?? 0) > 0 && !item.UserData?.Played,
+        );
+        if (!movie || !episode || !started) throw new Error('Missing demo titles');
+
+        await pausedPlayer(page, movie.Id, 22);
+        await shoot(page, '13-player');
+
+        // Trickplay preview while hovering the timeline.
+        const timeline = page.getByRole('slider', { name: 'Zeitleiste' });
+        const box = await timeline.boundingBox();
+        if (box) await page.mouse.move(box.x + box.width * 0.62, box.y + box.height / 2);
+        await shoot(page, '14-player-trickplay');
+
+        await page.getByRole('button', { name: 'Audio und Untertitel' }).click();
+        await expect(page.getByRole('dialog', { name: 'Audio und Untertitel' })).toBeVisible();
+        await shoot(page, '15-player-tracks');
+
+        await pausedPlayer(page, episode.Id, 50);
+        await expect(page.getByRole('region', { name: 'Nächste Folge' })).toBeVisible();
+        await shoot(page, '16-player-next-up');
+
+        await page.goto(`/play/${started.Id}`);
+        await expect(page.getByText('Weiterschauen?')).toBeVisible();
+        await shoot(page, '17-resume-prompt');
+      });
+
       test('server selection', async ({ page }) => {
         await page.route('**/config.js', (route) =>
           route.fulfill({
@@ -174,6 +227,10 @@ test.describe('screenshots @shots', () => {
       await shoot(page, '04-home', '-light');
       await openFromSearch(page, 'Hafenviertel', 'Serien');
       await shoot(page, '10-series', '-light');
+      const movie = (await demoItems(page, 'Movie')).find(directPlayable);
+      if (!movie) throw new Error('Missing demo title');
+      await pausedPlayer(page, movie.Id, 22);
+      await shoot(page, '13-player', '-light');
     });
   });
 });

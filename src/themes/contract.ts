@@ -6,7 +6,7 @@
  * props and the shared hooks; they never talk to the server themselves.
  *
  * The contract grows with the project phases: phase 1 covers the shell and the sign-in
- * screens, phase 2 adds the content pages, phase 3 the player.
+ * screens, phase 2 adds the content pages, phase 3 the player (PlayerOverlay, ResumePrompt).
  */
 import type { ComponentType, ReactNode } from 'react';
 import type { ThemeId } from '@/config/theme-ids';
@@ -25,6 +25,7 @@ import type {
 import type { LoginFlow, ProfileSelectModel } from '@/hooks/auth/types';
 import type { LibraryBrowser } from '@/hooks/useLibraryBrowser';
 import type { NavModel } from '@/navigation/nav-model';
+import type { PlayerModel } from '@/player/model';
 
 export type { ThemeId };
 
@@ -73,6 +74,8 @@ export interface ThemeComponents {
   SeriesPage: ComponentType<SeriesPageProps>;
   SearchPage: ComponentType<SearchPageProps>;
   FavoritesPage: ComponentType<FavoritesPageProps>;
+  PlayerOverlay: ComponentType<PlayerOverlayProps>;
+  ResumePrompt: ComponentType<ResumePromptProps>;
   Hero: ComponentType<HeroProps>;
   Row: ComponentType<RowProps>;
   MediaCard: ComponentType<MediaCardProps>;
@@ -145,6 +148,23 @@ export interface SearchPageProps {
 
 export interface FavoritesPageProps {
   groups: QueryResult<FavoriteGroup[]>;
+}
+
+/**
+ * Everything drawn on top of the video: controls, timeline, menus, skip and next-episode offers,
+ * loading and error states. The video element itself belongs to the app (full screen stage).
+ */
+export interface PlayerOverlayProps {
+  player: PlayerModel;
+}
+
+/** Asked before playback when the item has a saved position. */
+export interface ResumePromptProps {
+  item: MediaItem;
+  positionSeconds: number;
+  onResume: () => void;
+  onRestart: () => void;
+  onCancel: () => void;
 }
 
 export interface HeroProps {

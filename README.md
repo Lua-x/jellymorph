@@ -2,7 +2,7 @@
 
 Ein selbst gehosteter Web-Client für [Jellyfin](https://jellyfin.org) mit austauschbaren Themes. Ein Theme ist hier mehr als ein Farbschema: Jedes bringt sein eigenes Bedienkonzept mit, also Layout, Navigation, Karten, Detailseiten, Player-Oberfläche und Animationen.
 
-> **Status:** in Entwicklung. Fertig sind das Fundament, die Anmeldung (Server, Profile, Passwort, Quick Connect) und der Demo-Modus. Den Fahrplan zeigt [CLAUDE.md](CLAUDE.md) §11.
+> **Status:** in Entwicklung. Fertig sind das Fundament, die Anmeldung (Server, Profile, Passwort, Quick Connect), alle Inhaltsseiten im Theme „Classic“, der Player und der Demo-Modus. Den Fahrplan zeigt [CLAUDE.md](CLAUDE.md) §11.
 
 ## Ausprobieren ohne Server (Demo-Modus)
 
@@ -12,6 +12,8 @@ npm run dev
 ```
 
 Ohne `JELLYFIN_DEV_URL` startet die App mit einem eingebauten Mock-Server und erfundenen Beispieldaten. Das Passwort aller Demo-Profile lautet `demo`. Quick-Connect-Codes werden nach wenigen Sekunden automatisch bestätigt.
+
+Im Demo-Modus spielt jeder Titel denselben 60-Sekunden-Clip, mit Intro, Abspann, Kapiteln, Untertiteln und Vorschaubildern. Daran lassen sich alle Player-Funktionen ausprobieren: Direct Play, HLS, Spurwechsel, „Intro überspringen“ und die nächste Folge.
 
 ## Entwicklung mit einem echten Jellyfin-Server
 
@@ -32,6 +34,7 @@ Unterstützt wird Jellyfin ab Version 10.10, auch 12.x.
 | `npm run test:e2e`                   | End-to-End-Tests gegen den Build im Demo-Modus (Playwright)        |
 | `npm run shots`                      | Prüf-Screenshots in vier Auflösungen nach `artifacts/screenshots/` |
 | `npm run check:bundle`               | Größenbudget des Basis-Bundles (250 KB gzip) prüfen                |
+| `node scripts/record-demo-clip.ts`   | Demo-Clip neu aufnehmen (dauert eine Minute)                       |
 
 Die Architektur beschreibt [docs/architecture.md](docs/architecture.md).
 

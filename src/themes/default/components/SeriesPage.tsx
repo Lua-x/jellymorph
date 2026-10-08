@@ -116,6 +116,20 @@ function EpisodeList({ episodes, nextUpId }: { episodes: MediaItem[]; nextUpId: 
             </AppLink>
             <button
               type="button"
+              className={styles.episodePlay}
+              aria-label={t('actions.playEpisode', { name: episode.name })}
+              onFocus={actions.preparePlayback}
+              onPointerEnter={actions.preparePlayback}
+              onClick={() => {
+                actions.play(episode, 'ask');
+              }}
+            >
+              <span className={styles.episodePlayIcon}>
+                <Icon name="play" filled />
+              </span>
+            </button>
+            <button
+              type="button"
               className={styles.played}
               aria-pressed={episode.userData.played}
               aria-label={
@@ -146,6 +160,7 @@ export function SeriesPage({
   similar,
 }: SeriesPageProps) {
   const { t } = useTranslation('content');
+  const actions = useMediaActions();
   const panelId = useId();
   const headingId = useId();
   const next = nextUp.status === 'success' ? nextUp.data : null;
@@ -153,20 +168,34 @@ export function SeriesPage({
   return (
     <article className={styles.page}>
       <DetailHeader item={series}>
-        {next && (
-          <AppLink to={paths.item(next.id)} className={styles.nextLink}>
+        {nextUp.status === 'success' && (
+          <button
+            type="button"
+            className={styles.nextLink}
+            onFocus={actions.preparePlayback}
+            onPointerEnter={actions.preparePlayback}
+            onClick={() => {
+              if (next)
+                actions.play(next, next.userData.progress !== null ? 'resume' : 'beginning');
+              else actions.play(series, 'ask');
+            }}
+          >
             <Icon name="play" filled />
             <span>
-              <span className={styles.nextLabel}>{t('detail.nextUp')}</span>
+              <span className={styles.nextLabel}>
+                {next && next.userData.progress !== null ? t('detail.resume') : t('actions.play')}
+              </span>{' '}
               <span className={styles.nextName}>
-                {t('detail.episodeShort', {
-                  season: next.episode?.seasonNumber ?? 0,
-                  episode: next.episode?.episodeNumber ?? 0,
-                  name: next.name,
-                })}
+                {next
+                  ? t('detail.episodeShort', {
+                      season: next.episode?.seasonNumber ?? 0,
+                      episode: next.episode?.episodeNumber ?? 0,
+                      name: next.name,
+                    })
+                  : t('detail.startSeries')}
               </span>
             </span>
-          </AppLink>
+          </button>
         )}
       </DetailHeader>
 

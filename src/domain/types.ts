@@ -82,6 +82,8 @@ export interface CurrentUser {
   isAdministrator: boolean;
   /** Libraries the user excluded from "Latest" in their Jellyfin settings. */
   latestExcludes: string[];
+  /** Jellyfin setting "play next episode automatically", shared with other clients. */
+  nextEpisodeAutoplay: boolean;
 }
 
 export type ItemKind =

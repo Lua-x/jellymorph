@@ -53,3 +53,41 @@ export async function expectNoA11yViolations(page: Page): Promise<void> {
   );
   expect(violations).toEqual([]);
 }
+
+export interface DemoItem {
+  Id: string;
+  Name: string;
+  Type: string;
+  SeriesId?: string;
+  MediaStreams?: { Type: string; Codec: string; IsDefault: boolean }[];
+  UserData?: { PlaybackPositionTicks: number; Played: boolean };
+}
+
+/** Asks the demo server (running in the page) for titles, like the app would. */
+export async function demoItems(page: Page, type: 'Movie' | 'Episode'): Promise<DemoItem[]> {
+  return page.evaluate(async (itemType) => {
+    const sessions = JSON.parse(localStorage.getItem('jellymorph.sessions') ?? '[]') as {
+      accessToken: string;
+    }[];
+    const token = sessions[0]?.accessToken ?? '';
+    const response = await fetch(
+      `/demo-server/Items?includeItemTypes=${itemType}&recursive=true&sortBy=SortName&ApiKey=${token}`,
+    );
+    return ((await response.json()) as { Items: DemoItem[] }).Items;
+  }, type);
+}
+
+/** H.264 with AAC sound and no default subtitles: plays directly in Chromium. */
+export function directPlayable(item: DemoItem): boolean {
+  const streams = item.MediaStreams ?? [];
+  return (
+    streams[0]?.Codec === 'h264' &&
+    streams.some(
+      (stream) => stream.Type === 'Audio' && stream.IsDefault && stream.Codec === 'aac',
+    ) &&
+    !streams.some((stream) => stream.Type === 'Subtitle' && stream.IsDefault)
+  );
+}
+
+export const unwatched = (item: DemoItem) =>
+  item.UserData?.PlaybackPositionTicks === 0 && !item.UserData.Played;

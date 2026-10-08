@@ -1,10 +1,11 @@
 import { useId, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { CastMember, ItemDetail, MediaTrack } from '@/domain/types';
-import { useMediaActions } from '@/hooks/useMediaActions';
+import type { CastMember, ItemDetail, MediaItem, MediaTrack } from '@/domain/types';
+import { isPlayable, useMediaActions } from '@/hooks/useMediaActions';
 import { paths } from '@/navigation/paths';
 import { AppLink } from '@/ui/AppLink';
 import { JellyImage } from '@/ui/JellyImage';
+import { formatClock } from '@/ui/time';
 import { Button } from './Button';
 import styles from './DetailHeader.module.css';
 import { Icon } from './icons';
@@ -12,6 +13,55 @@ import { MetaLine } from './MetaLine';
 
 function trackList(tracks: MediaTrack[]): string {
   return tracks.map((track) => track.title).join(' · ');
+}
+
+/** "Play", or "Resume from …" plus "Start over" for a started video. */
+export function PlayActions({ item }: { item: Pick<MediaItem, 'id' | 'kind' | 'userData'> }) {
+  const { t } = useTranslation('content');
+  const actions = useMediaActions();
+  if (!isPlayable(item) || item.kind === 'series') return null;
+  const position = item.userData.positionTicks / 10_000_000;
+  const resumable = position >= 1 && !item.userData.played;
+  const prepare = {
+    onFocus: actions.preparePlayback,
+    onPointerEnter: actions.preparePlayback,
+  };
+  return resumable ? (
+    <>
+      <Button
+        size="lg"
+        icon={<Icon name="play" filled />}
+        {...prepare}
+        onClick={() => {
+          actions.play(item, 'resume');
+        }}
+      >
+        {t('actions.resumeFrom', { time: formatClock(position) })}
+      </Button>
+      <Button
+        variant="secondary"
+        size="lg"
+        icon={<Icon name="refresh" />}
+        {...prepare}
+        onClick={() => {
+          actions.play(item, 'beginning');
+        }}
+      >
+        {t('actions.restart')}
+      </Button>
+    </>
+  ) : (
+    <Button
+      size="lg"
+      icon={<Icon name="play" filled />}
+      {...prepare}
+      onClick={() => {
+        actions.play(item, 'beginning');
+      }}
+    >
+      {t('actions.play')}
+    </Button>
+  );
 }
 
 /** Backdrop, poster, title/logo, metadata, overview, actions and technical details. */
@@ -68,7 +118,22 @@ export function DetailHeader({ item, children }: { item: ItemDetail; children?: 
           {item.tagline && <p className={styles.tagline}>{item.tagline}</p>}
           {item.overview && <p className={styles.overview}>{item.overview}</p>}
           <div className={styles.actions}>
+            <PlayActions item={item} />
             {children}
+            {item.localTrailerCount > 0 && (
+              <Button
+                variant="secondary"
+                size="lg"
+                icon={<Icon name="videos" />}
+                onFocus={actions.preparePlayback}
+                onPointerEnter={actions.preparePlayback}
+                onClick={() => {
+                  actions.playTrailer(item);
+                }}
+              >
+                {t('actions.trailer')}
+              </Button>
+            )}
             <Button
               variant="secondary"
               size="lg"

@@ -1,7 +1,8 @@
-import { http, HttpResponse, ws, type HttpResponseResolver } from 'msw';
+import { http, HttpResponse, ws } from 'msw';
 import { artworkSvg } from './artwork';
-import { itemsById, type MockImageType } from './catalog';
-import { DEMO_VIEWS, type MockUser } from './fixtures';
+import { itemsById, trailers, type MockImageType } from './catalog';
+import { DEMO_VIEWS } from './fixtures';
+import type { Authed } from './handlers';
 import { libraryArtSvg, svgResponseInit } from './images';
 import {
   filterOptions,
@@ -14,18 +15,11 @@ import {
   queryItems,
   resumeItems,
   searchPeople,
+  seriesEpisodes,
   similarItems,
   userDataDto,
 } from './library';
 import type { MockState } from './state';
-
-type Authed = (
-  resolver: (
-    user: MockUser,
-    request: Request,
-    params: Record<string, string>,
-  ) => Response | Promise<Response>,
-) => HttpResponseResolver<Record<string, string>>;
 
 const notFound = () => new HttpResponse(null, { status: 404 });
 const IMAGE_TYPES: readonly string[] = ['Primary', 'Backdrop', 'Thumb', 'Logo'];
@@ -96,7 +90,13 @@ export function createContentHandlers(state: MockState, authed: Authed) {
     ),
     http.get(
       '*/Items/:itemId/LocalTrailers',
-      authed(() => HttpResponse.json([])),
+      authed((user, _request, params) =>
+        HttpResponse.json(
+          trailers
+            .filter((trailer) => trailer.parentId === params.itemId)
+            .map((trailer) => itemDto(library, user.id, trailer)),
+        ),
+      ),
     ),
     http.get(
       '*/Items/:itemId',
@@ -121,11 +121,25 @@ export function createContentHandlers(state: MockState, authed: Authed) {
     ),
     http.get(
       '*/Shows/:seriesId/Episodes',
-      authed((user, request) => {
-        const seasonId = new URL(request.url).searchParams.get('seasonId');
-        const result = queryItems(library, user.id, { parentId: seasonId });
-        result.Items.sort((a, b) => (a.IndexNumber ?? 0) - (b.IndexNumber ?? 0));
-        return HttpResponse.json(result);
+      authed((user, request, params) => {
+        const search = new URL(request.url).searchParams;
+        const seasonId = search.get('seasonId');
+        if (seasonId) {
+          const result = queryItems(library, user.id, { parentId: seasonId });
+          result.Items.sort((a, b) => (a.IndexNumber ?? 0) - (b.IndexNumber ?? 0));
+          return HttpResponse.json(result);
+        }
+        // Whole series in order, optionally starting at one episode (next episode lookup).
+        const list = seriesEpisodes(params.seriesId ?? '');
+        const startId = search.get('startItemId');
+        const start = startId
+          ? Math.max(
+              0,
+              list.findIndex((episode) => episode.id === startId),
+            )
+          : 0;
+        const slice = list.slice(start, start + limitOf(request, list.length));
+        return page(slice.map((episode) => itemDto(library, user.id, episode)));
       }),
     ),
     http.get(

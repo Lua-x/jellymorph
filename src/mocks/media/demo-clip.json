@@ -1,0 +1,162 @@
+{
+  "width": 960,
+  "height": 540,
+  "durationSeconds": 60.189,
+  "codecs": "vp09.00.30.08,opus",
+  "init": {
+    "offset": 0,
+    "length": 1220
+  },
+  "fragments": [
+    {
+      "offset": 1220,
+      "length": 75796,
+      "duration": 2.009
+    },
+    {
+      "offset": 77016,
+      "length": 145977,
+      "duration": 2.05
+    },
+    {
+      "offset": 222993,
+      "length": 97891,
+      "duration": 2.016
+    },
+    {
+      "offset": 320884,
+      "length": 98915,
+      "duration": 2.05
+    },
+    {
+      "offset": 419799,
+      "length": 99227,
+      "duration": 2.017
+    },
+    {
+      "offset": 519026,
+      "length": 103993,
+      "duration": 2
+    },
+    {
+      "offset": 623019,
+      "length": 102181,
+      "duration": 2.05
+    },
+    {
+      "offset": 725200,
+      "length": 99341,
+      "duration": 2.017
+    },
+    {
+      "offset": 824541,
+      "length": 83883,
+      "duration": 2.032
+    },
+    {
+      "offset": 908424,
+      "length": 86917,
+      "duration": 2.017
+    },
+    {
+      "offset": 995341,
+      "length": 85319,
+      "duration": 2.033
+    },
+    {
+      "offset": 1080660,
+      "length": 90303,
+      "duration": 2.017
+    },
+    {
+      "offset": 1170963,
+      "length": 98524,
+      "duration": 2.001
+    },
+    {
+      "offset": 1269487,
+      "length": 100371,
+      "duration": 2.017
+    },
+    {
+      "offset": 1369858,
+      "length": 99742,
+      "duration": 2.016
+    },
+    {
+      "offset": 1469600,
+      "length": 95855,
+      "duration": 2
+    },
+    {
+      "offset": 1565455,
+      "length": 85483,
+      "duration": 2.017
+    },
+    {
+      "offset": 1650938,
+      "length": 100997,
+      "duration": 2.033
+    },
+    {
+      "offset": 1751935,
+      "length": 100352,
+      "duration": 2.017
+    },
+    {
+      "offset": 1852287,
+      "length": 103614,
+      "duration": 2
+    },
+    {
+      "offset": 1955901,
+      "length": 84337,
+      "duration": 2.033
+    },
+    {
+      "offset": 2040238,
+      "length": 97014,
+      "duration": 2.017
+    },
+    {
+      "offset": 2137252,
+      "length": 102524,
+      "duration": 2.033
+    },
+    {
+      "offset": 2239776,
+      "length": 92442,
+      "duration": 2.017
+    },
+    {
+      "offset": 2332218,
+      "length": 103319,
+      "duration": 2
+    },
+    {
+      "offset": 2435537,
+      "length": 98763,
+      "duration": 2.049
+    },
+    {
+      "offset": 2534300,
+      "length": 104479,
+      "duration": 2.017
+    },
+    {
+      "offset": 2638779,
+      "length": 106152,
+      "duration": 2.033
+    },
+    {
+      "offset": 2744931,
+      "length": 114017,
+      "duration": 2.016
+    },
+    {
+      "offset": 2858948,
+      "length": 95245,
+      "duration": 1.567
+    }
+  ]
+}

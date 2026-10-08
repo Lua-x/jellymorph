@@ -298,9 +298,9 @@ Performance-Ziele: Basis-Bundle ohne Theme < 250 KB gzip, LCP < 2,5 s auf Deskto
 ## 11. Phasen & Status
 
 - [x] Phase 0 – Plan: Architektur, finaler Theme-Vertrag, Abhängigkeiten mit Begründung, Player-Datenfluss, Risiken, offene Fragen → docs/architecture.md. Keine Implementierung. _(freigegeben 2026-10-07)_
-- [x] Phase 1 – Fundament: Setup, Tooling, ci.yml, Laufzeit-Config, API-Client, Auth (Server, Login, Quick Connect, Profilauswahl), Mock-Server + Demo-Modus, i18n _(fertig 2026-10-07, v0.1.0, Freigabe ausstehend)_
-- [x] Phase 2 – Default-Theme: alle Seiten funktional (Home, Bibliothek, Details, Serien, Suche, Favoriten) _(fertig 2026-10-07, v0.2.0, Freigabe ausstehend)_
-- [ ] Phase 3 – Player: komplett inkl. Reporting, Spuren, Trickplay, Segmente, Nächste Folge
+- [x] Phase 1 – Fundament: Setup, Tooling, ci.yml, Laufzeit-Config, API-Client, Auth (Server, Login, Quick Connect, Profilauswahl), Mock-Server + Demo-Modus, i18n _(fertig 2026-10-07, v0.1.0, freigegeben)_
+- [x] Phase 2 – Default-Theme: alle Seiten funktional (Home, Bibliothek, Details, Serien, Suche, Favoriten) _(fertig 2026-10-07, v0.2.0, freigegeben 2026-10-07)_
+- [x] Phase 3 – Player: komplett inkl. Reporting, Spuren, Trickplay, Segmente, Nächste Folge _(fertig 2026-10-08, v0.3.0, Freigabe ausstehend)_
 - [ ] Phase 4 – Theme-System: Registry, Fallback, Einstellungen mit Live-Vorschau, Persistenz, Spatial Navigation
 - [ ] Phase 5 – Docker & Release: Dockerfile, nginx, Entrypoint, Compose, release.yml
 - [ ] Phase 6 – Theme neon-grid
@@ -352,6 +352,21 @@ Hier trägt Claude Code wichtige Architekturentscheidungen und Abweichungen mit 
   - Inhaltsseiten außer der Startseite werden per Lazy Loading nachgeladen.
   - **Theme-Regel:** Seiten-Grids brauchen `grid-template-columns: minmax(0, 1fr)`. Sonst wächst die Spalte mit einer langen Kartenreihe mit, und die Seite scrollt seitlich. Ein E2E-Test prüft das.
   - Der Demo-Server speichert auch Favoriten und den Gesehen-Status pro Benutzer in `localStorage`.
+- **2026-10-08 – Phase 3, Umsetzungsentscheidungen:**
+  - Der Player ist eine eigene Vollbild-Route `/play/:itemId?start=<Sekunden>` statt einer Ebene über der vorherigen Seite. Die Startposition steht in der URL, ein Neuladen setzt also an derselben Stelle fort. Die vorherige Seite kommt beim Zurückgehen aus dem Cache. Beim Wechsel zur nächsten Folge bleibt der Bildschirm montiert, Vollbild bleibt erhalten.
+  - Ohne `start` fragt die Route nach (Slot `ResumePrompt`), wenn eine gespeicherte Position existiert. Serien werden auf die nächste Folge aufgelöst.
+  - Quellenwahl wie jellyfin-web (im Quelltext geprüft): `SupportsDirectPlay` oder `SupportsDirectStream` → statische Datei, sonst `TranscodingUrl`. HLS beginnt bei 0, der Player springt selbst an die Startposition. Bei progressivem Transcoding gilt ein Zeitversatz, außer die URL enthält `copytimestamps=true`.
+  - DeviceProfile nach den Konventionen von jellyfin-web: `IsSecondaryAudio = false` (Tonspurwechsel immer über einen neuen Stream), MKV per `canPlayType` statt User-Agent (Chrome 153 meldet `maybe`), Untertitel nur als `vtt` extern (der Server wandelt SRT und ASS um), Bilduntertitel werden eingebrannt. „Gestaltete Untertitel einbrennen“ nutzt `AlwaysBurnInSubtitleWhenTranscoding` ohne Direct Play und ohne Video-Stream-Copy.
+  - HLS läuft außerhalb von Safari über `hls.js/light` (116 statt 181 KB gzip, nur bei Bedarf geladen). Chrome meldet inzwischen natives HLS, trotzdem bleibt hls.js dort die erste Wahl, weil es erprobter ist.
+  - `DELETE /Videos/ActiveEncodings` existiert in Jellyfin 12 weiter (`HlsSegmentController`, per `IgnoreApi` aus der OpenAPI ausgeblendet, deshalb fehlt er im SDK).
+  - Die Laufzeit vom Server gilt als Dauer. Browser kennen bei fragmentierten Dateien und laufenden Transcodes oft nur den geladenen Teil.
+  - Qualität, Lautstärke und „einbrennen“ sind Geräte-Einstellungen (lokal). „Nächste Folge automatisch“ liest der Player aus `UserConfiguration.EnableNextEpisodeAutoPlay`; die Einstellungsseite dafür kommt in Phase 4. Die Trailer-Vorschau im Hero (architecture.md §9.13) hängt an „Trailer-Autoplay“ und folgt deshalb ebenfalls in Phase 4. Lokale Trailer lassen sich schon jetzt auf der Detailseite abspielen.
+  - Theme-Vertrag: neue Slots `PlayerOverlay` (bekommt ein `PlayerModel`) und `ResumePrompt`. Das `<video>`-Element gehört der App, das Overlay liegt darüber. Gemeinsame Bausteine für alle Themes: `useScrubber` (Zeitleiste) und `formatClock` in `src/ui/`.
+  - Player-Bildschirme sind in jedem Farbschema dunkel: Die Bühne setzt das aktive Theme mit `data-color-scheme="dark"` erneut (derselbe Mechanismus wie die spätere Live-Vorschau).
+  - Classic: Primär-Buttons werden bei Hover und Fokus dunkler statt heller. Vorher hatte weiße Schrift auf dem fokussierten Button nur 3,99:1.
+  - **Demo-Video:** Jeder Titel spielt im Demo-Modus denselben 60-Sekunden-Clip. `scripts/record-demo-clip.ts` nimmt ihn per MediaRecorder in Chromium auf (VP9/Opus als fragmentiertes MP4, 2,9 MB) und korrigiert danach VP9-Level und Dauer im Header. Dieselbe Datei dient als Direct-Play-Datei und, über Byte-Ranges, als HLS-Stream. Gespeicherte Positionen beziehen sich im Demo-Modus auf den Clip.
+  - Der Demo-Server beantwortet Range-Anfragen für Direct Play selbst: Der MSW-Service-Worker verliert beim Weiterreichen von `<video>`-Anfragen (no-cors) den Range-Header, die Datei wäre sonst nicht spulbar. Für Tests lassen sich Fehler einschalten (`localStorage["jellymorph.demo.faults"]`: `directPlay`, `transcode`, `playbackInfo`).
+  - Bekannte Einschränkung im Demo-Modus: Beim Neuladen der Seite geht die Stop-Meldung verloren, weil der Mock-Server im Tab selbst läuft. Bei einem echten Server greift `keepalive`.
 - **2026-10-07 – MSW 3 über das Vite-Plugin `msw/vite` im Modus `worker-only`.** Es liefert `mockServiceWorker.js` im Dev-Server aus und legt es beim Build in `dist/`. Die Datei liegt also nicht im Repo und ist immer passend zur installierten MSW-Version. Gestartet wird über die stabile API `setupWorker`, nicht über das experimentelle `virtual:msw`.
 
 - **2026-10-07 – SDK 1.0.0 trotz Mindestversion 10.10.** `@jellyfin/sdk` 1.0.0 ist gegen die OpenAPI von Jellyfin 12.0 generiert (Klassen umbenannt, z. B. `ItemsApi` → `LibraryApi`, `PlaystateApi` → `SessionApi`). Ein Abgleich aller Endpunkt-Pfade mit SDK 0.11.0 (= Jellyfin 10.10) zeigt: Jeder Pfad, den der Client braucht, existiert unverändert in 10.10. `MINIMUM_VERSION` des SDK ist weiterhin 10.10.0. Details: docs/architecture.md §1.2.

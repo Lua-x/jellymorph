@@ -17,6 +17,11 @@ export const paths = {
     `/item/${encodeURIComponent(seriesId)}?season=${encodeURIComponent(seasonId)}`,
   search: (term?: string) => (term ? `/search?q=${encodeURIComponent(term)}` : '/search'),
   favorites: '/favorites',
+  /** The player; `startSeconds` skips the resume question (0 = from the beginning). */
+  play: (itemId: string, startSeconds?: number) =>
+    startSeconds === undefined
+      ? `/play/${encodeURIComponent(itemId)}`
+      : `/play/${encodeURIComponent(itemId)}?start=${String(Math.max(0, Math.floor(startSeconds)))}`,
 } as const;
 
 /** Where a card for this item leads. */
