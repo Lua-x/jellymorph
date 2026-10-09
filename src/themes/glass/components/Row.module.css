@@ -1,0 +1,166 @@
+.row {
+  --gap: 1.25rem;
+  --per-row: 5;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.row[data-shape='poster'] {
+  --per-row: 8;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(1.1875rem, 1rem + 0.5vw, 1.5rem);
+  font-weight: 700;
+}
+
+.titleLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.625rem 0.125rem 0;
+  border-radius: 999px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.chevron {
+  color: var(--color-text-muted);
+  font-size: 1.25rem;
+  transition: transform var(--duration-base) var(--ease-emphasized);
+}
+
+/* Focus = hover: the chevron moves on and turns bright. */
+.titleLink:is(:hover, :focus-visible) .chevron {
+  color: var(--color-text);
+  transform: translateX(0.25rem);
+}
+
+.titleLink:focus-visible {
+  outline: 0.125rem solid var(--gl-ring);
+  outline-offset: 2px;
+}
+
+.viewport {
+  position: relative;
+  margin: 0 calc(var(--page-gutter) * -1);
+}
+
+/* Room above and below for lifted cards and their shadows (scrolling clips both axes). */
+.track {
+  display: flex;
+  gap: var(--gap);
+  margin: -1rem 0 -1.5rem;
+  padding: 1.5rem var(--page-gutter) 2.25rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-padding-inline: var(--page-gutter);
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  list-style: none;
+}
+
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+.slot {
+  flex: 0 0 calc((100% - (var(--per-row) - 1) * var(--gap)) / var(--per-row));
+  min-width: 0;
+  scroll-snap-align: start;
+}
+
+/* Round glass arrows at the ends, only under a pointer. */
+.arrow {
+  position: absolute;
+  top: calc(50% - 2rem);
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border: 1px solid var(--gl-glass-border);
+  border-radius: 999px;
+  background: var(--gl-bar);
+  color: var(--color-text);
+  font-size: 1.5rem;
+  cursor: pointer;
+  opacity: 0;
+  backdrop-filter: var(--gl-blur);
+  transition:
+    opacity var(--duration-base) var(--ease-standard),
+    transform var(--duration-base) var(--ease-emphasized);
+}
+
+.arrow:hover {
+  transform: scale(1.08);
+}
+
+.previous {
+  left: calc(var(--page-gutter) / 2);
+}
+
+.next {
+  right: calc(var(--page-gutter) / 2);
+}
+
+.viewport:hover .arrow {
+  opacity: 1;
+}
+
+@media (max-width: 120rem) {
+  .row {
+    --per-row: 4.5;
+  }
+
+  .row[data-shape='poster'] {
+    --per-row: 7.2;
+  }
+}
+
+@media (max-width: 90rem) {
+  .row {
+    --per-row: 3.5;
+  }
+
+  .row[data-shape='poster'] {
+    --per-row: 6.2;
+  }
+}
+
+@media (max-width: 64rem) {
+  .row {
+    --gap: 1rem;
+    --per-row: 2.5;
+  }
+
+  .row[data-shape='poster'] {
+    --per-row: 4.3;
+  }
+}
+
+@media (max-width: 40rem) {
+  .row {
+    --gap: 0.75rem;
+    --per-row: 1.3;
+  }
+
+  .row[data-shape='poster'] {
+    --per-row: 2.4;
+  }
+}
+
+@media (hover: none) {
+  .arrow {
+    display: none;
+  }
+}
+
+:global([data-motion='reduced']) .arrow,
+:global([data-motion='reduced']) .chevron {
+  transition: none;
+}

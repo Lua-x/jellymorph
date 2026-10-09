@@ -1,0 +1,20 @@
+{
+  "hero": {
+    "pause": "Pause automatic rotation",
+    "resume": "Resume automatic rotation",
+    "slides": "Featured titles"
+  },
+  "detail": {
+    "castAndCrew": "Cast and crew",
+    "information": "Information",
+    "released": "Released",
+    "runtime": "Runtime",
+    "rated": "Rated",
+    "genres": "Genres",
+    "episode": "Episode {{number}}",
+    "episodeDetails": "Details for “{{name}}”"
+  },
+  "player": {
+    "elapsed": "Watched: {{time}}"
+  }
+}

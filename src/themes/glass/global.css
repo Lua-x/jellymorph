@@ -1,0 +1,27 @@
+/*
+ * Glass – global styles. Every selector starts with the theme scope; :where() keeps the
+ * specificity low so component styles always win.
+ */
+
+[data-theme='glass'] body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-feature-settings: 'cv11', 'ss01';
+  letter-spacing: -0.005em;
+}
+
+:where([data-theme='glass']) ::selection {
+  background: rgb(86 126 255 / 40%);
+}
+
+:where([data-theme='glass']) :focus-visible {
+  outline: 0.125rem solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Headings of the reused Classic pages get the calmer, heavier Glass look. */
+:where([data-theme='glass']) h1,
+:where([data-theme='glass']) h2 {
+  letter-spacing: -0.02em;
+}

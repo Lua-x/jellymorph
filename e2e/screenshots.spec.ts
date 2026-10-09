@@ -494,6 +494,121 @@ test.describe('screenshots @shots', () => {
     });
   }
 
+  /** Theme Glass (phase 8): every screen it designs, in all four sizes and both schemes. */
+  for (const scheme of ['dark', 'light'] as const) {
+    for (const viewport of VIEWPORTS) {
+      test.describe(`glass ${scheme} ${String(viewport.width)}x${String(viewport.height)}`, () => {
+        test.use({ viewport, colorScheme: scheme });
+
+        test('glass', async ({ page }) => {
+          test.setTimeout(150_000);
+          const suffix = scheme === 'light' ? '-light' : '';
+          await signInAs(page, 'Alex');
+          await chooseTheme(page, 'Glass', 'glass');
+          await page.goto('/');
+          const resume = page.getByRole('region', { name: 'Weiterschauen', exact: true });
+          await expect(resume.getByRole('list').getByRole('link').first()).toBeVisible();
+          // Resting in the middle of the hero holds the rotation for the picture.
+          await page.mouse.move(viewport.width * 0.6, viewport.height * 0.35);
+          await shoot(page, '70-glass-home', suffix);
+          await shoot(page, '70-glass-home', `${suffix}-full`, true);
+
+          // The focus effect under a pointer, off the card's centre.
+          if (viewport.width > 640) {
+            const card = page
+              .getByRole('region', { name: 'Neu in Filme', exact: true })
+              .getByRole('list')
+              .getByRole('link')
+              .nth(1);
+            await card.scrollIntoViewIfNeeded();
+            const box = await card.boundingBox();
+            if (box) {
+              await page.mouse.move(box.x + box.width * 0.8, box.y + box.height * 0.2);
+              await page.mouse.move(box.x + box.width * 0.85, box.y + box.height * 0.15);
+            }
+            await shoot(page, '71-glass-card', suffix);
+            await page.mouse.move(0, 0);
+          }
+
+          await openFromSearch(page, 'Kupferherz', 'Filme');
+          await shoot(page, '72-glass-movie', suffix);
+          await shoot(page, '72-glass-movie', `${suffix}-full`, true);
+
+          await openFromSearch(page, 'Hafenviertel', 'Serien');
+          await shoot(page, '73-glass-series', suffix);
+          await page.getByRole('tablist', { name: 'Staffeln' }).scrollIntoViewIfNeeded();
+          await page.mouse.move(0, 0);
+          await shoot(page, '73-glass-series', `${suffix}-episodes`);
+
+          await page.goto('/search?q=or');
+          await expect(page.getByRole('region', { name: /^Filme/ })).toBeVisible();
+          await shoot(page, '74-glass-search', suffix);
+
+          await page.goto('/');
+          await page
+            .getByRole('region', { name: 'Bibliotheken' })
+            .getByRole('link', { name: /^Filme/ })
+            .click();
+          await expect(page.getByText('56 Titel')).toBeVisible();
+          await page.mouse.move(0, 0);
+          await shoot(page, '75-glass-library', suffix);
+
+          if (scheme === 'dark') {
+            const movie = (await demoItems(page, 'Movie')).find(directPlayable);
+            if (!movie) throw new Error('Missing demo title');
+            await pausedPlayer(page, movie.Id, 22);
+            await shoot(page, '76-glass-player');
+            await page.getByRole('button', { name: 'Audio und Untertitel' }).click();
+            await expect(page.getByRole('dialog', { name: 'Audio und Untertitel' })).toBeVisible();
+            await shoot(page, '77-glass-player-tracks');
+          }
+
+          await page.goto('/settings');
+          await expect(
+            page.getByRole('heading', { level: 1, name: 'Einstellungen' }),
+          ).toBeVisible();
+          await shoot(page, '78-glass-settings', suffix);
+        });
+      });
+    }
+  }
+
+  for (const viewport of [
+    { width: 1920, height: 1080 },
+    { width: 3840, height: 2160 },
+  ]) {
+    test.describe(`glass TV ${String(viewport.width)}x${String(viewport.height)}`, () => {
+      test.use({ viewport });
+
+      test('glass TV mode', async ({ page }) => {
+        await page.addInitScript(() => {
+          const raw = localStorage.getItem('jellymorph.settings');
+          const settings = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+          localStorage.setItem(
+            'jellymorph.settings',
+            JSON.stringify({ ...settings, deviceMode: 'tv', overscan: 0.03 }),
+          );
+        });
+        await signInAs(page, 'Alex');
+        await chooseTheme(page, 'Glass', 'glass');
+        await page.goto('/');
+        await expect(page.locator('html')).toHaveAttribute('data-device', 'tv');
+        const resume = page.getByRole('region', { name: 'Weiterschauen', exact: true });
+        await expect(resume.getByRole('list').getByRole('link').first()).toBeVisible();
+        await page.keyboard.press('ArrowDown');
+        await page.keyboard.press('ArrowDown');
+        await expect(resume.locator(':focus')).toHaveCount(1);
+        await page.waitForTimeout(700);
+        await shoot(page, '79-glass-tv-home');
+        await page.keyboard.press('Enter');
+        await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+        await page.keyboard.press('ArrowDown');
+        await page.waitForTimeout(700);
+        await shoot(page, '80-glass-tv-details');
+      });
+    });
+  }
+
   test.describe('light color scheme', () => {
     test.use({ viewport: { width: 1280, height: 800 }, colorScheme: 'light' });
 

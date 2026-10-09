@@ -604,13 +604,15 @@ Umsetzung (`themes/loader.ts`, `themes/transition.ts`): Der Loader merkt sich je
 
 - Animiert werden nur `transform`, `opacity` und `filter`. Eine Code-Review-Regel und ein E2E-Test prüfen, dass keine Animation Layout-Eigenschaften anfasst.
 - `MotionConfig reducedMotion` folgt `data-motion`. `useMotionPreference()` liefert Themes `'full' | 'reduced'`. Bei `reduced` entfallen Glitch, Ken Burns, Parallax, Neigung und automatische Karussells. Überblendungen bleiben kurz erhalten.
-- Stand Phase 4: `data-motion` ergibt sich aus der Einstellung „Bewegung“ (Wie das System / Reduziert / Alle Animationen) und `prefers-reduced-motion`. Classic kommt mit CSS-Übergängen aus, `motion` ist deshalb noch nicht installiert. Es folgt mit dem ersten Theme, das Feder-Animationen braucht. Ein E2E-Test liest alle `transition`- und `@keyframes`-Regeln aus dem CSSOM und prüft, dass nur `transform`, `opacity` und `filter` (samt `translate`, `scale`, `rotate`) animiert werden.
+- Stand Phase 4: `data-motion` ergibt sich aus der Einstellung „Bewegung“ (Wie das System / Reduziert / Alle Animationen) und `prefers-reduced-motion`. Classic kommt mit CSS-Übergängen aus, `motion` ist deshalb noch nicht installiert. Es folgt mit dem ersten Theme, das Feder-Animationen braucht.
+- Stand Phase 8: `motion` 13.5 ist installiert und wird nur im Glass-Chunk geladen (Basis-Bundle unverändert). Glass nutzt `LazyMotion` mit `domAnimation` (keine Layout-Animationen), Federn für Kartenneigung und -anhebung (`useLift`) und den Textwechsel im Hero. `MotionConfig reducedMotion` folgt `useReducedMotion()` (Komponente `GlassMotion`). Die neue Hauptversion 14 war beim Einbau eine Woche alt und wurde deshalb nicht genommen. Ein E2E-Test liest alle `transition`- und `@keyframes`-Regeln aus dem CSSOM und prüft, dass nur `transform`, `opacity` und `filter` (samt `translate`, `scale`, `rotate`) animiert werden.
 - Neon Grid: Glitch-Effekte flackern maximal 3× pro Sekunde (WCAG 2.3.1) und laufen nie über Fließtext.
 
 ### 7.8 Rechtliche Prüfliste je Theme
 
 Vor dem Abschluss jeder Theme-Phase: keine Markennamen in Code, Dateinamen, Kommentaren oder Texten; Farben nur in ähnlicher Stimmung (Abstand zu bekannten Markenfarben dokumentiert); Schriften nur frei lizenziert über `@fontsource`; Icons selbst gezeichnet; keine „im Stil von“-Hinweise im UI.
 
+- Glass: Akzent `#4256cf` (dunkel) bzw. `#2456c8` (hell), ΔE76 ≥ 16 bzw. ≥ 12 zu den bekannten Systemblautönen; die Hauptaktionen sind weiß bzw. fast schwarz statt blau. Keine Original-Schrift (Inter statt der Systemschrift des Vorbilds), Icons selbst gezeichnet.
 - Crimson: Akzent `#d31d34`, dunkler und blauer als das Rot des Vorbilds (ΔE76 ≈ 21). Kein roter Schriftzug als Marke: Logo und App-Titel wie in allen Themes, Titel weiß. Bewertungssterne `#f2c14e` statt eines bekannten Gelbs. Schrift Inter (OFL).
 
 ### 7.9 Details als Overlay (Phase 7) **[Entscheidung]**

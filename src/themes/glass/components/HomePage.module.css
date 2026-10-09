@@ -1,0 +1,117 @@
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.rows {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2.75rem;
+  margin-top: 2.5rem;
+}
+
+.section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.heading {
+  margin: 0;
+  font-size: clamp(1.1875rem, 1rem + 0.5vw, 1.5rem);
+  font-weight: 700;
+}
+
+.libraries {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.library {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 8;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-card);
+  color: var(--color-text);
+  text-decoration: none;
+  transition: transform var(--duration-base) var(--ease-emphasized);
+}
+
+.library > span:first-child {
+  position: absolute;
+  inset: 0;
+}
+
+/* Focus = hover: the tile lifts and gets a ring. */
+.library:is(:hover, :focus-visible) {
+  outline: none;
+  box-shadow:
+    var(--shadow-card),
+    0 0 0 0.125rem var(--gl-ring);
+  transform: scale(1.04);
+}
+
+.libraryFallback {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(140deg, rgb(86 126 255 / 45%), rgb(196 120 255 / 30%));
+}
+
+/* The name sits on a strip of frosted glass at the bottom. */
+.libraryName {
+  position: absolute;
+  right: 0.625rem;
+  bottom: 0.625rem;
+  left: 0.625rem;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid var(--gl-glass-border);
+  border-radius: 0.875rem;
+  background: var(--gl-bar);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  backdrop-filter: var(--gl-blur);
+}
+
+.genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.genre {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 1.125rem;
+  border: 1px solid var(--gl-glass-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform var(--duration-base) var(--ease-emphasized);
+}
+
+.genre:is(:hover, :focus-visible) {
+  background: var(--color-surface-hover);
+  transform: scale(1.05);
+}
+
+.genre:focus-visible {
+  outline: 0.125rem solid var(--gl-ring);
+  outline-offset: 2px;
+}
+
+:global([data-motion='reduced']) :is(.library, .genre) {
+  transition: none;
+}

@@ -214,6 +214,9 @@ Die Pfeiltasten-Navigation (`src/navigation/spatial.ts`) arbeitet mit dem echten
 - Animiert werden nur `transform` (auch `translate`, `scale`, `rotate`), `opacity` und `filter`. Ein E2E-Test liest alle Übergänge und Keyframes aus dem CSSOM und schlägt bei anderen Eigenschaften fehl.
 - `data-motion="reduced"` auf `<html>` bzw. `useMotionPreference() === 'reduced'`: keine Parallaxe, kein Ken Burns, keine Neigung, kein Glitch, keine automatischen Karussells, keine Trailer. Kurze Überblendungen bleiben erlaubt.
 - Flackernde Effekte höchstens dreimal pro Sekunde (WCAG 2.3.1).
+- **Motion (Feder-Animationen):** erlaubt, aber nur im Theme-Chunk. Mit `LazyMotion features={domAnimation} strict` und `m.*`-Elementen bleibt der Anteil klein (ohne Layout-Animationen), `MotionConfig reducedMotion` folgt `useReducedMotion()`. Glass kapselt das in `GlassMotion`; Bausteine, die außerhalb der Shell gerendert werden (Live-Vorschau, Player), brauchen die Hülle selbst. Auch Motion animiert nur `transform` und `opacity`. Diese Animationen laufen per JavaScript und stehen nicht im CSSOM, der E2E-Test sieht sie also nicht: Hier gilt die Regel per Code-Review.
+- **Beispiel Fokuseffekt:** `glass/components/useLift.ts` hebt eine Karte bei Fokus und Hover an, neigt sie unter der Maus zur Zeigerposition und lässt einen Lichtreflex folgen (Federn über Motion-Werte, ohne Neu-Rendern). Tastatur und Fernbedienung heben die Karte nur gerade an, reduzierte Bewegung schaltet Neigung und Animation ab. Der stärkere Schatten einer angehobenen Karte liegt auf einer eigenen Ebene und blendet nur über `opacity` ein.
+- **Automatische Karussells** brauchen einen Pause-Knopf (WCAG 2.2.2) und halten bei Hover, Fokus und laufendem Trailer an.
 - Der Theme-Wechsel selbst blendet über (View Transition). Das Theme muss dafür nichts tun.
 
 ## 8. Live-Vorschau

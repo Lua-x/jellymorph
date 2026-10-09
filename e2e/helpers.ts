@@ -30,12 +30,18 @@ export async function openUserMenu(page: Page): Promise<void> {
   await page.getByRole('button', { name: /Benutzermenü/ }).click();
 }
 
-/** Waits until all finite animations (entrances, fades) are done; ambient loops are ignored. */
+/**
+ * Waits until all short animations (entrances, fades) are done. Ambient motion is ignored: loops
+ * and slow movements of five seconds or more (a picture settling, a carousel's time indicator).
+ */
 export async function waitForAnimations(page: Page): Promise<void> {
   await page.waitForFunction(() =>
     document
       .getAnimations()
-      .filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity)
+      .filter((animation) => {
+        const timing = animation.effect?.getComputedTiming();
+        return timing?.iterations !== Infinity && Number(timing?.duration ?? 0) < 5000;
+      })
       .every((animation) => animation.playState === 'finished'),
   );
 }

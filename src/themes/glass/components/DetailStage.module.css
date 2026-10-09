@@ -1,0 +1,150 @@
+/* The picture fills the window from the top edge, under the floating bar. */
+.stage {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: 100svh;
+  margin: calc((var(--gl-nav-height) + var(--overscan-y) + 1.5rem) * -1)
+    calc(var(--page-gutter) * -1) 0;
+  overflow: hidden;
+  isolation: isolate;
+  background: #0a0a0c;
+  color: #ffffff;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  animation: settle 1.4s var(--ease-emphasized) both;
+}
+
+@keyframes settle {
+  from {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+}
+
+/* Dark from the bottom and the left: light text reads in both color schemes. */
+.shade {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(0deg, rgb(0 0 0 / 88%) 0%, rgb(0 0 0 / 45%) 40%, transparent 70%),
+    linear-gradient(90deg, rgb(0 0 0 / 65%) 0%, rgb(0 0 0 / 20%) 50%, transparent 75%),
+    linear-gradient(180deg, rgb(0 0 0 / 40%) 0%, transparent 18%);
+}
+
+.content {
+  display: grid;
+  justify-items: start;
+  gap: 1rem;
+  width: min(44rem, 100%);
+  padding: 8rem var(--page-gutter) calc(3.5rem + var(--overscan-y));
+}
+
+.parent {
+  padding: 0.25rem 0;
+  border-radius: 0.375rem;
+  color: rgb(255 255 255 / 85%);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.parent:is(:hover, :focus-visible) {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+.parent:focus-visible {
+  outline: 0.125rem solid #ffffff;
+  outline-offset: 2px;
+}
+
+.logo {
+  width: min(30rem, 85%);
+  height: clamp(5rem, 12vw, 10rem);
+  margin: 0 0 0.5rem;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(2.25rem, 1.4rem + 3vw, 4.5rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+  text-shadow: 0 2px 16px rgb(0 0 0 / 40%);
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem 0.625rem;
+  margin: 0;
+  color: rgb(255 255 255 / 86%);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.badge {
+  padding: 0.0625rem 0.4375rem;
+  border: 1px solid rgb(255 255 255 / 55%);
+  border-radius: 0.375rem;
+  font-size: 0.8125rem;
+}
+
+.score {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #ffffff;
+}
+
+.score > svg {
+  color: #f5c451;
+}
+
+.tagline {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.overview {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: rgb(255 255 255 / 92%);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 100%;
+  margin-top: 0.5rem;
+}
+
+:global([data-motion='reduced']) .backdrop {
+  animation: none;
+}
+
+@media (max-width: 48rem) {
+  .stage {
+    min-height: 88svh;
+  }
+
+  .content {
+    padding-bottom: 2.5rem;
+  }
+}

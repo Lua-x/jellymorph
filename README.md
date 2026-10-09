@@ -2,7 +2,7 @@
 
 Ein selbst gehosteter Web-Client für [Jellyfin](https://jellyfin.org) mit austauschbaren Themes. Ein Theme ist hier mehr als ein Farbschema: Jedes bringt sein eigenes Bedienkonzept mit, also Layout, Navigation, Karten, Detailseiten, Player-Oberfläche und Animationen.
 
-> **Status:** in Entwicklung. Fertig sind das Fundament, die Anmeldung (Server, Profile, Passwort, Quick Connect), alle Inhaltsseiten im Theme „Classic“, der Player, das Theme-System mit Einstellungen und Live-Vorschau, die Bedienung per Fernbedienung samt TV-Modus, der Demo-Modus und das Docker-Image. Wählbar sind die Themes „Classic“, „Neon Grid“ und „Crimson“. Den Fahrplan zeigt [CLAUDE.md](CLAUDE.md) §11.
+> **Status:** in Entwicklung. Fertig sind das Fundament, die Anmeldung (Server, Profile, Passwort, Quick Connect), alle Inhaltsseiten im Theme „Classic“, der Player, das Theme-System mit Einstellungen und Live-Vorschau, die Bedienung per Fernbedienung samt TV-Modus, der Demo-Modus und das Docker-Image. Wählbar sind die Themes „Classic“, „Neon Grid“, „Crimson“ und „Glass“. Den Fahrplan zeigt [CLAUDE.md](CLAUDE.md) §11.
 
 ## Betrieb mit Docker
 
@@ -15,18 +15,20 @@ docker run -d --name jellymorph -p 8080:8080 \
   ghcr.io/lua-x/jellymorph:latest
 ```
 
+Bis zur ersten veröffentlichten Version gibt es nur den Tag `edge` (siehe unten); bis dahin steht in den Befehlen `edge` statt `latest`.
+
 Danach ist Jellymorph unter `http://<rechner>:8080` erreichbar. Ein vollständiges Beispiel für Docker Compose liegt in [docker-compose.yml](docker-compose.yml).
 
 ### Variablen
 
-| Variable                | Zweck                                                                                       | Standard     |
-| ----------------------- | ------------------------------------------------------------------------------------------- | ------------ |
-| `JELLYFIN_PROXY_TARGET` | Adresse deines Jellyfin-Servers. Jellymorph reicht ihn unter `/jellyfin` durch (empfohlen). | leer         |
-| `JELLYFIN_URL`          | Server-Adresse, die bei der Anmeldung vorbelegt ist. Der Browser verbindet sich direkt.     | leer         |
-| `LOCK_SERVER`           | `true`: Die Adresse aus `JELLYFIN_URL` ist fest und lässt sich in der App nicht ändern.     | `false`      |
-| `DEFAULT_THEME`         | Theme für Benutzer ohne eigene Wahl: `default` (Classic), `neon-grid` oder `crimson`.       | `default`    |
-| `APP_TITLE`             | Name im Browser-Tab und beim Installieren als App                                           | `Jellymorph` |
-| `DEMO_MODE`             | `true`: Demo mit erfundenen Daten, ganz ohne Jellyfin-Server                                | `false`      |
+| Variable                | Zweck                                                                                          | Standard     |
+| ----------------------- | ---------------------------------------------------------------------------------------------- | ------------ |
+| `JELLYFIN_PROXY_TARGET` | Adresse deines Jellyfin-Servers. Jellymorph reicht ihn unter `/jellyfin` durch (empfohlen).    | leer         |
+| `JELLYFIN_URL`          | Server-Adresse, die bei der Anmeldung vorbelegt ist. Der Browser verbindet sich direkt.        | leer         |
+| `LOCK_SERVER`           | `true`: Die Adresse aus `JELLYFIN_URL` ist fest und lässt sich in der App nicht ändern.        | `false`      |
+| `DEFAULT_THEME`         | Theme für Benutzer ohne eigene Wahl: `default` (Classic), `neon-grid`, `crimson` oder `glass`. | `default`    |
+| `APP_TITLE`             | Name im Browser-Tab und beim Installieren als App                                              | `Jellymorph` |
+| `DEMO_MODE`             | `true`: Demo mit erfundenen Daten, ganz ohne Jellyfin-Server                                   | `false`      |
 
 Änderungen brauchen keinen neuen Build: Variable anpassen, Container neu starten. Ungültige Werte, etwa ein Tippfehler im Theme-Namen, stoppen den Container mit einer Meldung im Log (`docker logs jellymorph`), die die Variable nennt.
 

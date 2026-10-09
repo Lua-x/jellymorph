@@ -1,0 +1,11 @@
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2.75rem;
+  margin-top: 2.5rem;
+}

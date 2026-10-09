@@ -144,11 +144,12 @@ test('arrow keys reach the cards; focus looks like hover @desktop-only', async (
   await waitForScramble(page);
   await page.keyboard.press('ArrowDown');
   await expect(page.getByRole('button', { name: 'Abspielen' }).first()).toBeFocused();
-  await page.keyboard.press('ArrowDown');
-  await page.keyboard.press('ArrowDown');
-  await expect(page.getByRole('region', { name: 'Weiterschauen' }).locator(':focus')).toHaveCount(
-    1,
-  );
+  // Step down until the focus enters the row (late layout shifts can change the number of steps).
+  const resume = page.getByRole('region', { name: 'Weiterschauen' });
+  await expect(async () => {
+    if ((await resume.locator(':focus').count()) === 0) await page.keyboard.press('ArrowDown');
+    await expect(resume.locator(':focus')).toHaveCount(1, { timeout: 400 });
+  }).toPass({ timeout: 8000 });
 
   await compareHoverAndFocus(
     page,

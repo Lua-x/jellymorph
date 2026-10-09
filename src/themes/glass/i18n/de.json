@@ -1,0 +1,20 @@
+{
+  "hero": {
+    "pause": "Automatischen Wechsel anhalten",
+    "resume": "Automatischen Wechsel fortsetzen",
+    "slides": "Empfohlene Titel"
+  },
+  "detail": {
+    "castAndCrew": "Besetzung und Crew",
+    "information": "Informationen",
+    "released": "Erschienen",
+    "runtime": "Laufzeit",
+    "rated": "Freigabe",
+    "genres": "Genres",
+    "episode": "Folge {{number}}",
+    "episodeDetails": "Details zu „{{name}}“"
+  },
+  "player": {
+    "elapsed": "Gesehen: {{time}}"
+  }
+}

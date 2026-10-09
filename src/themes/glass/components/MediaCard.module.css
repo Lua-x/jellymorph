@@ -1,0 +1,173 @@
+.card {
+  position: relative;
+  display: grid;
+  gap: 0.625rem;
+  color: var(--color-text);
+  text-decoration: none;
+  outline: none;
+}
+
+/* The lifted card lies above its neighbours. */
+.card:is(:hover, :focus-visible) {
+  z-index: 2;
+}
+
+.tile {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-card);
+  will-change: transform;
+}
+
+.card[data-shape='poster'] .tile {
+  aspect-ratio: 2 / 3;
+}
+
+/* The deeper shadow of a lifted card fades in (opacity only). */
+.shadow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: var(--gl-lift-shadow);
+  opacity: 0;
+  transition: opacity var(--duration-base) var(--ease-standard);
+}
+
+.frame {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-card);
+}
+
+.frame > span:first-child {
+  position: absolute;
+  inset: 0;
+}
+
+/* Focus = hover: lifted (spring, in the component), deeper shadow, light and a ring. */
+.card:is(:hover, :focus-visible) .shadow {
+  opacity: 1;
+}
+
+.card:is(:hover, :focus-visible) .frame {
+  box-shadow: 0 0 0 0.125rem var(--gl-ring);
+}
+
+.card:is(:hover, :focus-visible) .glare {
+  opacity: 1;
+}
+
+/* A soft light that follows the pointer (moved by transform). */
+.glare {
+  position: absolute;
+  inset: -50%;
+  background: radial-gradient(circle at 50% 35%, rgb(255 255 255 / 34%), transparent 42%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-base) var(--ease-standard);
+}
+
+.fallback {
+  display: grid;
+  height: 100%;
+  place-items: center;
+  background: linear-gradient(150deg, var(--color-surface-hover), var(--color-surface));
+  color: var(--color-text-muted);
+  font-size: 2.5rem;
+}
+
+.played {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  background: rgb(20 20 24 / 55%);
+  color: #ffffff;
+  font-size: 1rem;
+  backdrop-filter: var(--gl-blur);
+}
+
+.progress {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  height: 0.25rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 32%);
+}
+
+.progress > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #ffffff;
+  transform-origin: left center;
+}
+
+.text {
+  display: grid;
+  min-width: 0;
+  padding: 0 0.25rem;
+  transition: transform var(--duration-base) var(--ease-emphasized);
+}
+
+/* The title makes room for the lifted card. */
+.card:is(:hover, :focus-visible) .text {
+  transform: translateY(0.625rem);
+}
+
+.title,
+.subtitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.subtitle {
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+}
+
+.skeleton {
+  background: var(--color-surface-raised);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.skeletonLine {
+  display: block;
+  width: 60%;
+  height: 0.875rem;
+  border-radius: 999px;
+  background: var(--color-surface-raised);
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+:global([data-motion='reduced']) .shadow,
+:global([data-motion='reduced']) .glare,
+:global([data-motion='reduced']) .text {
+  transition: none;
+}
+
+:global([data-motion='reduced']) .skeleton {
+  animation: none;
+}

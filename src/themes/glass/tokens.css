@@ -1,0 +1,114 @@
+/*
+ * Glass – design tokens (docs/architecture.md §7.4). Frosted surfaces, generous radii and calm
+ * motion, in a dark and a light scheme. Text above pictures (hero, details, player) is always
+ * light on a dark shade, whatever the scheme. None of the colors is a brand color.
+ */
+
+[data-theme='glass'] {
+  color-scheme: dark;
+
+  --color-bg: #0a0a0c;
+  --color-surface: #1a1b1f;
+  --color-surface-raised: #24252a;
+  --color-surface-hover: #2f3036;
+  --color-border: #3a3b42;
+  --color-text: #f4f5f7;
+  --color-text-muted: #a3a6ae;
+  --color-accent: #4256cf;
+  --color-on-accent: #ffffff;
+  --color-accent-text: #8fb5ff;
+  --color-focus: #ffffff;
+  --color-danger: #ff7d7d;
+  --color-success: #5ccf91;
+  --color-progress: #f4f5f7;
+  --color-overlay: rgb(0 0 0 / 60%);
+
+  --font-body: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', 'SFMono-Regular', Consolas, monospace;
+
+  --radius-card: 1rem;
+  --radius-control: 1.375rem;
+  --shadow-card: 0 0.5rem 1.5rem rgb(0 0 0 / 35%);
+  --shadow-overlay: 0 1.5rem 4rem rgb(0 0 0 / 50%);
+
+  --duration-fast: 160ms;
+  --duration-base: 300ms;
+  --duration-slow: 560ms;
+  --ease-standard: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+  --focus-ring: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-focus);
+
+  --logo-shape: #f4f5f7;
+  --logo-dot: #0a0a0c;
+  --backdrop-glow: rgb(86 126 255 / 20%);
+  --backdrop-glow-2: rgb(196 120 255 / 14%);
+
+  /* Theme-own tokens */
+  --gl-glass: rgb(40 41 47 / 52%);
+  --gl-glass-strong: rgb(28 29 33 / 82%);
+  --gl-glass-hover: rgb(74 76 84 / 64%);
+  --gl-glass-border: rgb(255 255 255 / 12%);
+  /* Bars carry text above any picture: dense enough for AA contrast on white or black. */
+  --gl-bar: rgb(30 31 36 / 74%);
+  --gl-blur: blur(28px) saturate(170%);
+  --gl-button: #f4f5f7;
+  --gl-button-hover: #ffffff;
+  --gl-on-button: #0a0a0c;
+  --gl-ring: #ffffff;
+  --gl-lift-shadow: 0 1.5rem 3rem rgb(0 0 0 / 60%);
+  --gl-nav-height: 4.75rem;
+}
+
+[data-theme='glass'][data-color-scheme='light'] {
+  color-scheme: light;
+
+  --color-bg: #f2f2f6;
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-surface-hover: #e7e7ec;
+  --color-border: #d4d4da;
+  --color-text: #1b1b1f;
+  --color-text-muted: #595b64;
+  --color-accent: #2456c8;
+  --color-on-accent: #ffffff;
+  --color-accent-text: #2050bd;
+  --color-focus: #1b1b1f;
+  --color-danger: #be2a2c;
+  --color-success: #1c7b4b;
+  --color-progress: #2456c8;
+  --color-overlay: rgb(20 20 24 / 40%);
+
+  --shadow-card: 0 0.5rem 1.5rem rgb(20 20 40 / 12%);
+  --shadow-overlay: 0 1.5rem 4rem rgb(20 20 40 / 22%);
+
+  --logo-shape: #1b1b1f;
+  --logo-dot: #ffffff;
+  --backdrop-glow: rgb(86 126 255 / 16%);
+  --backdrop-glow-2: rgb(196 120 255 / 10%);
+
+  --gl-glass: rgb(255 255 255 / 62%);
+  --gl-glass-strong: rgb(255 255 255 / 86%);
+  --gl-glass-hover: rgb(255 255 255 / 92%);
+  --gl-glass-border: rgb(0 0 0 / 8%);
+  --gl-bar: rgb(255 255 255 / 76%);
+  --gl-button: #1b1b1f;
+  --gl-button-hover: #000000;
+  --gl-on-button: #ffffff;
+  --gl-ring: #1b1b1f;
+  --gl-lift-shadow: 0 1.5rem 3rem rgb(20 20 40 / 24%);
+}
+
+/* TVs: blur is expensive on their graphics chips; denser glass reads the same from the sofa. */
+[data-theme='glass'][data-device='tv'] {
+  --gl-blur: none;
+  --gl-bar: rgb(30 31 36 / 94%);
+  --gl-glass: rgb(40 41 47 / 88%);
+  --gl-glass-hover: rgb(74 76 84 / 92%);
+}
+
+[data-theme='glass'][data-color-scheme='light'][data-device='tv'] {
+  --gl-bar: rgb(255 255 255 / 96%);
+  --gl-glass: rgb(255 255 255 / 92%);
+  --gl-glass-hover: rgb(255 255 255 / 98%);
+}
