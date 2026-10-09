@@ -1,6 +1,21 @@
-# Jellymorph
+<p align="center">
+  <img src="public/favicon.svg" width="88" height="88" alt="" />
+</p>
 
-Ein selbst gehosteter Web-Client für [Jellyfin](https://jellyfin.org) mit austauschbaren Themes. Ein Theme ist hier mehr als ein Farbschema: Jedes bringt sein eigenes Bedienkonzept mit, also Layout, Navigation, Karten, Detailseiten, Player-Oberfläche und Animationen.
+<h1 align="center">Jellymorph</h1>
+
+<p align="center">
+  Ein selbst gehosteter Web-Client für <a href="https://jellyfin.org">Jellyfin</a> mit austauschbaren Themes.<br />
+  Jedes Theme bringt sein eigenes Bedienkonzept mit: Layout, Navigation, Karten, Detailseiten,
+  Player und Animationen – im Browser, auf dem Handy und auf dem Fernseher.
+</p>
+
+<p align="center">
+  <a href="https://github.com/Lua-x/jellymorph/actions/workflows/release.yml?query=branch%3Amain"><img src="https://img.shields.io/github/actions/workflow/status/Lua-x/jellymorph/release.yml?branch=main&event=push&label=CI&logo=github" alt="CI" /></a>
+  <a href="https://github.com/Lua-x/jellymorph/releases"><img src="https://img.shields.io/github/v/release/Lua-x/jellymorph?include_prereleases&label=release" alt="Release" /></a>
+  <a href="https://github.com/Lua-x/jellymorph/pkgs/container/jellymorph"><img src="https://img.shields.io/badge/image-ghcr.io-2496ed?logo=docker&logoColor=white" alt="Docker-Image auf ghcr.io" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="Lizenz: AGPL-3.0" /></a>
+</p>
 
 > **Status:** in Entwicklung. Fertig sind das Fundament, die Anmeldung (Server, Profile, Passwort, Quick Connect), alle Inhaltsseiten im Theme „Classic“, der Player, das Theme-System mit Einstellungen und Live-Vorschau, die Bedienung per Fernbedienung samt TV-Modus, der Demo-Modus und das Docker-Image. Wählbar sind die Themes „Classic“, „Neon Grid“, „Crimson“ und „Glass“. Den Fahrplan zeigt [CLAUDE.md](CLAUDE.md) §11.
 
