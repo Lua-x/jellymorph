@@ -549,6 +549,7 @@ Gegenüber dem Richtwert in CLAUDE.md:
 - `contractVersion`, damit spätere Vertragsänderungen auffallen.
 - Wiederverwendbare **gemeinsame Hooks und Bausteine für Themes** (alle headless oder theme-neutral): `<ThemeSlot>`, `useMediaActions()`, `useTrailerPreview()`, `useMotionPreference()`, `useAppearance()`, `<ThemePreview>`, `<JellyImage>`, `<VirtualGrid>`, `<AppLink>`, `useScrubber()`. Fokus braucht keinen eigenen Hook: Die Navigation arbeitet mit echtem DOM-Fokus (§8).
 - Seiten wie Genre, Sammlung und Person brauchen keine eigene Komponente. Sie sind `LibraryPage` mit einer anderen `source`.
+- **Stand Phase 7:** `ThemeOptions.cardShape` (`'mixed' | 'landscape'`) steuert die Kartenform der übernommenen Classic-Seiten. `presentation: 'modal'` wird seit Phase 7 tatsächlich geliefert (§7.9).
 - **Stand Phase 4:** Der Block oben ist der Plan aus Phase 0, maßgeblich ist `src/themes/contract.ts`. Dort sind u. a. `HomePageProps.user`, `RowProps` (`variant`, `seeAll: string | null`), `ResumePromptProps.positionSeconds`, `ToastProps.action` und `ErrorStateProps.variant` genauer gefasst. `THEME_SLOTS` listet alle Slots zur Laufzeit; ein Compile-Check schlägt fehl, wenn ein Slot in der Liste fehlt. Anleitung für Theme-Autoren: [themes.md](themes.md).
 
 ### 7.2 Registry und Laden
@@ -609,6 +610,19 @@ Umsetzung (`themes/loader.ts`, `themes/transition.ts`): Der Loader merkt sich je
 ### 7.8 Rechtliche Prüfliste je Theme
 
 Vor dem Abschluss jeder Theme-Phase: keine Markennamen in Code, Dateinamen, Kommentaren oder Texten; Farben nur in ähnlicher Stimmung (Abstand zu bekannten Markenfarben dokumentiert); Schriften nur frei lizenziert über `@fontsource`; Icons selbst gezeichnet; keine „im Stil von“-Hinweise im UI.
+
+- Crimson: Akzent `#d31d34`, dunkler und blauer als das Rot des Vorbilds (ΔE76 ≈ 21). Kein roter Schriftzug als Marke: Logo und App-Titel wie in allen Themes, Titel weiß. Bewertungssterne `#f2c14e` statt eines bekannten Gelbs. Schrift Inter (OFL).
+
+### 7.9 Details als Overlay (Phase 7) **[Entscheidung]**
+
+Crimson zeigt Details als Ebene über der Seite, von der sie kommen (`detailPresentation: 'modal'`). Umsetzung mit dem Muster „Hintergrund-Location“ von react-router statt eines eigenen Modal-Zustands:
+
+- **Routing:** Die Inhaltsseiten liegen nicht mehr als einzelne Data-Routen unter der Shell, sondern als Descendant-`<Routes>` in `app/routes/ShellRoutes.tsx` (die Shell ist `path: '*'`, der Player bleibt eine eigene Data-Route). Ein Overlay-Link (`<AppLink overlay>`) schreibt die aktuelle Location als `state.backgroundLocation` in den Verlauf. `ShellRoutes` rendert die Seiten dann mit `<Routes location={background}>`, die Seite bleibt also montiert, und darüber in einem zweiten `<Routes>` nur `/item/:itemId` mit `presentation="modal"`. Die Seite darunter ist `inert`.
+- **Grenzen:** Nur `/item/:itemId` kann ein Overlay sein (`navigation/overlay.ts`: `opensAsOverlay`, `backgroundOf`). Ein Hintergrund im State einer anderen Route wird ignoriert. Overlay-Links innerhalb eines Overlays ersetzen den Eintrag (`replace`) und behalten den ursprünglichen Hintergrund, Zurück und Schließen landen also immer auf der Seite. Der Staffelwechsel ersetzt die URL (`?season=`) und reicht den State weiter, sonst würde aus dem Overlay eine Seite.
+- **URL, Neuladen, Teilen:** Die URL ist immer die normale Detail-URL. Ohne Hintergrund (direkt aufgerufen, neu geladen, geteilt) zeigt dasselbe Theme die Details als Seite.
+- **Fokus und Seitenwechsel:** `useRouteKey()` liefert den Pfad der Hintergrund-Seite. Öffnen und Schließen eines Overlays sind deshalb kein Seitenwechsel: kein Scroll nach oben, kein Fokus auf `<main>`, keine Seitenübergänge. Den Fokus verwaltet das Overlay (Dialog-Muster, Rückgabe an die öffnende Karte). `useDocumentTitle` stellt beim Schließen den vorigen Titel wieder her.
+- **Laden:** Seiten-Chunks werden per `React.lazy` geladen. Das Overlay hat eine eigene Suspense-Grenze, damit die Seite darunter beim Nachladen nicht verschwindet.
+- **Prüfung:** `navigation/overlay.test.ts`, E2E `e2e/crimson.spec.ts` (Öffnen, Mausrad scrollt nur das Overlay, Zurück und Esc mit unveränderter Scrollposition und Fokus auf der Karte, Titel aus „Mehr wie dieses“ ersetzt das Overlay, direkt aufgerufen als Seite, Staffelwechsel bleibt im Overlay).
 
 ---
 

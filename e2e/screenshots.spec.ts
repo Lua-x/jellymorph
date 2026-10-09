@@ -358,6 +358,142 @@ test.describe('screenshots @shots', () => {
     });
   }
 
+  /** Theme Crimson (phase 7): every screen it designs, in all four sizes. */
+  for (const viewport of VIEWPORTS) {
+    test.describe(`crimson ${String(viewport.width)}x${String(viewport.height)}`, () => {
+      test.use({ viewport });
+
+      test('crimson', async ({ page }) => {
+        test.setTimeout(150_000);
+        await signInAs(page, 'Alex');
+        await chooseTheme(page, 'Crimson', 'crimson');
+        await page.goto('/');
+        const resume = page.getByRole('region', { name: 'Weiterschauen', exact: true });
+        await expect(resume.getByRole('list').getByRole('link').first()).toBeVisible();
+        await shoot(page, '50-crimson-home');
+        await shoot(page, '50-crimson-home', '-full', true);
+
+        // The enlarged preview (not on phones, they have no hover).
+        if (viewport.width > 640) {
+          const card = page
+            .getByRole('region', { name: 'Neu in Filme', exact: true })
+            .getByRole('list')
+            .getByRole('link')
+            .nth(1);
+          await card.scrollIntoViewIfNeeded();
+          await card.hover();
+          await expect(page.getByRole('group', { name: /^Vorschau: / })).toBeVisible();
+          await shoot(page, '51-crimson-preview');
+          await page.mouse.move(0, 0);
+        }
+
+        // Details as an overlay above the page, a film and a series.
+        await page.goto('/search?q=Kupferherz');
+        await page
+          .getByRole('region', { name: /^Filme/ })
+          .getByRole('link', { name: /Kupferherz/ })
+          .first()
+          .click();
+        await expect(page.getByRole('dialog').getByRole('heading', { level: 1 })).toBeVisible();
+        await shoot(page, '52-crimson-movie');
+        await page.goBack();
+
+        await page.goto('/');
+        await page
+          .getByRole('region', { name: 'Neu in Serien', exact: true })
+          .getByRole('list')
+          .getByRole('link')
+          .first()
+          .click();
+        const dialog = page.getByRole('dialog');
+        await expect(dialog.getByRole('region', { name: 'Episoden' })).toBeVisible();
+        await shoot(page, '53-crimson-series');
+        await page.locator('[data-overlay-open]').evaluate((overlay) => {
+          overlay.scrollTop = overlay.scrollHeight / 3;
+        });
+        await shoot(page, '53-crimson-series', '-episodes');
+
+        // Opened directly: the same details as a page.
+        await openFromSearch(page, 'Hafenviertel', 'Serien');
+        await page.reload();
+        await expect(page.getByRole('heading', { level: 1, name: 'Hafenviertel' })).toBeVisible();
+        await shoot(page, '54-crimson-series-page', '', true);
+
+        await page.goto('/search?q=or');
+        await expect(page.getByRole('region', { name: /^Filme/ })).toBeVisible();
+        await shoot(page, '55-crimson-search');
+
+        await page.goto('/');
+        await page
+          .getByRole('region', { name: 'Bibliotheken' })
+          .getByRole('link', { name: /^Filme/ })
+          .click();
+        await expect(page.getByText('56 Titel')).toBeVisible();
+        await page.mouse.move(0, 0);
+        await shoot(page, '56-crimson-library');
+
+        const movie = (await demoItems(page, 'Movie')).find(directPlayable);
+        if (!movie) throw new Error('Missing demo title');
+        await pausedPlayer(page, movie.Id, 22);
+        await shoot(page, '57-crimson-player');
+        await page.getByRole('button', { name: 'Audio und Untertitel' }).click();
+        await expect(page.getByRole('dialog', { name: 'Audio und Untertitel' })).toBeVisible();
+        await shoot(page, '58-crimson-player-tracks');
+        await page.keyboard.press('Escape');
+        await expect(page.getByRole('group', { name: 'Videoplayer' })).toHaveAttribute(
+          'data-paused-info',
+          'true',
+          { timeout: 10_000 },
+        );
+        await shoot(page, '59-crimson-player-paused');
+
+        await page.goto('/settings');
+        await expect(page.getByRole('heading', { level: 1, name: 'Einstellungen' })).toBeVisible();
+        await shoot(page, '60-crimson-settings');
+
+        await page.goto('/');
+        await openUserMenu(page);
+        await page.getByRole('button', { name: 'Profil wechseln' }).click();
+        await expect(page.getByRole('heading', { level: 1, name: 'Wer schaut?' })).toBeVisible();
+        await shoot(page, '61-crimson-profiles');
+      });
+    });
+  }
+
+  for (const viewport of [
+    { width: 1920, height: 1080 },
+    { width: 3840, height: 2160 },
+  ]) {
+    test.describe(`crimson TV ${String(viewport.width)}x${String(viewport.height)}`, () => {
+      test.use({ viewport });
+
+      test('crimson TV mode', async ({ page }) => {
+        await page.addInitScript(() => {
+          const raw = localStorage.getItem('jellymorph.settings');
+          const settings = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+          localStorage.setItem(
+            'jellymorph.settings',
+            JSON.stringify({ ...settings, deviceMode: 'tv', overscan: 0.03 }),
+          );
+        });
+        await signInAs(page, 'Alex');
+        await chooseTheme(page, 'Crimson', 'crimson');
+        await page.goto('/');
+        await expect(page.locator('html')).toHaveAttribute('data-device', 'tv');
+        const resume = page.getByRole('region', { name: 'Weiterschauen', exact: true });
+        await expect(resume.getByRole('list').getByRole('link').first()).toBeVisible();
+        await page.keyboard.press('ArrowDown');
+        await page.keyboard.press('ArrowDown');
+        await expect(resume.locator(':focus')).toHaveCount(1);
+        await page.waitForTimeout(600);
+        await shoot(page, '62-crimson-tv-home');
+        await page.keyboard.press('Enter');
+        await expect(page.getByRole('dialog')).toBeVisible();
+        await shoot(page, '63-crimson-tv-details');
+      });
+    });
+  }
+
   test.describe('light color scheme', () => {
     test.use({ viewport: { width: 1280, height: 800 }, colorScheme: 'light' });
 

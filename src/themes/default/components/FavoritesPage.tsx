@@ -1,7 +1,7 @@
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { FavoriteGroup } from '@/domain/types';
-import { useThemeComponent } from '../../context';
+import { useThemeComponent, useThemeOptions } from '../../context';
 import type { FavoritesPageProps } from '../../contract';
 import styles from './SearchPage.module.css';
 import { EmptyState, ErrorState, LoadingState } from './States';
@@ -10,7 +10,9 @@ function Group({ group }: { group: FavoriteGroup }) {
   const { t } = useTranslation('content');
   const MediaCard = useThemeComponent('MediaCard');
   const headingId = useId();
-  const landscape = group.kind === 'episodes' || group.kind === 'videos';
+  const { cardShape } = useThemeOptions();
+  const landscape =
+    cardShape === 'landscape' || group.kind === 'episodes' || group.kind === 'videos';
   return (
     <section className={styles.group} aria-labelledby={headingId}>
       <h2 id={headingId} className={styles.groupTitle}>

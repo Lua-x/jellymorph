@@ -47,5 +47,6 @@ export const theme: CompleteThemeModule = {
   options: {
     detailPresentation: 'page',
     heroItemCount: 6,
+    cardShape: 'mixed',
   },
 };

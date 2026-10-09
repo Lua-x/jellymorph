@@ -1,0 +1,190 @@
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2rem;
+}
+
+.form {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 44rem;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 1rem;
+  color: var(--color-text-muted);
+  font-size: 1.5rem;
+  pointer-events: none;
+}
+
+.input {
+  width: 100%;
+  min-height: 3.5rem;
+  padding: 0 3.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: rgb(0 0 0 / 60%);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 1.25rem;
+}
+
+.input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.input::-webkit-search-cancel-button {
+  display: none;
+}
+
+/* Focus = hover: white border. */
+.input:is(:hover, :focus-visible) {
+  border-color: #ffffff;
+  outline: none;
+}
+
+.input:focus-visible {
+  box-shadow: 0 0 0 1px #ffffff;
+}
+
+.clear {
+  position: absolute;
+  right: 0.5rem;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+.clear:is(:hover, :focus-visible) {
+  outline: none;
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+  box-shadow: 0 0 0 2px #ffffff;
+}
+
+.hint {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.groups {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2.5rem;
+  transition: opacity var(--duration-base) var(--ease-standard);
+}
+
+.groups[data-refreshing] {
+  opacity: 0.6;
+}
+
+.group {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.875rem;
+}
+
+.groupTitle {
+  display: flex;
+  align-items: baseline;
+  gap: 0.625rem;
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 700;
+}
+
+.groupCount {
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+  gap: 1.5rem 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.people {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+  gap: 1.5rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.person {
+  display: grid;
+  justify-items: center;
+  gap: 0.625rem;
+  color: var(--color-text);
+  text-align: center;
+  text-decoration: none;
+  outline: none;
+}
+
+.portrait {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: 8rem;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--color-surface-raised);
+  transition: transform var(--duration-base) var(--ease-emphasized);
+}
+
+.portrait > span {
+  position: absolute;
+  inset: 0;
+}
+
+.portraitFallback {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  color: var(--color-text-muted);
+  font-size: 2.5rem;
+}
+
+/* Focus = hover: the portrait grows and gets the white ring. */
+.person:is(:hover, :focus-visible) .portrait {
+  box-shadow:
+    0 0 0 2px var(--color-bg),
+    0 0 0 4px #ffffff;
+  transform: scale(1.06);
+}
+
+.personName {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+:global([data-motion='reduced']) .portrait,
+:global([data-motion='reduced']) .groups {
+  transition: none;
+}
+
+@media (max-width: 40rem) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .people {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

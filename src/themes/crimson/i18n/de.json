@@ -1,0 +1,29 @@
+{
+  "profiles": {
+    "title": "Wer schaut?",
+    "other": "Anderer Benutzer"
+  },
+  "hero": {
+    "moreInfo": "Weitere Infos",
+    "rating": "Altersfreigabe {{rating}}"
+  },
+  "preview": {
+    "label": "Vorschau: {{name}}",
+    "more": "Mehr zu „{{name}}“"
+  },
+  "detail": {
+    "close": "Details schließen",
+    "more": "Mehr wie dieses",
+    "cast": "Besetzung:",
+    "genres": "Genres:",
+    "director": "Regie:",
+    "audio": "Ton:",
+    "subtitles": "Untertitel:"
+  },
+  "rows": {
+    "page": "Seite {{current}} von {{total}}"
+  },
+  "player": {
+    "watching": "Du siehst gerade"
+  }
+}

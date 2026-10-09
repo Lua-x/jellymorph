@@ -134,6 +134,13 @@ test('the player HUD shows readouts and opens the track menu', async ({ page }) 
 
 test('arrow keys reach the cards; focus looks like hover @desktop-only', async ({ page }) => {
   await useNeonGrid(page);
+  // Rows load after the hero; arrow presses before that would skip ahead.
+  await expect(
+    page.getByRole('region', { name: 'Bibliotheken' }).getByRole('link').first(),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('region', { name: 'Weiterschauen' }).getByRole('link').first(),
+  ).toBeVisible();
   await waitForScramble(page);
   await page.keyboard.press('ArrowDown');
   await expect(page.getByRole('button', { name: 'Abspielen' }).first()).toBeFocused();

@@ -70,10 +70,13 @@ export const theme: ThemeModule = {
 
 `options` steuert, was die App für das Theme anders vorbereiten muss:
 
-| Option               | Bedeutung                                                          | Classic  |
-| -------------------- | ------------------------------------------------------------------ | -------- |
-| `detailPresentation` | `'page'` oder `'modal'` (Details als Ebene über der vorigen Seite) | `'page'` |
-| `heroItemCount`      | Anzahl der Titel, die der Hero bekommt                             | `6`      |
+| Option               | Bedeutung                                                           | Classic   |
+| -------------------- | ------------------------------------------------------------------- | --------- |
+| `detailPresentation` | `'page'` oder `'modal'` (Details als Ebene über der vorigen Seite)  | `'page'`  |
+| `heroItemCount`      | Anzahl der Titel, die der Hero bekommt                              | `6`       |
+| `cardShape`          | `'mixed'` (Poster und Querformat je nach Inhalt) oder `'landscape'` | `'mixed'` |
+
+`cardShape` gilt für die Seiten, die ein Theme von Classic übernimmt (Bibliothek, Favoriten): Mit `'landscape'` zeigen sie überall Querformat-Karten, passend zu einem Theme, das nur solche Karten kennt.
 
 ## 2. Neues Theme anlegen
 
@@ -167,7 +170,7 @@ Themes rufen nie selbst den Server. ESLint verbietet in `src/themes/**` Importe 
 | `useScrubber()` (`@/ui`)                       | Zeitleiste des Players mit Zeiger, Touch und Tastatur                             |
 | `<JellyImage>` (`@/ui`)                        | Bilder vom Server in passender Größe, mit BlurHash, lazy außerhalb des Viewports  |
 | `<VirtualGrid>` (`@/ui`)                       | Virtualisiertes Raster mit eigener Pfeiltasten-Logik                              |
-| `<AppLink>` (`@/ui`)                           | Interne Links, ohne direkte Abhängigkeit von der Router-API                       |
+| `<AppLink>` (`@/ui`)                           | Interne Links ohne direkte Router-API; `overlay` öffnet Details als Ebene         |
 | `<ThemePreview>` (`@/themes/ThemePreview`)     | Live-Vorschau eines Themes in der Einstellungsseite                               |
 | `formatClock()` (`@/ui/time`)                  | Zeitangaben im Player                                                             |
 | `paths` (`@/navigation/paths`)                 | URLs für Seiten und Player                                                        |
@@ -177,7 +180,16 @@ Themes rufen nie selbst den Server. ESLint verbietet in `src/themes/**` Importe 
 
 Der Player gehört der App. `PlayerOverlay` bekommt ein `PlayerModel` mit Zustand und Befehlen (`togglePlay`, `seek`, `selectAudio`, `skipSegment` …) und sieht nie hls.js, URLs oder PlaybackInfo. Das `<video>`-Element liegt unter dem Overlay.
 
-**Bausteine von Classic wiederverwenden:** Themes dürfen aus `src/themes/default/components` importieren (Icons, `meta.ts`, `text.ts`, `Avatar`). Zeitleiste und Spur-/Kapitelmenüs des Players haben eine geprüfte Bedienlogik (Ziehen, Tastatur, Dialog-Fokus). `PlayerTimeline` und `PlayerMenu` nehmen deshalb ein `classes`-Objekt: ein CSS-Modul mit denselben Klassennamen wie `default/components/PlayerOverlay.module.css`. Neon Grid nutzt das für seinen HUD-Player.
+**Bausteine von Classic wiederverwenden:** Themes dürfen aus `src/themes/default/components` importieren (Icons, `meta.ts`, `text.ts`, `Avatar`). Zeitleiste und Spur-/Kapitelmenüs des Players haben eine geprüfte Bedienlogik (Ziehen, Tastatur, Dialog-Fokus). `PlayerTimeline` und `PlayerMenu` nehmen deshalb ein `classes`-Objekt: ein CSS-Modul mit denselben Klassennamen wie `default/components/PlayerOverlay.module.css`. Neon Grid und Crimson nutzen das für ihre Player.
+
+**Details als Overlay** (`detailPresentation: 'modal'`, Beispiel Crimson): Links mit `<AppLink overlay>` öffnen Details eines Titels über der aktuellen Seite. Die URL ist die normale Detail-URL, die Seite darunter bleibt montiert, unverändert und `inert`. Zurück schließt die Ebene, Scrollpositionen und Zustand der Seite bleiben erhalten. `ItemDetailPage` und `SeriesPage` bekommen dann `presentation: 'modal'` und `onClose`; ohne Seite darunter (direkt aufgerufene URL, neu geladen) kommt `presentation: 'page'`, und das Theme zeigt dieselben Inhalte als Seite. Das Overlay muss selbst:
+
+- `role="dialog"`, `aria-modal="true"` und `aria-labelledby` (auf die Überschrift, auch im Lade- und Fehlerzustand) setzen,
+- ein Element mit `data-overlay-open` tragen (das Theme sperrt damit z. B. das Scrollen der Seite),
+- Esc selbst behandeln (`preventDefault()`, dann `onClose()`), einen Schließen-Button haben und Tab im Dialog halten,
+- den Fokus beim Öffnen hineinholen und beim Schließen an das Element zurückgeben, das es geöffnet hat.
+
+Nur Details (`/item/:id`) öffnen als Overlay; `overlay` an anderen Zielen (Person, Sammlung) ist ein normaler Link. Ein Overlay-Link innerhalb eines Overlays ersetzt den Verlaufseintrag, Schließen führt also immer zur Seite zurück. Crimsons `DetailSheet` ist die Vorlage.
 
 **Oberflächenklänge:** Ein Theme mit `features: { uiSounds: true }` bekommt in den Einstellungen den Schalter „Klänge der Oberfläche“ (standardmäßig aus, pro Benutzer am Server gespeichert). Das Theme erzeugt die Klänge selbst und spielt sie nur, solange `useUiSounds()` `true` liefert.
 

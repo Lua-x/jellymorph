@@ -2,7 +2,7 @@ import { useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { LibraryBrowser, LibraryFilters, SortField } from '@/hooks/useLibraryBrowser';
 import { VirtualGrid, type VirtualGridHandle } from '@/ui/VirtualGrid';
-import { useThemeComponent } from '../../context';
+import { useThemeComponent, useThemeOptions } from '../../context';
 import type { CardVariant, LibraryPageProps } from '../../contract';
 import { Button } from './Button';
 import { Icon } from './icons';
@@ -172,6 +172,7 @@ function ActiveFilters({ browser }: { browser: LibraryBrowser }) {
 export function LibraryPage({ browser }: LibraryPageProps) {
   const { t } = useTranslation('content');
   const MediaCard = useThemeComponent('MediaCard');
+  const { cardShape } = useThemeOptions();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const gridRef = useRef<VirtualGridHandle>(null);
   const panelId = useId();
@@ -179,7 +180,10 @@ export function LibraryPage({ browser }: LibraryPageProps) {
   const { heading, total } = browser;
   const title = heading.status === 'success' ? heading.data.title : '';
   const variant: CardVariant =
-    heading.status === 'success' && heading.data.libraryKind === 'videos' ? 'landscape' : 'poster';
+    cardShape === 'landscape' ||
+    (heading.status === 'success' && heading.data.libraryKind === 'videos')
+      ? 'landscape'
+      : 'poster';
 
   if (heading.status === 'error') {
     return <ErrorState error={heading.error} onRetry={heading.retry} />;

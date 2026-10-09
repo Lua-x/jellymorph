@@ -11,6 +11,7 @@ const THEMES_DIR = join(import.meta.dirname, '..', 'src', 'themes');
 const THEMES = [
   { id: 'default', name: 'Classic', schemes: ['dark', 'light'] as const },
   { id: 'neon-grid', name: 'Neon Grid', schemes: ['dark'] as const },
+  { id: 'crimson', name: 'Crimson', schemes: ['dark'] as const },
 ];
 
 test.describe('theme previews @previews', () => {

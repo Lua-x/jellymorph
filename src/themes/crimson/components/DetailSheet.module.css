@@ -1,0 +1,85 @@
+/* Dimmed page with the details on top; the overlay scrolls, the page underneath does not. */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: calc(2rem + var(--overscan-y)) var(--page-gutter) 3rem;
+  background: rgb(0 0 0 / 72%);
+  animation: fade-in var(--duration-base) var(--ease-standard) both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.dialog {
+  position: relative;
+  width: min(100%, 60rem);
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-overlay);
+  animation: rise var(--duration-slow) var(--ease-emphasized) both;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(2rem) scale(0.96);
+  }
+}
+
+.close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(24 24 26 / 90%);
+  color: #ffffff;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+.close:is(:hover, :focus-visible) {
+  background: rgb(60 60 66 / 95%);
+  box-shadow: 0 0 0 2px #ffffff;
+}
+
+.close:focus-visible {
+  outline: none;
+}
+
+/* Opened directly (no page underneath): the same content as a page. */
+.page {
+  width: min(100%, 64rem);
+  margin: calc((var(--cr-nav-height) + var(--overscan-y) + 1.5rem) * -1) auto 0;
+  padding-top: var(--cr-nav-height);
+  overflow: hidden;
+}
+
+:global([data-motion='reduced']) .overlay,
+:global([data-motion='reduced']) .dialog {
+  animation: none;
+}
+
+@media (max-width: 40rem) {
+  .overlay {
+    padding: 0;
+  }
+
+  .dialog {
+    min-height: 100%;
+    border-radius: 0;
+  }
+}

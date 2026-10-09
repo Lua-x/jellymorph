@@ -1,0 +1,183 @@
+/* Full width, from the top of the window under the transparent bar. */
+.hero {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: min(56.25cqi, 88vh);
+  margin: calc((var(--cr-nav-height) + var(--overscan-y) + 1.5rem) * -1)
+    calc(var(--page-gutter) * -1) 0;
+  padding: 7rem var(--page-gutter) clamp(4rem, 9cqi, 9rem);
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--color-bg);
+}
+
+.hero[data-context='preview'] {
+  margin-top: 0;
+}
+
+.skeleton {
+  min-height: min(56.25cqi, 88vh);
+  background: linear-gradient(120deg, var(--color-surface), var(--color-bg));
+}
+
+/*
+ * The picture stops a few pixels above the bottom edge, where the shade is already solid: the
+ * hero's height is fractional, and at an anti-aliased edge the picture would shine through the
+ * shade as a thin light line.
+ */
+.backdrop {
+  position: absolute;
+  inset: 0 0 4px;
+  z-index: -3;
+  overflow: hidden;
+  transition: opacity 1.2s var(--ease-standard);
+}
+
+/* Slow drift of the picture while no trailer plays (Ken Burns, transform only). */
+.backdrop > * {
+  animation: drift 26s ease-in-out infinite alternate;
+}
+
+.backdrop[data-trailer] {
+  opacity: 0;
+}
+
+.backdrop[data-trailer] > * {
+  animation-play-state: paused;
+}
+
+@keyframes drift {
+  from {
+    transform: scale(1.02) translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: scale(1.12) translate3d(-2%, -1.5%, 0);
+  }
+}
+
+.hero[data-context='preview'] .backdrop > * {
+  animation: none;
+}
+
+.trailer {
+  position: absolute;
+  inset: 0 0 4px;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.2s var(--ease-standard);
+}
+
+.trailer[data-playing='true'] {
+  opacity: 1;
+}
+
+.shade {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  /* The fade into the page lies on top, so the bottom edge matches the page exactly. */
+  background:
+    linear-gradient(0deg, var(--color-bg) 0%, rgb(15 15 16 / 60%) 12%, transparent 30%),
+    linear-gradient(77deg, rgb(0 0 0 / 70%) 0%, rgb(0 0 0 / 25%) 45%, transparent 75%);
+}
+
+.content {
+  display: grid;
+  gap: 1.25rem;
+  width: min(40rem, 45cqi);
+  min-width: min(100%, 22rem);
+}
+
+.logo {
+  height: clamp(4.5rem, 12cqi, 11rem);
+  margin: 0;
+  transform-origin: left bottom;
+  transition: transform 1.2s var(--ease-emphasized);
+}
+
+/* The logo steps back a little while the trailer plays. */
+.logo[data-small] {
+  transform: scale(0.75);
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(2.25rem, 1.5rem + 3.5cqi, 4.5rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  text-shadow: 0 2px 8px rgb(0 0 0 / 50%);
+}
+
+.overview {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  font-size: clamp(1rem, 0.9rem + 0.4cqi, 1.3rem);
+  line-height: 1.45;
+  text-shadow: 0 1px 4px rgb(0 0 0 / 60%);
+  transition: opacity 1.2s var(--ease-standard);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.overview[data-hidden] {
+  opacity: 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* Age rating flag on the right edge. */
+.rating {
+  position: absolute;
+  right: 0;
+  bottom: clamp(5rem, 11cqi, 11rem);
+  margin: 0;
+  padding: 0.375rem 2.5rem 0.375rem 0.75rem;
+  border-left: 3px solid rgb(255 255 255 / 75%);
+  background: rgb(51 51 51 / 60%);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+:global([data-motion='reduced']) .backdrop > * {
+  animation: none;
+}
+
+:global([data-motion='reduced']) .backdrop,
+:global([data-motion='reduced']) .trailer,
+:global([data-motion='reduced']) .logo,
+:global([data-motion='reduced']) .overview {
+  transition: none;
+}
+
+:global([data-device='tv']) .backdrop > * {
+  animation-duration: 40s;
+}
+
+@media (max-width: 40rem) {
+  .hero {
+    min-height: 70vh;
+    padding-bottom: 3rem;
+  }
+
+  .content {
+    width: 100%;
+  }
+
+  .rating {
+    display: none;
+  }
+}

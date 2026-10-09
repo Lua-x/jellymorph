@@ -1,0 +1,31 @@
+/*
+ * Crimson – global styles. Every selector starts with the theme scope; :where() keeps the
+ * specificity low so component styles always win.
+ */
+
+[data-theme='crimson'] body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-feature-settings: 'cv11', 'ss01';
+}
+
+:where([data-theme='crimson']) ::selection {
+  background: rgb(211 29 52 / 55%);
+  color: #ffffff;
+}
+
+:where([data-theme='crimson']) :focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Room for the scrollbar stays reserved, so locking the page below does not shift it sideways. */
+[data-theme='crimson'] {
+  scrollbar-gutter: stable;
+}
+
+/* The page under an open details overlay does not scroll. */
+[data-theme='crimson']:has([data-overlay-open]) {
+  overflow: hidden;
+}

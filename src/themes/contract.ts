@@ -63,6 +63,11 @@ export interface ThemeOptions {
   detailPresentation: 'page' | 'modal';
   /** Number of featured items the hero receives. */
   heroItemCount: number;
+  /**
+   * Card shape in grids: 'mixed' follows the content (posters for films and series), 'landscape'
+   * uses wide cards everywhere (Classic pages used as fallback honor it too).
+   */
+  cardShape: 'mixed' | 'landscape';
 }
 
 export interface ThemeModule {

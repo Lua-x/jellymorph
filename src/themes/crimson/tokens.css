@@ -1,0 +1,49 @@
+/*
+ * Crimson – design tokens (docs/architecture.md §7.4). Dark only: an almost black ground with a
+ * deep crimson accent, white for the main actions. The colors are chosen for the mood; none of
+ * them is the brand color of a streaming service.
+ */
+
+[data-theme='crimson'] {
+  color-scheme: dark;
+
+  --color-bg: #0f0f10;
+  --color-surface: #19191b;
+  --color-surface-raised: #232326;
+  --color-surface-hover: #2e2e32;
+  --color-border: #38383d;
+  --color-text: #f4f4f5;
+  --color-text-muted: #b4b4b9;
+  --color-accent: #d31d34;
+  --color-on-accent: #ffffff;
+  --color-accent-text: #ff6b7d;
+  --color-focus: #ffffff;
+  --color-danger: #ff7878;
+  --color-success: #4cc77a;
+  --color-progress: #d31d34;
+  --color-overlay: rgb(0 0 0 / 72%);
+
+  --font-body: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', 'SFMono-Regular', Consolas, monospace;
+
+  --radius-card: 0.25rem;
+  --radius-control: 0.25rem;
+  --shadow-card: 0 0.25rem 0.75rem rgb(0 0 0 / 50%);
+  --shadow-overlay: 0 1rem 3rem rgb(0 0 0 / 75%);
+
+  --duration-fast: 120ms;
+  --duration-base: 220ms;
+  --duration-slow: 400ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --focus-ring: 0 0 0 2px var(--color-bg), 0 0 0 4px #ffffff;
+
+  /* Theme-own tokens */
+  --cr-nav-height: 4.25rem;
+  --cr-button-light: #ffffff;
+  --cr-button-light-hover: #d9d9dc;
+  --cr-button-dim: rgb(109 109 114 / 70%);
+  --cr-button-dim-hover: rgb(109 109 114 / 45%);
+}

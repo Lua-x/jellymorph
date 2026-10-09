@@ -1,0 +1,44 @@
+.card {
+  position: relative;
+  display: block;
+  border-radius: var(--radius-card);
+  color: var(--color-text);
+  text-decoration: none;
+  outline: none;
+  transition: transform var(--duration-base) var(--ease-emphasized);
+}
+
+/* Focus = hover: the card lifts slightly and gets the white ring. */
+.card:is(:hover, :focus-visible) {
+  box-shadow:
+    0 0 0 2px var(--color-bg),
+    0 0 0 4px #ffffff;
+  transform: scale(1.04);
+}
+
+/* While the enlarged preview covers it, the card itself stays calm; the preview shows the ring. */
+.card[data-previewing] {
+  box-shadow: none;
+  transform: none;
+  transition: none;
+}
+
+.skeleton {
+  aspect-ratio: 16 / 9;
+  background: var(--color-surface-raised);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+:global([data-motion='reduced']) .card {
+  transition: none;
+}
+
+:global([data-motion='reduced']) .skeleton {
+  animation: none;
+}

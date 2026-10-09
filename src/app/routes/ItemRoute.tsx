@@ -1,5 +1,6 @@
-import { useNavigate, useParams, useSearchParams } from 'react-router';
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router';
 import type { ItemDetail } from '@/domain/types';
+import type { Presentation } from '@/themes/contract';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useItemDetail, useSeries, useSimilarItems } from '@/hooks/useItem';
 import { ThemeSlot } from '@/themes/ThemeSlot';
@@ -11,8 +12,9 @@ function useClose(): () => void {
   };
 }
 
-function SeriesView({ series }: { series: ItemDetail }) {
+function SeriesView({ series, presentation }: { series: ItemDetail; presentation: Presentation }) {
   const [params, setParams] = useSearchParams();
+  const location = useLocation();
   const model = useSeries(series.id, params.get('season'));
   const similar = useSimilarItems(series.id);
   const onClose = useClose();
@@ -23,17 +25,18 @@ function SeriesView({ series }: { series: ItemDetail }) {
         series,
         ...model,
         onSelectSeason: (seasonId) => {
-          setParams({ season: seasonId }, { replace: true });
+          // Keeps the history state: details shown as an overlay stay one.
+          setParams({ season: seasonId }, { replace: true, state: location.state as unknown });
         },
         similar,
-        presentation: 'page',
+        presentation,
         onClose,
       }}
     />
   );
 }
 
-function ItemView({ itemId }: { itemId: string }) {
+function ItemView({ itemId, presentation }: { itemId: string; presentation: Presentation }) {
   const detail = useItemDetail(itemId);
   const isEpisode = detail.status === 'success' && detail.data.kind === 'episode';
   const isSeries = detail.status === 'success' && detail.data.kind === 'series';
@@ -42,14 +45,13 @@ function ItemView({ itemId }: { itemId: string }) {
   useDocumentTitle(detail.status === 'success' ? detail.data.name : null);
 
   if (detail.status === 'success' && detail.data.kind === 'series') {
-    return <SeriesView series={detail.data} />;
+    return <SeriesView series={detail.data} presentation={presentation} />;
   }
-  return (
-    <ThemeSlot name="ItemDetailPage" props={{ detail, similar, presentation: 'page', onClose }} />
-  );
+  return <ThemeSlot name="ItemDetailPage" props={{ detail, similar, presentation, onClose }} />;
 }
 
-export function ItemRoute() {
+/** Details as a page, or as an overlay above the previous page (see ShellRoutes). */
+export function ItemRoute({ presentation = 'page' }: { presentation?: Presentation }) {
   const { itemId = '' } = useParams();
-  return <ItemView key={itemId} itemId={itemId} />;
+  return <ItemView key={itemId} itemId={itemId} presentation={presentation} />;
 }
