@@ -13,6 +13,7 @@ const THEMES = [
   { id: 'neon-grid', name: 'Neon Grid', schemes: ['dark'] as const },
   { id: 'crimson', name: 'Crimson', schemes: ['dark'] as const },
   { id: 'glass', name: 'Glass', schemes: ['dark', 'light'] as const },
+  { id: 'horizon', name: 'Horizon', schemes: ['dark'] as const },
 ];
 
 test.describe('theme previews @previews', () => {

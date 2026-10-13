@@ -1,0 +1,23 @@
+{
+  "hero": {
+    "previous": "Vorheriger Titel",
+    "next": "Nächster Titel",
+    "pause": "Automatischen Wechsel anhalten",
+    "resume": "Automatischen Wechsel fortsetzen",
+    "slides": "Empfohlene Titel"
+  },
+  "card": {
+    "panel": "Mehr zu „{{name}}“"
+  },
+  "detail": {
+    "sections": "Bereiche",
+    "related": "Ähnliches",
+    "details": "Details",
+    "released": "Erschienen",
+    "runtime": "Laufzeit",
+    "rated": "Freigabe",
+    "genres": "Genres",
+    "episode": "Folge {{number}}",
+    "noRelated": "Zu diesem Titel gibt es keine ähnlichen."
+  }
+}

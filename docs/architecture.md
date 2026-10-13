@@ -612,6 +612,7 @@ Umsetzung (`themes/loader.ts`, `themes/transition.ts`): Der Loader merkt sich je
 
 Vor dem Abschluss jeder Theme-Phase: keine Markennamen in Code, Dateinamen, Kommentaren oder Texten; Farben nur in ähnlicher Stimmung (Abstand zu bekannten Markenfarben dokumentiert); Schriften nur frei lizenziert über `@fontsource`; Icons selbst gezeichnet; keine „im Stil von“-Hinweise im UI.
 
+- Horizon: Grund `#13192a` (dunkles Blaugrau, ΔE76 ≈ 8 zum Grund des Vorbilds), Akzent `#2a63e6` (kräftiges Blau, ΔE76 ≥ 32 zum Blau des Vorbilds). Schrift Figtree (OFL) statt der Hausschrift des Vorbilds.
 - Glass: Akzent `#4256cf` (dunkel) bzw. `#2456c8` (hell), ΔE76 ≥ 16 bzw. ≥ 12 zu den bekannten Systemblautönen; die Hauptaktionen sind weiß bzw. fast schwarz statt blau. Keine Original-Schrift (Inter statt der Systemschrift des Vorbilds), Icons selbst gezeichnet.
 - Crimson: Akzent `#d31d34`, dunkler und blauer als das Rot des Vorbilds (ΔE76 ≈ 21). Kein roter Schriftzug als Marke: Logo und App-Titel wie in allen Themes, Titel weiß. Bewertungssterne `#f2c14e` statt eines bekannten Gelbs. Schrift Inter (OFL).
 

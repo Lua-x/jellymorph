@@ -609,6 +609,121 @@ test.describe('screenshots @shots', () => {
     });
   }
 
+  /** Theme Horizon (phase 9): every screen it designs, in all four sizes. */
+  for (const viewport of VIEWPORTS) {
+    test.describe(`horizon ${String(viewport.width)}x${String(viewport.height)}`, () => {
+      test.use({ viewport });
+
+      test('horizon', async ({ page }) => {
+        test.setTimeout(150_000);
+        await signInAs(page, 'Alex');
+        await chooseTheme(page, 'Horizon', 'horizon');
+        await page.goto('/');
+        const resume = page.getByRole('region', { name: 'Weiterschauen', exact: true });
+        await expect(resume.getByRole('list').getByRole('link').first()).toBeVisible();
+        // Resting on the hero holds the rotation for the picture.
+        await page.mouse.move(viewport.width * 0.7, 200);
+        await shoot(page, '81-horizon-home');
+        await page.mouse.move(0, 0);
+        await shoot(page, '81-horizon-home', '-full', true);
+
+        // A card unfolded downwards (not on phones, they have no hover).
+        if (viewport.width > 640) {
+          const card = page
+            .getByRole('region', { name: 'Neu in Filme', exact: true })
+            .getByRole('list')
+            .getByRole('link')
+            .nth(1);
+          await card.scrollIntoViewIfNeeded();
+          await page.evaluate(() => {
+            window.scrollBy(0, window.innerHeight * 0.25);
+          });
+          await card.hover();
+          await expect(page.getByRole('group', { name: /^Mehr zu / })).toBeVisible();
+          await shoot(page, '82-horizon-card');
+          await page.mouse.move(0, 0);
+        }
+
+        await openFromSearch(page, 'Kupferherz', 'Filme');
+        await shoot(page, '83-horizon-movie');
+        await shoot(page, '83-horizon-movie', '-full', true);
+        await page.getByRole('tab', { name: 'Details' }).click();
+        await page.getByRole('tablist', { name: 'Bereiche' }).scrollIntoViewIfNeeded();
+        await shoot(page, '83-horizon-movie', '-details');
+
+        await openFromSearch(page, 'Hafenviertel', 'Serien');
+        await shoot(page, '84-horizon-series');
+        await page.getByRole('tablist', { name: 'Bereiche' }).scrollIntoViewIfNeeded();
+        await page.mouse.move(0, 0);
+        await shoot(page, '84-horizon-series', '-episodes');
+
+        await page.goto('/search?q=or');
+        await expect(page.getByRole('region', { name: /^Filme/ })).toBeVisible();
+        await shoot(page, '85-horizon-search');
+
+        await page.goto('/');
+        await page
+          .getByRole('region', { name: 'Bibliotheken' })
+          .getByRole('link', { name: /^Filme/ })
+          .click();
+        await expect(page.getByText('56 Titel')).toBeVisible();
+        await page.mouse.move(0, 0);
+        await shoot(page, '86-horizon-library');
+
+        const movie = (await demoItems(page, 'Movie')).find(directPlayable);
+        if (!movie) throw new Error('Missing demo title');
+        await pausedPlayer(page, movie.Id, 22);
+        await shoot(page, '87-horizon-player');
+        await page.getByRole('button', { name: 'Audio und Untertitel' }).click();
+        await expect(page.getByRole('dialog', { name: 'Audio und Untertitel' })).toBeVisible();
+        await shoot(page, '88-horizon-player-tracks');
+
+        await page.goto('/settings');
+        await expect(page.getByRole('heading', { level: 1, name: 'Einstellungen' })).toBeVisible();
+        await shoot(page, '89-horizon-settings');
+      });
+    });
+  }
+
+  for (const viewport of [
+    { width: 1920, height: 1080 },
+    { width: 3840, height: 2160 },
+  ]) {
+    test.describe(`horizon TV ${String(viewport.width)}x${String(viewport.height)}`, () => {
+      test.use({ viewport });
+
+      test('horizon TV mode', async ({ page }) => {
+        await page.addInitScript(() => {
+          const raw = localStorage.getItem('jellymorph.settings');
+          const settings = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+          localStorage.setItem(
+            'jellymorph.settings',
+            JSON.stringify({ ...settings, deviceMode: 'tv', overscan: 0.03 }),
+          );
+        });
+        await signInAs(page, 'Alex');
+        await chooseTheme(page, 'Horizon', 'horizon');
+        await page.goto('/');
+        await expect(page.locator('html')).toHaveAttribute('data-device', 'tv');
+        const resume = page.getByRole('region', { name: 'Weiterschauen', exact: true });
+        await expect(resume.getByRole('list').getByRole('link').first()).toBeVisible();
+        await page.keyboard.press('ArrowDown');
+        await expect(async () => {
+          if ((await resume.locator(':focus').count()) === 0)
+            await page.keyboard.press('ArrowDown');
+          await expect(resume.locator(':focus')).toHaveCount(1, { timeout: 400 });
+        }).toPass({ timeout: 8000 });
+        await page.waitForTimeout(700);
+        await shoot(page, '90-horizon-tv-home');
+        await page.keyboard.press('Enter');
+        await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+        await page.keyboard.press('ArrowDown');
+        await page.waitForTimeout(700);
+        await shoot(page, '91-horizon-tv-details');
+      });
+    });
+  }
+
   test.describe('light color scheme', () => {
     test.use({ viewport: { width: 1280, height: 800 }, colorScheme: 'light' });
 

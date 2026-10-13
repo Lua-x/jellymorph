@@ -1,0 +1,382 @@
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* The next episode inside the main button. */
+.nextLabel {
+  margin-left: 0.375rem;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+/* --- Tabs: text with a bar underneath, like the main navigation ----------------------------- */
+
+.tabsArea {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--color-border);
+  scrollbar-width: none;
+}
+
+.tab {
+  position: relative;
+  flex: none;
+  min-height: 3.25rem;
+  padding: 0 1rem;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 1.125rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.tab::after {
+  position: absolute;
+  right: 1rem;
+  bottom: -1px;
+  left: 1rem;
+  height: 0.1875rem;
+  border-radius: 999px;
+  background: #ffffff;
+  content: '';
+  transform: scaleX(0);
+  transition: transform var(--duration-base) var(--ease-emphasized);
+}
+
+/* Focus = hover: white text and a white bar. */
+.tab:is(:hover, :focus-visible) {
+  color: #ffffff;
+}
+
+.tab:is(:hover, :focus-visible)::after {
+  transform: scaleX(1);
+}
+
+.tab:focus-visible {
+  outline: 0.125rem solid #ffffff;
+  outline-offset: -0.25rem;
+  border-radius: var(--radius-control);
+}
+
+.tab[aria-selected='true'] {
+  color: #ffffff;
+}
+
+.tab[aria-selected='true']::after {
+  background: var(--color-accent-text);
+  transform: scaleX(1);
+}
+
+.panel {
+  padding-top: 1.75rem;
+}
+
+/* --- More like this --------------------------------------------------------------------------- */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+  gap: 1.25rem 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* --- Episodes --------------------------------------------------------------------------------- */
+
+.episodesPanel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
+}
+
+.seasonSelect {
+  position: relative;
+  display: inline-grid;
+  align-items: center;
+  justify-self: start;
+}
+
+.seasonSelect select {
+  min-height: 2.75rem;
+  padding: 0 2.75rem 0 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  cursor: pointer;
+  appearance: none;
+}
+
+.seasonSelect select:is(:hover, :focus-visible) {
+  border-color: #ffffff;
+  outline: none;
+  box-shadow: 0 0 0 1px #ffffff;
+}
+
+.selectIcon {
+  position: absolute;
+  right: 0.875rem;
+  pointer-events: none;
+}
+
+.episodes {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.episode {
+  display: grid;
+  grid-template-columns: minmax(10rem, 18rem) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+  padding: 0.75rem;
+  border-radius: var(--radius-card);
+}
+
+.episode[data-next] {
+  background: var(--color-surface);
+  box-shadow: inset 0.1875rem 0 0 var(--color-accent-text);
+}
+
+.still {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-card);
+  background: var(--color-surface-raised);
+  cursor: pointer;
+}
+
+.still > span:first-child {
+  position: absolute;
+  inset: 0;
+}
+
+.stillPlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  margin: -1.5rem 0 0 -1.5rem;
+  border-radius: 999px;
+  background: rgb(19 25 42 / 70%);
+  color: #ffffff;
+  font-size: 1.25rem;
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+
+/* Focus = hover: ring around the still, the play symbol turns blue and grows. */
+.still:is(:hover, :focus-visible) {
+  outline: none;
+  box-shadow:
+    0 0 0 0.125rem var(--color-bg),
+    0 0 0 0.25rem #ffffff;
+}
+
+.still:is(:hover, :focus-visible) .stillPlay {
+  background: var(--color-accent);
+  transform: scale(1.12);
+}
+
+.stillProgress {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  left: 0.5rem;
+  height: 0.1875rem;
+  background: rgb(255 255 255 / 30%);
+}
+
+.stillProgress > span {
+  display: block;
+  height: 100%;
+  background: var(--color-progress);
+  transform-origin: left center;
+}
+
+.episodeText {
+  display: grid;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.episodeMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.nextBadge {
+  padding: 0.0625rem 0.5rem;
+  border-radius: 0.25rem;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-size: 0.75rem;
+}
+
+.played {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.episodeTitle {
+  justify-self: start;
+  border-radius: 0.25rem;
+  color: var(--color-text);
+  font-size: 1.125rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.episodeTitle:is(:hover, :focus-visible) {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+.episodeTitle:focus-visible {
+  outline: 0.125rem solid #ffffff;
+  outline-offset: 2px;
+}
+
+.episodeOverview {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+/* --- Details ---------------------------------------------------------------------------------- */
+
+.details {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 2rem 3rem;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
+  gap: 1.25rem 2rem;
+  align-content: start;
+  margin: 0;
+}
+
+.facts > div {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.facts dt {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.subheading {
+  margin: 0 0 0.75rem;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.cast ul {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cast li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.5rem;
+}
+
+.person {
+  border-radius: 0.25rem;
+  color: var(--color-text);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.person:is(:hover, :focus-visible) {
+  color: var(--color-accent-text);
+  text-decoration: underline;
+}
+
+.person:focus-visible {
+  outline: 0.125rem solid #ffffff;
+  outline-offset: 2px;
+}
+
+.role {
+  color: var(--color-text-muted);
+}
+
+:global([data-motion='reduced']) :is(.tab, .stillPlay) {
+  transition: none;
+}
+
+:global([data-motion='reduced']) .tab::after {
+  transition: none;
+}
+
+@media (max-width: 48rem) {
+  .episode {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+  }
+
+  .episode[data-next] {
+    padding: 0.75rem;
+  }
+
+  .details {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tab {
+    padding: 0 0.75rem;
+    font-size: 1rem;
+  }
+}
