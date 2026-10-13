@@ -724,6 +724,138 @@ test.describe('screenshots @shots', () => {
     });
   }
 
+  /** Theme Constellation (phase 10): every screen it designs, in all four sizes. */
+  for (const viewport of VIEWPORTS) {
+    test.describe(`constellation ${String(viewport.width)}x${String(viewport.height)}`, () => {
+      test.use({ viewport });
+
+      test('constellation', async ({ page }) => {
+        test.setTimeout(150_000);
+        await signInAs(page, 'Alex');
+        await chooseTheme(page, 'Constellation', 'constellation');
+        await page.goto('/');
+        const resume = page.getByRole('region', { name: 'Weiterschauen', exact: true });
+        await expect(resume.getByRole('list').getByRole('link').first()).toBeVisible();
+        // Resting on the banner holds the rotation and shows its glowing frame.
+        await page.mouse.move(viewport.width * 0.6, viewport.width > 640 ? 220 : 160);
+        await shoot(page, '92-constellation-home');
+        await page.mouse.move(viewport.width - 2, viewport.height - 2);
+        await shoot(page, '92-constellation-home', '-full', true);
+
+        // Pointer effects and the unfolded rail (not on phones, they have no hover or rail).
+        if (viewport.width > 640) {
+          const tiles = page.getByRole('region', { name: 'Bibliotheken und Sammlungen' });
+          await tiles.scrollIntoViewIfNeeded();
+          await tiles.getByRole('link').nth(1).hover();
+          await shoot(page, '93-constellation-tile');
+          await resume.getByRole('list').getByRole('link').nth(1).hover();
+          await shoot(page, '93-constellation-card');
+          await page.evaluate(() => {
+            window.scrollTo(0, 0);
+          });
+          await page
+            .getByRole('navigation', { name: 'Hauptnavigation' })
+            .getByRole('link', { name: 'Filme' })
+            .hover();
+          await shoot(page, '94-constellation-rail');
+          await page.mouse.move(viewport.width - 2, viewport.height - 2);
+        }
+
+        await openFromSearch(page, 'Kupferherz', 'Filme');
+        await shoot(page, '95-constellation-movie');
+        await shoot(page, '95-constellation-movie', '-full', true);
+
+        await openFromSearch(page, 'Hafenviertel', 'Serien');
+        await shoot(page, '96-constellation-series');
+        await page.getByRole('region', { name: 'Episoden' }).scrollIntoViewIfNeeded();
+        await page.mouse.move(viewport.width - 2, viewport.height - 2);
+        await shoot(page, '96-constellation-series', '-episodes');
+
+        await page.goto('/search?q=or');
+        await expect(page.getByRole('region', { name: /^Filme/ })).toBeVisible();
+        await shoot(page, '97-constellation-search');
+
+        await page.goto('/');
+        await page
+          .getByRole('region', { name: 'Bibliotheken und Sammlungen' })
+          .getByRole('link', { name: /^Filme/ })
+          .click();
+        await expect(page.getByText('56 Titel')).toBeVisible();
+        await page.mouse.move(viewport.width - 2, viewport.height - 2);
+        await shoot(page, '97-constellation-library');
+
+        await page.goto('/settings');
+        await expect(page.getByRole('heading', { level: 1, name: 'Einstellungen' })).toBeVisible();
+        await shoot(page, '97-constellation-settings');
+
+        const movie = (await demoItems(page, 'Movie')).find(directPlayable);
+        if (!movie) throw new Error('Missing demo title');
+        await pausedPlayer(page, movie.Id, 22);
+        await shoot(page, '98-constellation-player');
+        await page.getByRole('button', { name: 'Audio und Untertitel' }).click();
+        await expect(page.getByRole('dialog', { name: 'Audio und Untertitel' })).toBeVisible();
+        await shoot(page, '98-constellation-player-tracks');
+      });
+    });
+  }
+
+  for (const viewport of [
+    { width: 1920, height: 1080 },
+    { width: 3840, height: 2160 },
+  ]) {
+    test.describe(`constellation TV ${String(viewport.width)}x${String(viewport.height)}`, () => {
+      test.use({ viewport });
+
+      test('constellation TV mode', async ({ page }) => {
+        await page.addInitScript(() => {
+          const raw = localStorage.getItem('jellymorph.settings');
+          const settings = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+          localStorage.setItem(
+            'jellymorph.settings',
+            JSON.stringify({ ...settings, deviceMode: 'tv', overscan: 0.03 }),
+          );
+        });
+        await signInAs(page, 'Alex');
+        await chooseTheme(page, 'Constellation', 'constellation');
+        await page.goto('/');
+        await expect(page.locator('html')).toHaveAttribute('data-device', 'tv');
+        const resume = page.getByRole('region', { name: 'Weiterschauen', exact: true });
+        await expect(resume.getByRole('list').getByRole('link').first()).toBeVisible();
+        await page.keyboard.press('ArrowDown');
+        await expect(async () => {
+          if ((await resume.locator(':focus').count()) === 0)
+            await page.keyboard.press('ArrowDown');
+          await expect(resume.locator(':focus')).toHaveCount(1, { timeout: 400 });
+        }).toPass({ timeout: 8000 });
+        await page.waitForTimeout(700);
+        await shoot(page, '99-constellation-tv-home');
+
+        // Left from the first card opens the rail with the remote.
+        const rail = page.getByRole('banner');
+        await expect(async () => {
+          if ((await rail.locator(':focus').count()) === 0) await page.keyboard.press('ArrowLeft');
+          await expect(rail.locator(':focus')).toHaveCount(1, { timeout: 400 });
+        }).toPass({ timeout: 8000 });
+        await page.waitForTimeout(700);
+        await shoot(page, '99-constellation-tv-rail');
+
+        await page.keyboard.press('ArrowRight');
+        await expect(async () => {
+          if ((await resume.locator(':focus').count()) === 0)
+            await page.keyboard.press('ArrowDown');
+          await expect(resume.locator(':focus')).toHaveCount(1, { timeout: 400 });
+        }).toPass({ timeout: 8000 });
+        await page.keyboard.press('Enter');
+        await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+        // The app moves focus to the new page first; the arrow key then picks the play button.
+        await expect(page.locator('main')).toBeFocused();
+        await page.keyboard.press('ArrowDown');
+        await page.waitForTimeout(700);
+        await shoot(page, '99-constellation-tv-details');
+      });
+    });
+  }
+
   test.describe('light color scheme', () => {
     test.use({ viewport: { width: 1280, height: 800 }, colorScheme: 'light' });
 

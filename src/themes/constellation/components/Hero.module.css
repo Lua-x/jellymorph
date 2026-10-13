@@ -1,0 +1,339 @@
+.hero {
+  --slide-gap: clamp(0.5rem, 1vw, 1rem);
+
+  display: grid;
+  gap: 0.25rem;
+}
+
+/* Reaches both window edges (left: the rail), with room above and below for the glow. */
+.viewport {
+  position: relative;
+  margin: -0.75rem calc(var(--page-gutter) * -1) -0.25rem;
+  padding: 0.75rem 0;
+  overflow: hidden;
+}
+
+/* The current banner lines up with the content; its neighbours peek in at the edges. */
+.track {
+  display: flex;
+  gap: var(--slide-gap);
+  transform: translateX(
+    calc(var(--page-gutter) - var(--index) * (100% - 2 * var(--page-gutter) + var(--slide-gap)))
+  );
+  transition: transform 700ms var(--ease-standard);
+}
+
+.slide {
+  flex: 0 0 calc(100% - 2 * var(--page-gutter));
+  min-width: 0;
+  opacity: 0.45;
+  transition: opacity 700ms var(--ease-standard);
+}
+
+.slide[data-current] {
+  position: relative;
+  z-index: 1;
+  opacity: 1;
+}
+
+/* Neighbours show only their picture. */
+.slide:not([data-current]) .content {
+  opacity: 0;
+}
+
+.banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  aspect-ratio: 3 / 1;
+  min-height: 17rem;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  color: #ffffff;
+  text-decoration: none;
+  outline: none;
+}
+
+.skeleton {
+  margin: 0 var(--page-gutter);
+  background: linear-gradient(120deg, var(--color-surface-raised), var(--color-surface));
+}
+
+/* Focus = hover: a white frame with a soft glow fades in. */
+.banner::after {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    0 0 0 0.1875rem #ffffff,
+    0 0 2.5rem 0.375rem var(--cs-glow-soft);
+  content: '';
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-base) var(--ease-standard);
+}
+
+.banner:hover::after,
+.banner:focus-visible::after {
+  opacity: 1;
+}
+
+.frame {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  background: var(--color-surface-raised);
+}
+
+.trailer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.2s var(--ease-standard);
+}
+
+.trailer[data-playing='true'] {
+  opacity: 1;
+}
+
+.shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgb(5 10 30 / 88%) 0%, rgb(5 10 30 / 60%) 34%, rgb(5 10 30 / 0%) 64%),
+    linear-gradient(0deg, rgb(5 10 30 / 45%), rgb(5 10 30 / 0%) 40%);
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  transition: opacity 700ms var(--ease-standard);
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: start;
+  gap: 0.75rem;
+  width: min(34rem, 42%);
+  margin-left: clamp(1.5rem, 4%, 4rem);
+}
+
+.logo {
+  display: block;
+  width: min(22rem, 100%);
+  height: clamp(3.5rem, 7vw, 7rem);
+}
+
+.title {
+  font-size: clamp(1.75rem, 1.2rem + 2vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+  text-shadow: 0 2px 12px rgb(0 0 0 / 50%);
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgb(255 255 255 / 82%);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.badge {
+  padding: 0 0.375rem;
+  border: 1px solid rgb(255 255 255 / 50%);
+  border-radius: 0.25rem;
+  color: #ffffff;
+  font-size: 0.8125rem;
+}
+
+.overview {
+  display: -webkit-box;
+  overflow: hidden;
+  color: rgb(255 255 255 / 90%);
+  font-size: 1rem;
+  line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+/* Arrows over the peeking neighbours; shown under the pointer or with their own focus. */
+.arrow {
+  position: absolute;
+  top: 0.75rem;
+  bottom: 0.75rem;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: var(--page-gutter);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #ffffff;
+  font-size: 1.75rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--duration-base) var(--ease-standard);
+}
+
+.arrow > svg {
+  filter: drop-shadow(0 1px 4px rgb(0 0 0 / 70%));
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+
+.previous {
+  left: 0;
+}
+
+.next {
+  right: 0;
+}
+
+.viewport:hover .arrow,
+.arrow:focus-visible {
+  opacity: 1;
+}
+
+.arrow:is(:hover, :focus-visible) > svg {
+  transform: scale(1.3);
+}
+
+.arrow:focus-visible {
+  outline: 0.125rem solid #ffffff;
+  outline-offset: -0.25rem;
+  border-radius: var(--radius-control);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.25rem;
+}
+
+.dots {
+  display: flex;
+}
+
+.dot {
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.dot > span {
+  display: block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--color-text-muted);
+  opacity: 0.5;
+  transition:
+    transform var(--duration-base) var(--ease-emphasized),
+    opacity var(--duration-base) var(--ease-standard);
+}
+
+.dot[aria-current='true'] > span {
+  background: #ffffff;
+  box-shadow: 0 0 0.5rem var(--cs-glow);
+  opacity: 1;
+  transform: scale(1.3);
+}
+
+/* Focus = hover: the dot brightens and grows. */
+.dot:is(:hover, :focus-visible) > span {
+  opacity: 1;
+  transform: scale(1.5);
+}
+
+.dot:focus-visible {
+  outline: 0.125rem solid #ffffff;
+  outline-offset: -0.25rem;
+  border-radius: 999px;
+}
+
+.pause {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.pause:is(:hover, :focus-visible) {
+  background: rgb(255 255 255 / 12%);
+  color: #ffffff;
+}
+
+.pause:focus-visible {
+  outline: 0.125rem solid #ffffff;
+  outline-offset: 0;
+}
+
+:global([data-motion='reduced'])
+  :is(.track, .slide, .content, .trailer, .arrow, .arrow > svg, .dot > span) {
+  transition: none;
+}
+
+:global([data-motion='reduced']) .banner::after {
+  transition: none;
+}
+
+/* Phones: a taller banner, the text at the bottom, no description; the dots switch titles. */
+@media (max-width: 47.99rem) {
+  .banner {
+    align-items: flex-end;
+    aspect-ratio: 16 / 10;
+    min-height: 0;
+  }
+
+  .shade {
+    background: linear-gradient(0deg, rgb(5 10 30 / 90%) 0%, rgb(5 10 30 / 0%) 60%);
+  }
+
+  .content {
+    gap: 0.375rem;
+    width: auto;
+    margin: 0 1rem 1rem;
+  }
+
+  .logo {
+    width: min(14rem, 70%);
+    height: 3rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .facts {
+    font-size: 0.8125rem;
+  }
+
+  .overview,
+  .arrow {
+    display: none;
+  }
+
+  .controls {
+    justify-content: center;
+  }
+}

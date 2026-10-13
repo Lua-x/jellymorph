@@ -1,0 +1,70 @@
+/*
+ * Constellation – global styles. Every selector starts with the theme scope; :where() keeps the
+ * specificity low so component styles always win.
+ */
+
+/* The deep blue gradient with two faint nebula glows stays in place while the page scrolls. */
+[data-theme='constellation'] body {
+  background:
+    radial-gradient(ellipse 70% 55% at 85% 0%, rgb(43 182 201 / 9%), transparent),
+    radial-gradient(ellipse 60% 50% at 0% 100%, rgb(120 110 255 / 9%), transparent),
+    linear-gradient(180deg, var(--cs-gradient-top), var(--cs-gradient-bottom));
+  background-attachment: fixed;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+}
+
+/*
+ * A subtle starfield behind every page: tiny radial gradients in tiles of different sizes, so no
+ * pattern shows. The shell adds a few brighter stars that twinkle (AppShell.module.css).
+ */
+[data-theme='constellation'] body::before {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  content: '';
+  pointer-events: none;
+  background-image:
+    radial-gradient(1.3px 1.3px at 0px 564px, rgb(255 255 255 / 44%) 45%, transparent),
+    radial-gradient(1.3px 1.3px at 117px 447px, rgb(255 255 255 / 51%) 45%, transparent),
+    radial-gradient(1.3px 1.3px at 183px 461px, rgb(255 255 255 / 58%) 45%, transparent),
+    radial-gradient(1.3px 1.3px at 302px 420px, rgb(255 255 255 / 54%) 45%, transparent),
+    radial-gradient(1.3px 1.3px at 455px 148px, rgb(255 255 255 / 46%) 45%, transparent),
+    radial-gradient(1.3px 1.3px at 394px 428px, rgb(255 255 255 / 37%) 45%, transparent),
+    radial-gradient(1.3px 1.3px at 381px 287px, rgb(255 255 255 / 63%) 45%, transparent),
+    radial-gradient(1.6px 1.6px at 716px 91px, rgb(255 255 255 / 55%) 45%, transparent),
+    radial-gradient(1.6px 1.6px at 819px 509px, rgb(255 255 255 / 59%) 45%, transparent),
+    radial-gradient(1.6px 1.6px at 512px 674px, rgb(255 255 255 / 67%) 45%, transparent),
+    radial-gradient(1.6px 1.6px at 330px 248px, rgb(255 255 255 / 65%) 45%, transparent),
+    radial-gradient(1.6px 1.6px at 295px 113px, rgb(255 255 255 / 49%) 45%, transparent),
+    radial-gradient(1.6px 1.6px at 380px 218px, rgb(255 255 255 / 68%) 45%, transparent);
+  background-size:
+    557px 613px,
+    557px 613px,
+    557px 613px,
+    557px 613px,
+    557px 613px,
+    557px 613px,
+    557px 613px,
+    887px 739px,
+    887px 739px,
+    887px 739px,
+    887px 739px,
+    887px 739px,
+    887px 739px;
+}
+
+:where([data-theme='constellation']) ::selection {
+  background: rgb(43 182 201 / 45%);
+}
+
+:where([data-theme='constellation']) :focus-visible {
+  outline: 0.125rem solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+:where([data-theme='constellation']) h1,
+:where([data-theme='constellation']) h2 {
+  font-weight: 800;
+}

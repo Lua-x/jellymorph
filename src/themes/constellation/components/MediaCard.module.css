@@ -1,0 +1,62 @@
+.card {
+  position: relative;
+  display: block;
+  border-radius: var(--radius-card);
+  color: var(--color-text);
+  text-decoration: none;
+  outline: none;
+  transition: transform var(--duration-base) var(--ease-emphasized);
+}
+
+/* The frame and its glow fade in; only opacity is animated. */
+.card::after {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    0 0 0 0.1875rem #ffffff,
+    0 0.75rem 2rem rgb(2 6 20 / 60%),
+    0 0 1.75rem 0.25rem var(--cs-glow-soft);
+  content: '';
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-base) var(--ease-standard);
+}
+
+/* Focus = hover: the card grows slightly and the frame lights up. */
+.card:is(:hover, :focus-visible) {
+  transform: scale(1.05);
+}
+
+.card:hover::after,
+.card:focus-visible::after {
+  opacity: 1;
+}
+
+.card:active {
+  transform: scale(1.02);
+}
+
+.skeleton {
+  aspect-ratio: 16 / 9;
+  background: var(--color-surface-raised);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+:global([data-motion='reduced']) .card {
+  transition: none;
+}
+
+:global([data-motion='reduced']) .card::after {
+  transition: none;
+}
+
+:global([data-motion='reduced']) .skeleton {
+  animation: none;
+}

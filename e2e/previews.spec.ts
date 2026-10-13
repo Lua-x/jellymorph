@@ -14,6 +14,7 @@ const THEMES = [
   { id: 'crimson', name: 'Crimson', schemes: ['dark'] as const },
   { id: 'glass', name: 'Glass', schemes: ['dark', 'light'] as const },
   { id: 'horizon', name: 'Horizon', schemes: ['dark'] as const },
+  { id: 'constellation', name: 'Constellation', schemes: ['dark'] as const },
 ];
 
 test.describe('theme previews @previews', () => {

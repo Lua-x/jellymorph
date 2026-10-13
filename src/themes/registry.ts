@@ -1,3 +1,4 @@
+import { constellationManifest } from './constellation/manifest';
 import type { ThemeId, ThemeManifest } from './contract';
 import { crimsonManifest } from './crimson/manifest';
 import { defaultManifest } from './default/manifest';
@@ -12,6 +13,7 @@ export const THEMES: readonly ThemeManifest[] = [
   crimsonManifest,
   glassManifest,
   horizonManifest,
+  constellationManifest,
 ];
 
 export function getThemeManifest(id: ThemeId): ThemeManifest {

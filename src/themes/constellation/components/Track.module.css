@@ -1,0 +1,80 @@
+.viewport {
+  position: relative;
+  margin: 0 calc(var(--page-gutter) * -1);
+}
+
+/* Room above and below for the grown card, its frame and glow (scrolling clips both axes). */
+.track {
+  position: relative;
+  display: flex;
+  gap: var(--gap);
+  margin: -1.25rem 0;
+  padding: 1.25rem var(--page-gutter);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-padding-inline: var(--page-gutter);
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  list-style: none;
+}
+
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+.slot {
+  flex: 0 0 calc((100% - (var(--per-row) - 1) * var(--gap)) / var(--per-row));
+  min-width: 0;
+  scroll-snap-align: start;
+}
+
+/* Round dark arrows with a light edge, on both sides under the pointer. */
+.arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  margin-top: -1.5rem;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(11 21 51 / 88%);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 30%),
+    var(--shadow-card);
+  color: #ffffff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity var(--duration-base) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
+}
+
+.arrow:hover {
+  transform: scale(1.1);
+}
+
+.previous {
+  left: max(0.25rem, calc(var(--page-gutter) / 2 - 1rem));
+}
+
+.next {
+  right: max(0.25rem, calc(var(--page-gutter) / 2 - 1rem));
+}
+
+.viewport:hover .arrow {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .arrow {
+    display: none;
+  }
+}
+
+:global([data-motion='reduced']) .arrow {
+  transition: none;
+}

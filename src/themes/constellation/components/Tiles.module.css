@@ -1,0 +1,137 @@
+.tiles {
+  --gap: 1rem;
+  --per-row: 5;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.tile {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  padding: 0.75rem;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  color: #ffffff;
+  text-align: center;
+  text-decoration: none;
+  outline: none;
+  transition: transform var(--duration-base) var(--ease-emphasized);
+}
+
+/* A thin light edge at rest; focus and hover fade in the white frame with its glow. */
+.tile::before,
+.tile::after {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  content: '';
+  pointer-events: none;
+}
+
+.tile::before {
+  z-index: 1;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 18%);
+}
+
+.tile::after {
+  box-shadow:
+    0 0 0 0.1875rem #ffffff,
+    0 0 2.25rem 0.375rem var(--cs-glow-soft),
+    0 0 0.75rem var(--cs-glow-soft);
+  opacity: 0;
+  transition: opacity var(--duration-base) var(--ease-standard);
+}
+
+/* Focus = hover. */
+.tile:is(:hover, :focus-visible) {
+  transform: scale(1.05);
+}
+
+.tile:hover::after,
+.tile:focus-visible::after {
+  opacity: 1;
+}
+
+.tile:active {
+  transform: scale(1.02);
+}
+
+.frame {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  background: var(--color-surface-raised);
+}
+
+.fallback {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 30% 20%, rgb(43 182 201 / 35%), transparent 60%),
+    linear-gradient(135deg, var(--color-surface-hover), var(--color-surface));
+}
+
+.shade {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    rgb(7 13 34 / 72%) 0%,
+    rgb(7 13 34 / 50%) 70%,
+    rgb(7 13 34 / 40%) 100%
+  );
+}
+
+.name {
+  position: relative;
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: clamp(1rem, 0.85rem + 0.7vw, 1.625rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1.15;
+  text-shadow: 0 2px 10px rgb(0 0 0 / 60%);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.skeleton {
+  background: var(--color-surface-raised);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (max-width: 64rem) {
+  .tiles {
+    --per-row: 3.4;
+  }
+}
+
+@media (max-width: 40rem) {
+  .tiles {
+    --gap: 0.625rem;
+    --per-row: 2.3;
+  }
+}
+
+:global([data-motion='reduced']) .tile {
+  transition: none;
+}
+
+:global([data-motion='reduced']) .tile::after {
+  transition: none;
+}
+
+:global([data-motion='reduced']) .skeleton {
+  animation: none;
+}

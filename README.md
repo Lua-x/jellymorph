@@ -17,7 +17,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="Lizenz: AGPL-3.0" /></a>
 </p>
 
-> **Status:** in Entwicklung. Fertig sind das Fundament, die Anmeldung (Server, Profile, Passwort, Quick Connect), alle Inhaltsseiten im Theme „Classic“, der Player, das Theme-System mit Einstellungen und Live-Vorschau, die Bedienung per Fernbedienung samt TV-Modus, der Demo-Modus und das Docker-Image. Wählbar sind die Themes „Classic“, „Neon Grid“, „Crimson“, „Glass“ und „Horizon“. Den Fahrplan zeigt [CLAUDE.md](CLAUDE.md) §11.
+> **Status:** in Entwicklung. Fertig sind das Fundament, die Anmeldung (Server, Profile, Passwort, Quick Connect), alle Inhaltsseiten im Theme „Classic“, der Player, das Theme-System mit Einstellungen und Live-Vorschau, die Bedienung per Fernbedienung samt TV-Modus, der Demo-Modus und das Docker-Image. Wählbar sind alle sechs Themes: „Classic“, „Neon Grid“, „Crimson“, „Glass“, „Horizon“ und „Constellation“. Den Fahrplan zeigt [CLAUDE.md](CLAUDE.md) §11.
 
 ## Betrieb mit Docker
 
@@ -36,14 +36,14 @@ Danach ist Jellymorph unter `http://<rechner>:8080` erreichbar. Ein vollständig
 
 ### Variablen
 
-| Variable                | Zweck                                                                                                     | Standard     |
-| ----------------------- | --------------------------------------------------------------------------------------------------------- | ------------ |
-| `JELLYFIN_PROXY_TARGET` | Adresse deines Jellyfin-Servers. Jellymorph reicht ihn unter `/jellyfin` durch (empfohlen).               | leer         |
-| `JELLYFIN_URL`          | Server-Adresse, die bei der Anmeldung vorbelegt ist. Der Browser verbindet sich direkt.                   | leer         |
-| `LOCK_SERVER`           | `true`: Die Adresse aus `JELLYFIN_URL` ist fest und lässt sich in der App nicht ändern.                   | `false`      |
-| `DEFAULT_THEME`         | Theme für Benutzer ohne eigene Wahl: `default` (Classic), `neon-grid`, `crimson`, `glass` oder `horizon`. | `default`    |
-| `APP_TITLE`             | Name im Browser-Tab und beim Installieren als App                                                         | `Jellymorph` |
-| `DEMO_MODE`             | `true`: Demo mit erfundenen Daten, ganz ohne Jellyfin-Server                                              | `false`      |
+| Variable                | Zweck                                                                                                                      | Standard     |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| `JELLYFIN_PROXY_TARGET` | Adresse deines Jellyfin-Servers. Jellymorph reicht ihn unter `/jellyfin` durch (empfohlen).                                | leer         |
+| `JELLYFIN_URL`          | Server-Adresse, die bei der Anmeldung vorbelegt ist. Der Browser verbindet sich direkt.                                    | leer         |
+| `LOCK_SERVER`           | `true`: Die Adresse aus `JELLYFIN_URL` ist fest und lässt sich in der App nicht ändern.                                    | `false`      |
+| `DEFAULT_THEME`         | Theme für Benutzer ohne eigene Wahl: `default` (Classic), `neon-grid`, `crimson`, `glass`, `horizon` oder `constellation`. | `default`    |
+| `APP_TITLE`             | Name im Browser-Tab und beim Installieren als App                                                                          | `Jellymorph` |
+| `DEMO_MODE`             | `true`: Demo mit erfundenen Daten, ganz ohne Jellyfin-Server                                                               | `false`      |
 
 Änderungen brauchen keinen neuen Build: Variable anpassen, Container neu starten. Ungültige Werte, etwa ein Tippfehler im Theme-Namen, stoppen den Container mit einer Meldung im Log (`docker logs jellymorph`), die die Variable nennt.
 

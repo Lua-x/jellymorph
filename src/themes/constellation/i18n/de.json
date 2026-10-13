@@ -1,0 +1,24 @@
+{
+  "hero": {
+    "previous": "Vorheriger Titel",
+    "next": "Nächster Titel",
+    "pause": "Automatischen Wechsel anhalten",
+    "resume": "Automatischen Wechsel fortsetzen",
+    "slides": "Empfohlene Titel"
+  },
+  "tiles": {
+    "title": "Bibliotheken und Sammlungen"
+  },
+  "detail": {
+    "suggestions": "Vorschläge",
+    "details": "Details",
+    "released": "Erschienen",
+    "runtime": "Laufzeit",
+    "rated": "Freigabe",
+    "genres": "Genres",
+    "episode": "Folge {{number}}"
+  },
+  "nav": {
+    "menu": "Navigation"
+  }
+}

@@ -1,0 +1,107 @@
+.button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  max-width: 100%;
+  min-height: 2.75rem;
+  padding: 0 1.25rem;
+  border: 0;
+  border-radius: var(--radius-control);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+
+.button > svg {
+  flex: none;
+  font-size: 1.25rem;
+}
+
+.button:focus-visible {
+  outline: none;
+}
+
+/* Focus = hover: brighter fill (per variant), a white ring with a gap and a soft glow. */
+.button:is(:hover, :focus-visible) {
+  box-shadow:
+    0 0 0 0.125rem var(--color-bg),
+    0 0 0 0.25rem #ffffff,
+    0 0 1.5rem 0.25rem var(--cs-glow-soft);
+}
+
+.button:active {
+  transform: scale(0.97);
+}
+
+.button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.primary {
+  background: var(--cs-button);
+  color: var(--cs-on-button);
+}
+
+.primary:is(:hover, :focus-visible) {
+  background: var(--cs-button-hover);
+}
+
+/* Translucent with a thin light border, so they hold over pictures as well as on the page. */
+.secondary,
+.round {
+  background: var(--cs-secondary);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 55%);
+  color: #ffffff;
+}
+
+.secondary:is(:hover, :focus-visible),
+.round:is(:hover, :focus-visible) {
+  background: var(--cs-secondary-hover);
+}
+
+.round {
+  width: 2.75rem;
+  padding: 0;
+  border-radius: 999px;
+}
+
+.round[aria-pressed='true'] {
+  background: var(--cs-secondary-hover);
+}
+
+.lg {
+  min-height: 3.25rem;
+  padding: 0 1.75rem;
+  font-size: 1.0625rem;
+}
+
+.lg.round {
+  width: 3.25rem;
+  padding: 0;
+}
+
+.lg > svg {
+  font-size: 1.375rem;
+}
+
+/* Long labels end with an ellipsis instead of leaving the screen. */
+.label {
+  display: inline-block;
+  min-width: 0;
+  overflow: hidden;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+}
+
+:global([data-motion='reduced']) .button {
+  transition: none;
+}

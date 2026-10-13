@@ -1,0 +1,24 @@
+{
+  "hero": {
+    "previous": "Previous title",
+    "next": "Next title",
+    "pause": "Pause automatic rotation",
+    "resume": "Resume automatic rotation",
+    "slides": "Featured titles"
+  },
+  "tiles": {
+    "title": "Libraries and collections"
+  },
+  "detail": {
+    "suggestions": "Suggestions",
+    "details": "Details",
+    "released": "Released",
+    "runtime": "Runtime",
+    "rated": "Rated",
+    "genres": "Genres",
+    "episode": "Episode {{number}}"
+  },
+  "nav": {
+    "menu": "Navigation"
+  }
+}
