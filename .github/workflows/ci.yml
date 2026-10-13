@@ -60,8 +60,14 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
+      # Build tools and base images come from registries without Docker Hub's pull limit for
+      # anonymous runners (docs/architecture.md §15.1).
       - uses: docker/setup-qemu-action@v4
+        with:
+          image: mirror.gcr.io/tonistiigi/binfmt:latest
       - uses: docker/setup-buildx-action@v4
+        with:
+          driver-opts: image=mirror.gcr.io/moby/buildkit:buildx-stable-1
       - name: Build for amd64 and arm64
         uses: docker/build-push-action@v7
         with:

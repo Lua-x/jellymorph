@@ -364,7 +364,7 @@ async function proxy() {
     NETWORK,
     '--network-alias',
     'upstream',
-    'node:24-alpine',
+    'mirror.gcr.io/library/node:24-alpine',
     'node',
     '--input-type=module',
     '-e',

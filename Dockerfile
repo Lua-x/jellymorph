@@ -1,16 +1,19 @@
-# syntax=docker/dockerfile:1
+# syntax=mirror.gcr.io/docker/dockerfile:1
 # Jellymorph – static web client served by unprivileged nginx (docs/architecture.md §15).
+
+# Base images come from registries without Docker Hub's pull limit: the official Node image via
+# Google's Docker Hub mirror, nginx-unprivileged from its publisher on GitHub's registry.
 
 # Build on the machine's own platform: the output is static files, identical for every target
 # architecture, so arm64 images need no emulated Node build.
-FROM --platform=$BUILDPLATFORM node:24-alpine AS build
+FROM --platform=$BUILDPLATFORM mirror.gcr.io/library/node:24-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY . .
 RUN npm run build && rm -rf dist/.vite
 
-FROM nginxinc/nginx-unprivileged:1.31-alpine
+FROM ghcr.io/nginx/nginx-unprivileged:1.31-alpine
 
 USER root
 # The directory is created here: COPY --chmod would give a new directory the file mode (0644).

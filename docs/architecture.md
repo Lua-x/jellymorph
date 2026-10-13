@@ -892,8 +892,9 @@ Theme- und Default-Chunk werden parallel zur Session-Wiederherstellung geladen. 
 
 Plan aus Phase 0, umgesetzt in Phase 5 (Abweichungen und Details in §15.1):
 
-- **Build-Stage** `node:24-alpine` auf `$BUILDPLATFORM`: Das statische Ergebnis ist architekturunabhängig, nur die nginx-Stage wird pro Architektur gebaut. Das spart QEMU-Zeit für arm64.
-- **Laufzeit** `nginxinc/nginx-unprivileged:1.31-alpine`, Port 8080, Nicht-Root (UID 101).
+- **Build-Stage** `node:24-alpine` (über `mirror.gcr.io/library/node`, siehe unten) auf `$BUILDPLATFORM`: Das statische Ergebnis ist architekturunabhängig, nur die nginx-Stage wird pro Architektur gebaut. Das spart QEMU-Zeit für arm64.
+- **Laufzeit** `nginx-unprivileged:1.31-alpine` vom Hersteller NGINX, bezogen über `ghcr.io/nginx/nginx-unprivileged` (dasselbe Image wie `nginxinc/nginx-unprivileged` auf Docker Hub), Port 8080, Nicht-Root (UID 101).
+- **Ohne Docker Hub (seit 2026-10-13):** GitHub-Runner teilen sich IP-Adressen, anonyme Docker-Hub-Abrufe laufen deshalb ins Pull-Limit, und am 2026-10-09 fiel zusätzlich die Anmeldung von Docker Hub aus (504, Timeouts). Beides ließ den Docker-Job scheitern, obwohl der Code grün war. Seitdem kommen alle Images aus Registries ohne dieses Limit: Node, das Dockerfile-Frontend (`# syntax=`), BuildKit und QEMU (`tonistiigi/binfmt`) über Googles Docker-Hub-Spiegel `mirror.gcr.io`, nginx-unprivileged vom Hersteller auf `ghcr.io`. Beide Registries liefern Tag-Listen, Dependabot schlägt also weiter Updates vor (die Ignore-Regel für Node-Hauptversionen gilt per Muster `*node`).
 - **Entrypoint:** validiert die Variablen (Theme-ID gegen Liste, Booleans, URL-Format), schreibt `config.js` mit JSON-Escaping, rendert die nginx-Site (CSP, optionaler `/jellyfin/`-Proxy mit WebSocket-Upgrade) und `manifest.webmanifest` (Name aus `APP_TITLE`) nach `/tmp/jellymorph`.
 - **Read-only Root-FS:** einziger Schreibpfad `/tmp` (tmpfs), dokumentiert in README und Compose.
 - `/healthz` → 200 aus nginx. Docker-`HEALTHCHECK` mit `wget`.

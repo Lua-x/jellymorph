@@ -20,7 +20,8 @@ updates:
       interval: weekly
     ignore:
       # The build stage follows the LTS line in .node-version; majors are changed by hand.
-      - dependency-name: node
+      # (The image comes through a registry mirror, so its name carries a path prefix.)
+      - dependency-name: '*node'
         update-types: [version-update:semver-major]
 
   - package-ecosystem: github-actions
