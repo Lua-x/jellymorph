@@ -1,5 +1,6 @@
 import { delay, http, HttpResponse, type HttpResponseResolver } from 'msw';
 import { DEMO_SERVER, DEMO_VIEWS, type MockUser } from './fixtures';
+import { createAdminHandlers } from './admin-handlers';
 import { createContentHandlers } from './content-handlers';
 import { avatarSvg, svgResponseInit } from './images';
 import { createPlaybackHandlers } from './playback-handlers';
@@ -17,7 +18,11 @@ function userDto(state: MockState, user: MockUser) {
     HasConfiguredPassword: user.password !== null,
     EnableAutoLogin: false,
     Configuration: state.userConfiguration(user.id),
-    Policy: { IsAdministrator: user.isAdministrator, IsDisabled: false },
+    Policy: {
+      IsAdministrator: user.isAdministrator,
+      IsDisabled: false,
+      EnableContentDeletion: user.isAdministrator,
+    },
   };
 }
 
@@ -228,6 +233,7 @@ export function createHandlers(state: MockState) {
       ),
     ),
 
+    ...createAdminHandlers(authed),
     ...createContentHandlers(state, authed),
     ...createPlaybackHandlers(state, authed),
   ];

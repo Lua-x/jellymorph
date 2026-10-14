@@ -182,6 +182,7 @@ function toTrack(stream: MediaStream): MediaTrack {
     codec: stream.Codec ?? null,
     isDefault: stream.IsDefault ?? false,
     isForced: stream.IsForced ?? false,
+    isExternal: stream.IsExternal ?? false,
   };
 }
 
@@ -215,6 +216,7 @@ export function toItemDetail(dto: BaseItemDto, urls: ImageUrlFactory): ItemDetai
     localTrailerCount: dto.LocalTrailerCount ?? 0,
     seriesStatus:
       dto.Status === 'Continuing' ? 'continuing' : dto.Status === 'Ended' ? 'ended' : null,
+    canDelete: dto.CanDelete === true,
   };
 }
 

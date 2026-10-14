@@ -19,6 +19,11 @@ const LIBRARY_ICONS: Record<LibraryKind, NavIcon> = {
   mixed: 'folder',
 };
 
+/** jellyfin-web's dashboard; through the container's proxy this stays on the own origin. */
+export function dashboardUrl(serverUrl: string): string {
+  return `${serverUrl.replace(/\/+$/, '')}/web/#/dashboard`;
+}
+
 export function useNavModel(): NavModel {
   const { t } = useTranslation();
   const config = useAppConfig();
@@ -72,6 +77,10 @@ export function useNavModel(): NavModel {
     },
     serverName: server.name,
     settings: paths.settings,
+    dashboard:
+      user.status === 'success' && user.data.isAdministrator && !config.demoMode
+        ? dashboardUrl(server.url)
+        : null,
     switchProfile: () => {
       void endOrKeepSession().then(() => {
         leave(paths.login);

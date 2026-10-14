@@ -6,6 +6,7 @@ import { paths } from '@/navigation/paths';
 import { AppLink } from '@/ui/AppLink';
 import { JellyImage } from '@/ui/JellyImage';
 import { formatClock } from '@/ui/time';
+import { ItemAdmin } from '../../default/components/admin/ItemAdmin';
 import { Icon } from '../../default/components/icons';
 import { episodeCode, ratingText, runtimeText, yearText } from '../../default/components/meta';
 import styles from './DetailHeader.module.css';
@@ -158,6 +159,18 @@ export function DetailHeader({
             onClick={() => {
               actions.togglePlayed(item);
             }}
+          />
+          <ItemAdmin
+            item={item}
+            renderTrigger={({ label, buttonProps }) => (
+              <HorizonButton
+                variant="round"
+                size="lg"
+                aria-label={label}
+                icon={<Icon name="edit" />}
+                {...buttonProps}
+              />
+            )}
           />
         </div>
       </div>

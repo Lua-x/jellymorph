@@ -6,6 +6,7 @@ import { paths } from '@/navigation/paths';
 import { AppLink } from '@/ui/AppLink';
 import { JellyImage } from '@/ui/JellyImage';
 import { formatClock } from '@/ui/time';
+import { ItemAdmin } from '../../default/components/admin/ItemAdmin';
 import { Icon } from '../../default/components/icons';
 import { DataFields, FieldGrid } from './DataFields';
 import styles from './Dossier.module.css';
@@ -213,6 +214,14 @@ export function DossierHeader({ item, children }: { item: ItemDetail; children?:
             >
               {item.userData.played ? t('actions.markUnplayed') : t('actions.markPlayed')}
             </NeonButton>
+            <ItemAdmin
+              item={item}
+              renderTrigger={({ label, buttonProps }) => (
+                <NeonButton variant="ghost" size="lg" icon={<Icon name="edit" />} {...buttonProps}>
+                  {label}
+                </NeonButton>
+              )}
+            />
           </div>
         </div>
       </div>

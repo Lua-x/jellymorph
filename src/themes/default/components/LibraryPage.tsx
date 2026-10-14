@@ -1,6 +1,7 @@
 import { useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { LibraryBrowser, LibraryFilters, SortField } from '@/hooks/useLibraryBrowser';
+import { useToasts } from '@/ui/toast-store';
 import { VirtualGrid, type VirtualGridHandle } from '@/ui/VirtualGrid';
 import { useThemeComponent, useThemeOptions } from '../../context';
 import type { CardVariant, LibraryPageProps } from '../../contract';
@@ -97,6 +98,35 @@ function FilterPanel({ browser, id }: { browser: LibraryBrowser; id: string }) {
         </fieldset>
       )}
     </div>
+  );
+}
+
+/** "Scan library" for administrators: Jellyfin then looks for new and removed files. */
+function ScanButton({ scan, name }: { scan: () => Promise<void>; name: string }) {
+  const { t } = useTranslation('content');
+  const showToast = useToasts((state) => state.show);
+  const [busy, setBusy] = useState(false);
+  return (
+    <Button
+      variant="secondary"
+      icon={<Icon name="refresh" />}
+      busy={busy}
+      onClick={() => {
+        setBusy(true);
+        scan()
+          .then(() => {
+            showToast('info', t('admin.library.scanStarted', { name }));
+          })
+          .catch(() => {
+            showToast('error', t('admin.failed'));
+          })
+          .finally(() => {
+            setBusy(false);
+          });
+      }}
+    >
+      {t('admin.library.scan')}
+    </Button>
   );
 }
 
@@ -244,6 +274,7 @@ export function LibraryPage({ browser }: LibraryPageProps) {
               ? t('library.filterCount', { count: browser.activeFilterCount })
               : t('library.filters')}
           </Button>
+          {browser.scan && <ScanButton scan={browser.scan} name={title} />}
         </div>
       </header>
 

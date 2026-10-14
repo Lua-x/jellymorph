@@ -182,6 +182,8 @@ export interface MediaTrack {
   codec: string | null;
   isDefault: boolean;
   isForced: boolean;
+  /** A separate subtitle file next to the video (only those can be deleted). */
+  isExternal: boolean;
 }
 
 /** Everything the detail pages show about one item. */
@@ -195,6 +197,8 @@ export interface ItemDetail extends MediaItem {
   videoLabel: string | null;
   localTrailerCount: number;
   seriesStatus: 'continuing' | 'ended' | null;
+  /** The signed-in user may delete the item (and its files) on the server. */
+  canDelete: boolean;
 }
 
 export interface Season {
@@ -243,4 +247,97 @@ export type FavoriteGroupKind = 'movies' | 'shows' | 'episodes' | 'collections' 
 export interface FavoriteGroup {
   kind: FavoriteGroupKind;
   items: MediaItem[];
+}
+
+// --- Administration (phase 13) ----------------------------------------------------------------
+
+/** The fields of the metadata editor. Dates as `yyyy-mm-dd`, empty text means "not set". */
+export interface MetadataDraft {
+  name: string;
+  originalTitle: string;
+  sortName: string;
+  overview: string;
+  tagline: string;
+  genres: string[];
+  tags: string[];
+  studios: string[];
+  year: number | null;
+  premiereDate: string | null;
+  endDate: string | null;
+  officialRating: string;
+  communityRating: number | null;
+  criticRating: number | null;
+  providerIds: Record<string, string>;
+  /** Jellyfin no longer changes the metadata on its own. */
+  locked: boolean;
+}
+
+/** An external ID the server's metadata providers know (TheMovieDb, IMDb …). */
+export interface ExternalIdField {
+  key: string;
+  name: string;
+  /** What the ID refers to (Movie, Series, BoxSet …); tells apart two IDs of one provider. */
+  mediaType: string | null;
+}
+
+export interface MetadataEditorData {
+  draft: MetadataDraft;
+  /** Age ratings the server knows, for the select. */
+  ratings: string[];
+  externalIds: ExternalIdField[];
+}
+
+export interface IdentifyQuery {
+  name: string;
+  year: number | null;
+  providerIds: Record<string, string>;
+}
+
+export interface IdentifyResult {
+  id: string;
+  name: string;
+  year: number | null;
+  overview: string | null;
+  imageUrl: string | null;
+  provider: string | null;
+}
+
+/** jellyfin-web's refresh modes: new and changed files, missing metadata, or everything. */
+export type RefreshMode = 'scan' | 'missing' | 'all';
+
+export type EditableImageType = 'Primary' | 'Backdrop' | 'Logo' | 'Thumb' | 'Banner' | 'Art';
+
+export interface ItemImageEntry {
+  type: EditableImageType;
+  index: number;
+  url: string;
+  width: number | null;
+  height: number | null;
+}
+
+export interface RemoteImage {
+  url: string;
+  thumbnailUrl: string;
+  provider: string | null;
+  width: number | null;
+  height: number | null;
+  language: string | null;
+  rating: number | null;
+}
+
+export interface RemoteImageList {
+  images: RemoteImage[];
+  providers: string[];
+}
+
+export interface RemoteSubtitle {
+  id: string;
+  name: string;
+  provider: string | null;
+  format: string | null;
+  downloads: number | null;
+  rating: number | null;
+  hashMatch: boolean;
+  forced: boolean;
+  hearingImpaired: boolean;
 }

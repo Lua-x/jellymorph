@@ -308,8 +308,14 @@ span.avatar {
 }
 
 @media (max-width: 64rem) {
+  /* Out of sight, not gone: the logo link keeps the app's name for screen readers. */
   .brandName {
-    display: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
   .brand {

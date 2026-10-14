@@ -1,5 +1,6 @@
 import { http, HttpResponse, ws } from 'msw';
-import { artworkSvg } from './artwork';
+import { customImageResponse } from './admin-handlers';
+import { artworkSvg, displayItem } from './artwork';
 import { itemsById, trailers, type MockImageType } from './catalog';
 import { DEMO_VIEWS } from './fixtures';
 import type { Authed } from './handlers';
@@ -29,9 +30,15 @@ function artwork(itemId: string, type: string): Response {
   const view = DEMO_VIEWS.find((candidate) => candidate.id === itemId);
   if (view) return new HttpResponse(libraryArtSvg(view.hue, view.name), svgResponseInit());
   const item = itemsById.get(itemId);
-  if (!item || !IMAGE_TYPES.includes(type) || !item.images.includes(type as MockImageType))
+  if (!item) return notFound();
+  const custom = customImageResponse(item, type);
+  if (custom) return custom;
+  if (!IMAGE_TYPES.includes(type) || !item.images.includes(type as MockImageType))
     return notFound();
-  return new HttpResponse(artworkSvg(item, type as MockImageType), svgResponseInit());
+  return new HttpResponse(
+    artworkSvg(displayItem(item, type), type as MockImageType),
+    svgResponseInit(),
+  );
 }
 
 /** Library, item, show and user-data endpoints of the mock server. */

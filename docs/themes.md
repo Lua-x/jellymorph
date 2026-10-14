@@ -178,6 +178,8 @@ Themes rufen nie selbst den Server. ESLint verbietet in `src/themes/**` Importe 
 | `useRouteKey()` (`@/navigation`)               | Wechselt mit jeder Seite, z. B. als `key` für Seitenübergänge                     |
 | `useSessionFlag(key)` (`@/ui`)                 | Merker für die Browser-Sitzung, z. B. „Startsequenz schon gezeigt“                |
 | `useUiSounds()` (`@/hooks`)                    | Ob der Benutzer Oberflächenklänge eingeschaltet hat (nur mit `features.uiSounds`) |
+| `<ItemAdmin>` (`default/components/admin`)     | Menü „Bearbeiten“ samt Dialogen für Administratoren (siehe unten)                 |
+| `useIsAdmin()` (`@/hooks/useAdminAccess`)      | Ob der Benutzer den Server verwaltet                                              |
 
 Der Player gehört der App. `PlayerOverlay` bekommt ein `PlayerModel` mit Zustand und Befehlen (`togglePlay`, `seek`, `selectAudio`, `skipSegment` …) und sieht nie hls.js, URLs oder PlaybackInfo. Das `<video>`-Element liegt unter dem Overlay.
 
@@ -191,6 +193,8 @@ Der Player gehört der App. `PlayerOverlay` bekommt ein `PlayerModel` mit Zustan
 - den Fokus beim Öffnen hineinholen und beim Schließen an das Element zurückgeben, das es geöffnet hat.
 
 Nur Details (`/item/:id`) öffnen als Overlay; `overlay` an anderen Zielen (Person, Sammlung) ist ein normaler Link. Ein Overlay-Link innerhalb eines Overlays ersetzt den Verlaufseintrag, Schließen führt also immer zur Seite zurück. Crimsons `DetailSheet` ist die Vorlage.
+
+**Verwaltung:** Jede Detailseite bindet `<ItemAdmin item={item} renderTrigger={…} />` neben Favorit und „gesehen“ ein. Für alle anderen rendert es nichts. Das Theme liefert nur den Knopf: `renderTrigger` bekommt `label` und `buttonProps` (Ref, `aria-expanded`, `aria-controls`, `onClick`), die auf den eigenen Knopf gehören; ein runder Knopf ohne Text nimmt `label` als `aria-label`. Menü und Dialoge sind gemeinsam und nehmen die Tokens des Themes an (`--color-surface`, `--color-border`, `--radius-card`, `--shadow-overlay` …). Das Menü erscheint in der obersten Ebene des Browsers, `overflow: hidden` im Kopf schneidet es also nicht ab. `NavModel.dashboard` ist für Administratoren der Link zur Server-Verwaltung von Jellyfin (sonst `null`); jedes Profilmenü zeigt ihn als Link mit `target="_blank"`.
 
 **Oberflächenklänge:** Ein Theme mit `features: { uiSounds: true }` bekommt in den Einstellungen den Schalter „Klänge der Oberfläche“ (standardmäßig aus, pro Benutzer am Server gespeichert). Das Theme erzeugt die Klänge selbst und spielt sie nur, solange `useUiSounds()` `true` liefert.
 

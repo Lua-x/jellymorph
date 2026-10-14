@@ -7,6 +7,7 @@ import { AppLink } from '@/ui/AppLink';
 import { JellyImage } from '@/ui/JellyImage';
 import { formatClock } from '@/ui/time';
 import { Button } from './Button';
+import { ItemAdmin } from './admin/ItemAdmin';
 import { ExpandableText, ShortList, TrackList } from './Expandable';
 import styles from './DetailHeader.module.css';
 import { Icon } from './icons';
@@ -155,6 +156,7 @@ export function DetailHeader({ item, children }: { item: ItemDetail; children?: 
             >
               {item.userData.played ? t('actions.markUnplayed') : t('actions.markPlayed')}
             </Button>
+            <ItemAdmin item={item} />
           </div>
           <dl className={styles.facts}>
             {directors.length > 0 && (

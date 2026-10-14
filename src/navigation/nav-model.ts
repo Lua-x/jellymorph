@@ -18,6 +18,11 @@ export interface NavModel {
   serverName: string;
   /** Link to the settings page. */
   settings: string;
+  /**
+   * Jellyfin's own dashboard (server administration) for administrators, opened in a new tab;
+   * null for everyone else and in demo mode.
+   */
+  dashboard: string | null;
   switchProfile: () => void;
   changeServer: (() => void) | null;
   signOut: () => void;

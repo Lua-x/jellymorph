@@ -122,8 +122,15 @@ else
   socket_sources=" wss: ws:"
 fi
 
+# Pictures offered by metadata providers (administration dialogs) load straight from the
+# providers' sites: Jellyfin only returns their addresses and has no image proxy for them.
+image_sources=" https:$jellyfin_sources"
+if [ "$jellyfin_sources" = " https: http:" ]; then
+  image_sources=$jellyfin_sources
+fi
+
 csp="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'"
-csp="$csp; img-src 'self' data: blob:$jellyfin_sources; media-src 'self' blob:$jellyfin_sources"
+csp="$csp; img-src 'self' data: blob:$image_sources; media-src 'self' blob:$jellyfin_sources"
 csp="$csp; connect-src 'self'$jellyfin_sources$socket_sources; worker-src 'self' blob:"
 csp="$csp; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
 csp="$csp; frame-ancestors 'none'"

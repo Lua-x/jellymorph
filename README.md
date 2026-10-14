@@ -17,7 +17,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="Lizenz: AGPL-3.0" /></a>
 </p>
 
-> **Version 1.0:** Alle geplanten Funktionen und sechs Themes sind fertig. Was sich geändert hat, steht im [Changelog](CHANGELOG.md).
+> **Version 1.1:** Sechs Themes, der volle Funktionsumfang und jetzt auch die Verwaltung einzelner Titel für Administratoren. Was sich geändert hat, steht im [Changelog](CHANGELOG.md).
 
 ## Themes
 
@@ -86,6 +86,7 @@ Die Bilder zeigen den Demo-Modus mit erfundenen Titeln und generierten Bildern.
 - **Bibliotheken:** schnelles Raster auch bei tausenden Titeln, Sortierung, Filter (Genre, Jahr, gesehen, Favoriten) und eine Sprungleiste von A bis Z.
 - **Details und Serien:** Besetzung, Ton- und Untertitelspuren, Trailer, Staffeln, Episoden mit Fortschritt, nächste Folge hervorgehoben. Live-Suche, nach Typ gruppiert.
 - **Player:** spielt direkt ab, wo der Browser es kann, sonst über HLS-Transcoding. Ton- und Untertitelwahl (Bilduntertitel werden eingebrannt), Qualität, Geschwindigkeit, Vollbild, Bild-in-Bild, Vorschaubilder auf der Zeitleiste, „Intro überspringen“, nächste Folge mit Countdown. Der Fortschritt landet in Jellyfin, „Weiterschauen“ stimmt also auf allen Geräten.
+- **Verwaltung (für Administratoren):** Auf jeder Detailseite das Menü „Bearbeiten“: identifizieren, Metadaten bearbeiten, Bilder wählen, hochladen oder löschen, Untertitel suchen, hochladen oder löschen, Metadaten aktualisieren, Eintrag löschen. Dazu „Bibliothek scannen“ und im Profilmenü ein Link zur Server-Verwaltung von Jellyfin (dort meldest du dich einmal mit deinem Jellyfin-Konto an). Andere Benutzer sehen davon nichts.
 - **Bedienung:** Maus, Touch, Tastatur und Fernbedienung. Auf Fernsehern ein TV-Modus mit größerer Schrift und einstellbarem Bildrand, in 1080p und 4K.
 - **Barrierefreiheit:** Kontraste nach WCAG AA, Fokus mindestens so deutlich wie Hover, reduzierte Bewegung auf Wunsch oder nach Systemeinstellung. Jede Seite jedes Themes wird automatisch mit axe geprüft.
 - **Sprachen:** Deutsch und Englisch.
@@ -125,7 +126,7 @@ Danach ist Jellymorph unter `http://<rechner>:8080` erreichbar. Ein vollständig
 ### HTTPS, App-Installation und Sicherheit
 
 - Für HTTPS stellst du einen Reverse Proxy (z. B. Caddy, Traefik oder nginx) vor den Container. Erst mit HTTPS (oder auf `localhost`) lässt sich Jellymorph über das Browser-Menü als App installieren, und erst dann läuft der Demo-Modus auch auf anderen Geräten.
-- Jellymorph läuft als unprivilegierter Benutzer (UID 101) und braucht nur `/tmp` zum Schreiben, deshalb funktionieren `--read-only` und `--cap-drop ALL`. Der Container setzt eine strikte Content Security Policy und weitere Sicherheits-Header.
+- Jellymorph läuft als unprivilegierter Benutzer (UID 101) und braucht nur `/tmp` zum Schreiben, deshalb funktionieren `--read-only` und `--cap-drop ALL`. Der Container setzt eine strikte Content Security Policy und weitere Sicherheits-Header. Bilder dürfen von allen HTTPS-Adressen kommen, weil die Bildvorschläge der Metadaten-Anbieter (z. B. TMDB) direkt von deren Seiten laden.
 - Gesundheitsprüfung: `GET /healthz` antwortet mit `ok`. Das Image bringt einen passenden `HEALTHCHECK` mit.
 - Damit Jellyfin im Proxy-Betrieb die echten Client-Adressen sieht, kannst du die Adresse des Jellymorph-Containers in Jellyfin unter _Netzwerk → Bekannte Proxys_ eintragen.
 

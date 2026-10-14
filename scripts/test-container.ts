@@ -214,6 +214,7 @@ async function defaults() {
     assert.equal(csp.get('default-src'), "'self'");
     assert.equal(csp.get('script-src'), "'self'");
     assert.equal(csp.get('connect-src'), "'self' https: http: wss: ws:");
+    assert.equal(csp.get('img-src'), "'self' data: blob: https: http:");
     assert.equal(csp.get('frame-ancestors'), "'none'");
     assert.equal(header(response, 'server'), 'nginx', 'no version in the Server header');
     assetPath = /src="(\/assets\/index-[^"]+\.js)"/.exec(body)?.[1] ?? '';
@@ -280,7 +281,7 @@ async function fixedServer() {
 
   await check('CSP allows exactly the fixed server', container, async () => {
     const csp = cspOf((await get(port, '/')).response);
-    assert.equal(csp.get('img-src'), "'self' data: blob: https://jf.example.com:8920");
+    assert.equal(csp.get('img-src'), "'self' data: blob: https: https://jf.example.com:8920");
     assert.equal(csp.get('media-src'), "'self' blob: https://jf.example.com:8920");
     assert.equal(
       csp.get('connect-src'),
@@ -418,7 +419,7 @@ async function proxy() {
     assert.equal(config.proxyPath, '/jellyfin');
     const csp = cspOf((await get(port, '/')).response);
     assert.equal(csp.get('connect-src'), "'self'");
-    assert.equal(csp.get('img-src'), "'self' data: blob:");
+    assert.equal(csp.get('img-src'), "'self' data: blob: https:");
   });
 }
 

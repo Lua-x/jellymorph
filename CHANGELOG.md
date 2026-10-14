@@ -2,6 +2,32 @@
 
 Alle nennenswerten Änderungen an Jellymorph. Die Versionen folgen [Semantic Versioning](https://semver.org/lang/de/). Die Release-Notizen auf GitHub entstehen zusätzlich automatisch aus den Commits.
 
+## 1.1.0 – 2026-10-14
+
+Verwaltung direkt in Jellymorph: Administratoren pflegen ihre Titel, ohne zur Jellyfin-Oberfläche zu wechseln.
+
+### Neu
+
+- Menü **„Bearbeiten“** auf jeder Detailseite, in allen Themes, nur für Administratoren:
+  - **Identifizieren:** nach Titel, Jahr oder einer externen ID bei den Metadaten-Anbietern suchen und einen Treffer übernehmen, auf Wunsch samt Bildern.
+  - **Metadaten bearbeiten:** Titel, Originaltitel, Sortiertitel, Jahr, Daten, Altersfreigabe, Bewertungen, Slogan, Beschreibung, Genres, Tags, Studios, externe IDs und die Sperre gegen automatische Änderungen.
+  - **Bilder:** je Bildtyp (Poster, Hintergrund, Logo, Vorschaubild, Banner, Clearart) ein Bild der Anbieter übernehmen, ein eigenes hochladen oder eines löschen.
+  - **Untertitel:** bei den Untertitel-Anbietern des Servers suchen und herunterladen, eigene Dateien hochladen (SRT, VTT, ASS, SSA) und externe Untertitel löschen.
+  - **Metadaten aktualisieren:** nach neuen und geänderten Dateien suchen, fehlende Metadaten ergänzen oder alle ersetzen, auf Wunsch auch die Bilder.
+  - **Löschen:** Eintrag samt Dateien löschen (nur mit Löschrecht), danach geht es zur vorherigen Seite zurück.
+- **„Bibliothek scannen“** auf der Bibliotheksseite.
+- **„Server-Verwaltung“** im Profilmenü öffnet das Dashboard von Jellyfin in einem neuen Tab.
+- Demo-Modus: Alex (Administrator) kann alles davon ausprobieren; Änderungen gelten bis zum Neuladen.
+
+### Geändert
+
+- Content Security Policy: Bilder dürfen von allen HTTPS-Adressen kommen. Die Bildvorschläge der Metadaten-Anbieter lädt der Browser direkt von deren Seiten.
+
+### Behoben
+
+- Glass auf dem Handy: Der Link mit dem Logo hatte für Screenreader keinen Namen.
+- Sprachlisten zeigten für Sprachen ohne Übersetzung im Browser nur das Kürzel (z. B. „aa“) statt des Namens.
+
 ## 1.0.0 – 2026-10-14
 
 Die erste stabile Version: sechs Themes, der vollständige Funktionsumfang und ein geprüftes Docker-Image.

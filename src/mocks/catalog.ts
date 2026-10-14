@@ -31,7 +31,15 @@ export interface MockStream {
   level?: number;
   channels?: number;
   bitrate?: number;
+  /** A subtitle file next to the video (added through the administration endpoints). */
+  external?: boolean;
+  forced?: boolean;
+  hearingImpaired?: boolean;
 }
+
+/** A replaced picture: another provider variant of the generated artwork, or an uploaded file. */
+export type MockCustomImage =
+  { kind: 'variant'; variant: number } | { kind: 'upload'; contentType: string; data: string };
 
 export interface MockItem {
   id: string;
@@ -66,6 +74,16 @@ export interface MockItem {
   container: 'mkv' | 'mp4';
   memberIds: string[];
   localTrailerCount: number;
+  /* Set only by the administration endpoints of the demo server (phase 13). */
+  originalTitle?: string | null;
+  forcedSortName?: string | null;
+  tags?: string[];
+  providerIds?: Record<string, string>;
+  lockData?: boolean;
+  /** Counts picture changes, so the image tags (and with them the browser cache) change too. */
+  imageVersion?: number;
+  /** Replaced pictures by image type; Banner and Art exist only here. */
+  customImages?: Record<string, MockCustomImage>;
 }
 
 export const LIBRARY = {
@@ -787,6 +805,19 @@ export const trailers: MockItem[] = movies
   }));
 
 export const itemsById = new Map([...allItems, ...trailers].map((item) => [item.id, item]));
+
+/** Takes items out of the demo catalog (the administration endpoint "delete"). */
+export function removeFromCatalog(ids: ReadonlySet<string>) {
+  for (const list of [movies, series, seasons, episodes, collections, people, allItems, trailers]) {
+    for (let index = list.length - 1; index >= 0; index -= 1) {
+      const entry = list[index];
+      if (entry && ids.has(entry.id)) list.splice(index, 1);
+    }
+  }
+  for (const id of ids) itemsById.delete(id);
+  for (const collection of collections)
+    collection.memberIds = collection.memberIds.filter((id) => !ids.has(id));
+}
 
 /** Initial watch state shared by all demo users (each user's changes are kept separately). */
 export interface SeedUserData {

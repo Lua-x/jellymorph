@@ -61,7 +61,9 @@ function localizedNames(languages: LanguageOption[], uiLanguage: string): Langua
     .map((language) => {
       let name = language.name;
       try {
-        if (language.twoLetterCode) name = names?.of(language.twoLetterCode) ?? language.name;
+        const localized = language.twoLetterCode ? names?.of(language.twoLetterCode) : undefined;
+        // Without data for a language, Intl answers with the code itself ("aa").
+        if (localized && localized !== language.twoLetterCode) name = localized;
       } catch {
         // Unknown code for Intl: keep the server's name.
       }

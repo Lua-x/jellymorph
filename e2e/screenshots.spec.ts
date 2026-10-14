@@ -144,6 +144,75 @@ test.describe('screenshots @shots', () => {
         await shoot(page, '12-favorites');
       });
 
+      test('administration', async ({ page }) => {
+        test.setTimeout(180_000);
+        await signInAs(page, 'Alex');
+        await openFromSearch(page, 'Kupferherz', 'Filme');
+        const openEntry = async (entry: string, dialogName: RegExp) => {
+          await page.getByRole('button', { name: 'Bearbeiten', exact: true }).click();
+          await page.getByRole('button', { name: entry, exact: true }).click();
+          const dialog = page.getByRole('dialog', { name: dialogName });
+          await expect(dialog).toBeVisible();
+          return dialog;
+        };
+
+        await page.getByRole('button', { name: 'Bearbeiten', exact: true }).click();
+        await expect(page.getByRole('button', { name: 'Metadaten bearbeiten' })).toBeVisible();
+        await shoot(page, 'a1-admin-menu');
+        await page.keyboard.press('Escape');
+
+        const metadata = await openEntry('Metadaten bearbeiten', /^Metadaten von/);
+        await expect(metadata.getByLabel('Titel', { exact: true })).toHaveValue('Kupferherz');
+        await shoot(page, 'a2-admin-metadata');
+        await page.keyboard.press('Escape');
+
+        const identify = await openEntry('Identifizieren', /identifizieren$/);
+        await identify.getByRole('button', { name: 'Suchen' }).click();
+        await expect(identify.getByRole('region', { name: 'Treffer' })).toBeVisible();
+        await shoot(page, 'a3-admin-identify');
+        await page.keyboard.press('Escape');
+
+        const images = await openEntry('Bilder bearbeiten', /^Bilder von/);
+        await expect(
+          images.getByRole('region', { name: 'Aus Online-Quellen' }).getByRole('listitem'),
+        ).toHaveCount(6);
+        await shoot(page, 'a4-admin-images');
+        await page.keyboard.press('Escape');
+
+        const subtitles = await openEntry('Untertitel verwalten', /^Untertitel von/);
+        await subtitles.getByRole('button', { name: 'Suchen' }).click();
+        await expect(subtitles.getByRole('button', { name: /herunterladen$/ })).toHaveCount(3);
+        await shoot(page, 'a5-admin-subtitles');
+        await page.keyboard.press('Escape');
+
+        await openEntry('Metadaten aktualisieren', /aktualisieren$/);
+        await shoot(page, 'a6-admin-refresh');
+        await page.keyboard.press('Escape');
+        await openEntry('Löschen', /löschen\?$/);
+        await shoot(page, 'a7-admin-delete');
+        await page.keyboard.press('Escape');
+
+        for (const theme of [
+          { name: 'Neon Grid', id: 'neon-grid' },
+          { name: 'Crimson', id: 'crimson' },
+          { name: 'Glass', id: 'glass' },
+          { name: 'Horizon', id: 'horizon' },
+          { name: 'Constellation', id: 'constellation' },
+        ]) {
+          // Crimson shows details above the page; start each theme from home.
+          await page.goto('/');
+          await chooseTheme(page, theme.name, theme.id);
+          await openFromSearch(page, 'Kupferherz', 'Filme');
+          await page.getByRole('button', { name: 'Bearbeiten', exact: true }).click();
+          await expect(page.getByRole('button', { name: 'Metadaten bearbeiten' })).toBeVisible();
+          await shoot(page, `a8-admin-menu-${theme.id}`);
+          await page.getByRole('button', { name: 'Metadaten bearbeiten' }).click();
+          await expect(page.getByRole('dialog', { name: /^Metadaten von/ })).toBeVisible();
+          await shoot(page, `a9-admin-metadata-${theme.id}`);
+          await page.keyboard.press('Escape');
+        }
+      });
+
       test('player', async ({ page }) => {
         await signInAs(page, 'Alex');
         const movie = (await demoItems(page, 'Movie')).find(directPlayable);

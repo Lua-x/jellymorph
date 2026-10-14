@@ -82,6 +82,23 @@ function ProfileMenu({ nav }: { nav: NavModel }) {
               {t('nav.settings')}
             </AppLink>
           </li>
+          {nav.dashboard && (
+            <li>
+              <a
+                href={nav.dashboard}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.menuItem}
+                onClick={() => {
+                  setOpen(false);
+                }}
+              >
+                <Icon name="server" />
+                {t('nav.serverAdmin')}
+                <span className="visually-hidden"> ({t('nav.newTab')})</span>
+              </a>
+            </li>
+          )}
           <li>
             <button type="button" className={styles.menuItem} onClick={run(nav.switchProfile)}>
               <Icon name="switch" />

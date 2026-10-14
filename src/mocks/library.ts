@@ -2,7 +2,7 @@
  * Query engine of the mock server: turns catalog entries into Jellyfin DTOs and answers item
  * queries (filters, sorting, paging) the way the real /Items endpoints do.
  */
-import { blurHashFor } from './artwork';
+import { blurHashFor, displayItem } from './artwork';
 import {
   allItems,
   CLIP_TICKS,
@@ -19,15 +19,15 @@ import {
   type MockItem,
   type SeedUserData,
 } from './catalog';
-import { DEMO_SERVER } from './fixtures';
+import { DEMO_SERVER, DEMO_USERS } from './fixtures';
 import { chaptersDto, isPlayableItem, mediaStreamsDto, trickplayDto } from './playback';
 
 const blurHashes = new Map<string, string>();
 function hashFor(item: MockItem, type: MockImageType): string {
-  const key = `${item.id}:${type}`;
+  const key = `${item.id}:${type}:${String(item.imageVersion ?? 0)}`;
   let hash = blurHashes.get(key);
   if (!hash) {
-    hash = blurHashFor(item, type);
+    hash = blurHashFor(displayItem(item, type), type);
     blurHashes.set(key, hash);
   }
   return hash;
@@ -130,15 +130,30 @@ export function userDataDto(library: UserLibrary, userId: string, item: MockItem
   };
 }
 
+/** Image tag of a picture; changes with every picture change (admin endpoints). */
+export function imageTag(item: MockItem, type: string): string {
+  const version = item.imageVersion ? `v${String(item.imageVersion)}` : '';
+  return `${item.id.slice(0, 8)}${type}${version}`;
+}
+
+/** Picture types an item has: the generated ones plus pictures set through the admin endpoints. */
+export function imageTypesOf(item: MockItem): string[] {
+  return [
+    ...item.images,
+    ...Object.keys(item.customImages ?? {}).filter(
+      (type) => !(item.images as string[]).includes(type),
+    ),
+  ];
+}
+
 function imageTags(item: MockItem): Record<string, string> {
   const tags: Record<string, string> = {};
-  for (const type of item.images)
-    if (type !== 'Backdrop') tags[type] = `${item.id.slice(0, 8)}${type}`;
+  for (const type of imageTypesOf(item)) if (type !== 'Backdrop') tags[type] = imageTag(item, type);
   return tags;
 }
 
 function backdropTags(item: MockItem): string[] {
-  return item.images.includes('Backdrop') ? [`${item.id.slice(0, 8)}Backdrop`] : [];
+  return item.images.includes('Backdrop') ? [imageTag(item, 'Backdrop')] : [];
 }
 
 function blurHashMap(item: MockItem, owner: MockItem | undefined, types: MockImageType[]) {
@@ -147,7 +162,7 @@ function blurHashMap(item: MockItem, owner: MockItem | undefined, types: MockIma
     if (!source) continue;
     for (const type of types) {
       if (!source.images.includes(type)) continue;
-      const tag = `${source.id.slice(0, 8)}${type}`;
+      const tag = imageTag(source, type);
       result[type] = { ...result[type], [tag]: hashFor(source, type) };
     }
   }
@@ -155,6 +170,14 @@ function blurHashMap(item: MockItem, owner: MockItem | undefined, types: MockIma
 }
 
 const SERVER = { ServerId: DEMO_SERVER.Id };
+
+const DELETABLE: readonly string[] = ['Movie', 'Series', 'Season', 'Episode', 'BoxSet'];
+
+/** Like Jellyfin: administrators may delete media (EnableContentDeletion), others may not. */
+export function canDelete(userId: string, item: MockItem): boolean {
+  const user = DEMO_USERS.find((candidate) => candidate.id === userId);
+  return user?.isAdministrator === true && DELETABLE.includes(item.type);
+}
 
 /** Full DTO of a catalog item for one user, including parent images for episodes. */
 export function itemDto(library: UserLibrary, userId: string, item: MockItem) {
@@ -166,14 +189,10 @@ export function itemDto(library: UserLibrary, userId: string, item: MockItem) {
           ParentBackdropItemId: show.id,
           ParentBackdropImageTags: backdropTags(show),
           ParentLogoItemId: show.images.includes('Logo') ? show.id : undefined,
-          ParentLogoImageTag: show.images.includes('Logo')
-            ? `${show.id.slice(0, 8)}Logo`
-            : undefined,
+          ParentLogoImageTag: show.images.includes('Logo') ? imageTag(show, 'Logo') : undefined,
           ParentThumbItemId: show.images.includes('Thumb') ? show.id : undefined,
-          ParentThumbImageTag: show.images.includes('Thumb')
-            ? `${show.id.slice(0, 8)}Thumb`
-            : undefined,
-          SeriesPrimaryImageTag: `${show.id.slice(0, 8)}Primary`,
+          ParentThumbImageTag: show.images.includes('Thumb') ? imageTag(show, 'Thumb') : undefined,
+          SeriesPrimaryImageTag: imageTag(show, 'Primary'),
         }
       : {};
   const isFolder = item.type === 'Series' || item.type === 'Season' || item.type === 'BoxSet';
@@ -189,7 +208,9 @@ export function itemDto(library: UserLibrary, userId: string, item: MockItem) {
     ...SERVER,
     Id: item.id,
     Name: item.name,
+    OriginalTitle: item.originalTitle ?? undefined,
     SortName: item.sortName,
+    ForcedSortName: item.forcedSortName ?? undefined,
     Type: item.type,
     IsFolder: isFolder,
     ParentId: item.parentId,
@@ -211,6 +232,10 @@ export function itemDto(library: UserLibrary, userId: string, item: MockItem) {
     GenreItems: item.genres.map((genre) => ({ Name: genre, Id: GENRE_IDS.get(genre) })),
     Overview: item.overview ?? undefined,
     Taglines: item.tagline ? [item.tagline] : [],
+    Tags: item.tags ?? [],
+    ProviderIds: item.providerIds ?? {},
+    LockData: item.lockData ?? false,
+    CanDelete: canDelete(userId, item),
     DateCreated: item.dateCreated,
     ChildCount: childCount,
     LocalTrailerCount: item.localTrailerCount,

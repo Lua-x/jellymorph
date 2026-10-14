@@ -105,6 +105,17 @@ function personSvg(item: MockItem): string {
 </svg>`;
 }
 
+/** Another provider's take on an item's artwork: the same motif in other colours. */
+export function variantOf(item: MockItem, variant: number): MockItem {
+  return { ...item, hue: (item.hue + variant * 47) % 360, hue2: (item.hue2 + variant * 83) % 360 };
+}
+
+/** The item as a picture type shows it: with a chosen provider variant, or as generated. */
+export function displayItem(item: MockItem, type: string): MockItem {
+  const custom = item.customImages?.[type];
+  return custom?.kind === 'variant' ? variantOf(item, custom.variant) : item;
+}
+
 export function artworkSvg(item: MockItem, type: MockImageType): string {
   if (item.type === 'Person') return personSvg(item);
   const portrait = type === 'Primary' && item.type !== 'Episode';

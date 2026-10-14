@@ -20,7 +20,9 @@
     "favorites": "Favorites",
     "userMenuFor": "{{name}} – user menu",
     "settings": "Settings",
-    "more": "More"
+    "more": "More",
+    "serverAdmin": "Server dashboard",
+    "newTab": "opens in a new tab"
   },
   "home": {
     "kinds": {

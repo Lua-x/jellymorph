@@ -892,11 +892,11 @@ Total Blocking Time überall 0 ms, keine Long Tasks. Gefunden und behoben: Die H
 - **CSP** (vom Entrypoint gerendert, Phase 5):
   ```
   default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self';
-  img-src 'self' data: blob: <JF>; media-src 'self' blob: <JF>;
+  img-src 'self' data: blob: https: <JF>; media-src 'self' blob: <JF>;
   connect-src 'self' <JF> <JF-WS>; worker-src 'self' blob:; manifest-src 'self';
   object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
   ```
-  `<JF>`: bei `LOCK_SERVER`+`JELLYFIN_URL` genau diese Origin; im Proxy-Modus nichts zusätzlich; sonst `https: http:` bzw. `wss: ws:`, weil der Benutzer beliebige Server hinzufügen darf. `worker-src blob:` braucht der hls.js-Worker. Inline-Styles über Reacts `style`-Prop setzen CSSOM-Eigenschaften und sind ohne `unsafe-inline` erlaubt.
+  `<JF>`: bei `LOCK_SERVER`+`JELLYFIN_URL` genau diese Origin; im Proxy-Modus nichts zusätzlich; sonst `https: http:` bzw. `wss: ws:`, weil der Benutzer beliebige Server hinzufügen darf. `img-src https:` gilt in jedem Modus (seit Phase 13): Die Bildvorschläge der Metadaten-Anbieter in den Admin-Dialogen lädt der Browser direkt von deren Seiten, Jellyfin liefert nur die Adressen und hat dafür keinen Bild-Proxy. `worker-src blob:` braucht der hls.js-Worker. Inline-Styles über Reacts `style`-Prop setzen CSSOM-Eigenschaften und sind ohne `unsafe-inline` erlaubt.
 - Keine Secrets im Repo. `.env.local` steht in `.gitignore`. Demo-Daten enthalten keine echten Personen oder Marken.
 - `rel="noopener noreferrer"` für externe Links. `Referrer-Policy: strict-origin-when-cross-origin`. `Permissions-Policy` erlaubt nur `fullscreen`, `picture-in-picture`, `autoplay` und `screen-wake-lock` für `self`.
 - **Umsetzung (Phase 5):** Die CSP entsteht wie oben im Entrypoint. Demo-Modus und Proxy-Modus erlauben nur die eigene Origin, `LOCK_SERVER` genau die Origin aus `JELLYFIN_URL` (dazu `ws`/`wss` derselben Adresse), sonst `https: http:` bzw. `wss: ws:`. Dazu kommen `X-Content-Type-Options: nosniff`, `Cross-Origin-Opener-Policy: same-origin` und eine `Permissions-Policy`, die Kamera, Mikrofon, Standort, Zahlungen und USB ausdrücklich sperrt. **Geprüft** wird die CSP, indem die CI die komplette E2E-Suite gegen den laufenden Container im Demo-Modus ausführt. Ein Fixture (`e2e/fixtures.ts`) lässt jeden Test scheitern, der eine CSP-Verletzung auslöst.

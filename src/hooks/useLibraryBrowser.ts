@@ -15,6 +15,7 @@ import { fetchLibraries } from '@/api/user';
 import type { ImageRef, LibraryKind, MediaItem, QueryResult } from '@/domain/types';
 import { queryKeys } from './query-keys';
 import { toQueryResult } from './query-result';
+import { useIsAdmin, useLibraryScan } from './useAdminAccess';
 import { useActiveSession } from './useSession';
 
 export type { FilterOptions, SortField };
@@ -60,6 +61,8 @@ export interface LibraryBrowser {
   jumpTo: (letter: string) => Promise<number>;
   /** Changes whenever sort or filters change, so the grid can reset its scroll position. */
   resultKey: string;
+  /** Scans the library for new and removed files; null unless an administrator views a library. */
+  scan: (() => Promise<void>) | null;
 }
 
 export const PAGE_SIZE = 100;
@@ -122,6 +125,8 @@ export function useLibraryBrowser(sourceKind: LibrarySourceKind, sourceId: strin
   const client = useQueryClient();
   const [params, setParams] = useSearchParams();
   const { sort, descending, filters } = readState(params);
+  const isAdmin = useIsAdmin();
+  const scanLibrary = useLibraryScan();
 
   const libraries = useQuery({
     queryKey: queryKeys.libraries(key),
@@ -318,5 +323,6 @@ export function useLibraryBrowser(sourceKind: LibrarySourceKind, sourceId: strin
       });
     },
     resultKey: queryHash,
+    scan: sourceKind === 'library' && isAdmin ? () => scanLibrary(sourceId) : null,
   };
 }
