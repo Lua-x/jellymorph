@@ -61,8 +61,13 @@ for (const theme of TOP_BARS) {
     const nav = page.getByRole('navigation', { name: 'Hauptnavigation' }).first();
     await expect(nav.getByRole('link', { name: 'Filme', exact: true })).toBeVisible();
 
-    // Much wider links stand in for many libraries or long names.
-    await page.addStyleTag({ content: 'header nav a { padding-inline: 4.5rem !important; }' });
+    // Much wider links stand in for many libraries or long names. Set through the CSSOM: the
+    // container's Content Security Policy blocks injected style sheets.
+    await page.evaluate(() => {
+      for (const link of document.querySelectorAll<HTMLElement>('header nav a')) {
+        link.style.setProperty('padding-inline', '4.5rem', 'important');
+      }
+    });
     const more = nav.getByRole('button', { name: 'Mehr' });
     await expect(more).toBeVisible();
     const list = nav.locator('ul').first();
