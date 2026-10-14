@@ -1,6 +1,12 @@
 import type { Location } from 'react-router';
 import { describe, expect, it } from 'vitest';
-import { backgroundOf, opensAsOverlay, overlayState } from './overlay';
+import {
+  backgroundOf,
+  opensAsOverlay,
+  overlayState,
+  rememberOverlayOpener,
+  takeOverlayOpener,
+} from './overlay';
 
 function location(pathname: string, state: unknown = null): Location {
   return { pathname, search: '', hash: '', state, key: pathname };
@@ -31,5 +37,12 @@ describe('overlay navigation', () => {
     const first = location('/item/abc', overlayState(home));
     const second = location('/item/def', overlayState(first));
     expect(backgroundOf(second)).toBe(home);
+  });
+
+  it('hands the link that opened an overlay over exactly once', () => {
+    const card = document.createElement('a');
+    rememberOverlayOpener(card);
+    expect(takeOverlayOpener()).toBe(card);
+    expect(takeOverlayOpener()).toBeNull();
   });
 });

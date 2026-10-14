@@ -1,5 +1,6 @@
 import { useEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { takeOverlayOpener } from '@/navigation/overlay';
 import type { Presentation } from '../../contract';
 import { Icon } from '../../default/components/icons';
 import styles from './DetailSheet.module.css';
@@ -41,7 +42,9 @@ export function DetailSheet({
 
   useEffect(() => {
     if (!modal) return;
-    const active = document.activeElement;
+    // The link that was clicked, else whatever has the focus (keyboard, remote).
+    const clicked = takeOverlayOpener();
+    const active = clicked?.isConnected ? clicked : document.activeElement;
     if (
       active instanceof HTMLElement &&
       active !== document.body &&

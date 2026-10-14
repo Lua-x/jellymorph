@@ -26,6 +26,7 @@ Verwaltung direkt in Jellymorph: Administratoren pflegen ihre Titel, ohne zur Je
 ### Behoben
 
 - Glass auf dem Handy: Der Link mit dem Logo hatte für Screenreader keinen Namen.
+- Crimson: Nach dem Schließen der Details landete der Fokus selten auf einem anderen Link zum selben Titel (z. B. im Hero) statt auf der Karte, die sie geöffnet hatte. Die Details merken sich jetzt den angeklickten Link.
 - Sprachlisten zeigten für Sprachen ohne Übersetzung im Browser nur das Kürzel (z. B. „aa“) statt des Namens.
 
 ## 1.0.0 – 2026-10-14

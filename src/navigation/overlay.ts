@@ -24,6 +24,23 @@ export function backgroundOf(location: Location): Location | null {
   return background && typeof background.pathname === 'string' ? background : null;
 }
 
+let opener: HTMLElement | null = null;
+
+/**
+ * The link on the page that opened an overlay, recorded at the click: a page often links one
+ * title several times (hero, rows), so the overlay cannot find "its" card again by address.
+ */
+export function rememberOverlayOpener(element: HTMLElement) {
+  opener = element;
+}
+
+/** Hands the recorded opener to the overlay once (and forgets it). */
+export function takeOverlayOpener(): HTMLElement | null {
+  const element = opener;
+  opener = null;
+  return element;
+}
+
 /** History state for a link that opens above `location` (keeps an existing background). */
 export function overlayState(location: Location): OverlayState {
   return { backgroundLocation: backgroundOf(location) ?? location };

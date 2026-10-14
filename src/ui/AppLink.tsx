@@ -1,6 +1,11 @@
 import type { AnchorHTMLAttributes, ReactNode, Ref } from 'react';
 import { Link, NavLink, useLocation } from 'react-router';
-import { backgroundOf, opensAsOverlay, overlayState } from '@/navigation/overlay';
+import {
+  backgroundOf,
+  opensAsOverlay,
+  overlayState,
+  rememberOverlayOpener,
+} from '@/navigation/overlay';
 
 type AnchorProps = Omit<
   AnchorHTMLAttributes<HTMLAnchorElement>,
@@ -41,12 +46,16 @@ export function AppLink({
   const location = useLocation();
   if (!nav) {
     const asOverlay = overlay && opensAsOverlay(to);
+    const fromPage = asOverlay && backgroundOf(location) === null;
     return (
       <Link
         {...rest}
         to={to}
         className={className}
-        onClick={onClick}
+        onClick={(event) => {
+          if (fromPage) rememberOverlayOpener(event.currentTarget);
+          onClick?.();
+        }}
         state={asOverlay ? overlayState(location) : undefined}
         replace={asOverlay && backgroundOf(location) !== null}
       >
