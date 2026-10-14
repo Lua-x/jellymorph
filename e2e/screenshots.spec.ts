@@ -601,7 +601,9 @@ test.describe('screenshots @shots', () => {
         await page.waitForTimeout(700);
         await shoot(page, '79-glass-tv-home');
         await page.keyboard.press('Enter');
-        await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+        // The home page has an h1 and an entry point too: wait for the details' play button.
+        await expect(page).toHaveURL(/\/item\//);
+        await expect(page.locator('main article [data-autofocus]').first()).toBeVisible();
         await page.keyboard.press('ArrowDown');
         await page.waitForTimeout(700);
         await shoot(page, '80-glass-tv-details');
@@ -716,7 +718,9 @@ test.describe('screenshots @shots', () => {
         await page.waitForTimeout(700);
         await shoot(page, '90-horizon-tv-home');
         await page.keyboard.press('Enter');
-        await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+        // The home page has an h1 and an entry point too: wait for the details' play button.
+        await expect(page).toHaveURL(/\/item\//);
+        await expect(page.locator('main article [data-autofocus]').first()).toBeVisible();
         await page.keyboard.press('ArrowDown');
         await page.waitForTimeout(700);
         await shoot(page, '91-horizon-tv-details');
@@ -846,9 +850,9 @@ test.describe('screenshots @shots', () => {
           await expect(resume.locator(':focus')).toHaveCount(1, { timeout: 400 });
         }).toPass({ timeout: 8000 });
         await page.keyboard.press('Enter');
-        await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-        // The app moves focus to the new page first; the arrow key then picks the play button.
-        await expect(page.locator('main')).toBeFocused();
+        // The home page has an h1 and an entry point too: wait for the details' play button.
+        await expect(page).toHaveURL(/\/item\//);
+        await expect(page.locator('main article [data-autofocus]').first()).toBeVisible();
         await page.keyboard.press('ArrowDown');
         await page.waitForTimeout(700);
         await shoot(page, '99-constellation-tv-details');

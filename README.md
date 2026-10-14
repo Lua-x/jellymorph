@@ -17,7 +17,79 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="Lizenz: AGPL-3.0" /></a>
 </p>
 
-> **Status:** in Entwicklung. Fertig sind das Fundament, die Anmeldung (Server, Profile, Passwort, Quick Connect), alle Inhaltsseiten im Theme „Classic“, der Player, das Theme-System mit Einstellungen und Live-Vorschau, die Bedienung per Fernbedienung samt TV-Modus, der Demo-Modus und das Docker-Image. Wählbar sind alle sechs Themes: „Classic“, „Neon Grid“, „Crimson“, „Glass“, „Horizon“ und „Constellation“. Den Fahrplan zeigt [CLAUDE.md](CLAUDE.md) §11.
+> **Version 1.0:** Alle geplanten Funktionen und sechs Themes sind fertig. Was sich geändert hat, steht im [Changelog](CHANGELOG.md).
+
+## Themes
+
+Ein Theme ist mehr als ein Farbschema: Jedes ordnet Navigation, Startseite, Karten, Detailseiten und Player anders an und bewegt sich anders. Gewechselt wird in den Einstellungen, ohne Neuladen und mit Live-Vorschau. Die Wahl gilt pro Benutzer auf allen Geräten.
+
+### Classic
+
+Schlicht und übersichtlich, die Grundlage für alle anderen Themes. Hell und dunkel.
+
+<p>
+  <img src="docs/screenshots/classic-home.jpg" width="49%" alt="Classic: Startseite" />
+  <img src="docs/screenshots/classic-series.jpg" width="49%" alt="Classic: Serie mit Staffeln und Episoden" />
+</p>
+
+### Neon Grid
+
+Das eigene Design des Projekts: ein futuristisches HUD mit Neonlicht, perspektivischem Raster, Glitch-Effekten, Boot-Sequenz bei der Anmeldung und einer Suche im Terminal-Stil.
+
+<p>
+  <img src="docs/screenshots/neon-grid-home.jpg" width="49%" alt="Neon Grid: Startseite mit HUD-Leiste und Raster" />
+  <img src="docs/screenshots/neon-grid-movie.jpg" width="49%" alt="Neon Grid: Film als Dossier mit Datenfeldern" />
+</p>
+
+### Crimson
+
+Großes Kino: bildfüllendes Hero mit Trailer-Vorschau, Reihen mit Vorschaukarten, Details als Fenster über der Seite und eine Profilauswahl mit großen Kacheln.
+
+<p>
+  <img src="docs/screenshots/crimson-home.jpg" width="49%" alt="Crimson: Startseite mit großem Hero" />
+  <img src="docs/screenshots/crimson-preview.jpg" width="49%" alt="Crimson: vergrößerte Vorschaukarte in einer Reihe" />
+</p>
+
+### Glass
+
+Ruhige Milchglasflächen, ein Vollbild-Karussell und Karten, die sich bei Fokus heben und zur Maus neigen. Hell und dunkel.
+
+<p>
+  <img src="docs/screenshots/glass-home.jpg" width="49%" alt="Glass: Startseite mit Vollbild-Karussell" />
+  <img src="docs/screenshots/glass-series-light.jpg" width="49%" alt="Glass im hellen Schema: Episoden einer Serie" />
+</p>
+
+### Horizon
+
+Klare 16:9-Reihen, Karten, die bei Fokus nach unten aufklappen, und Detailseiten mit Tabs für Episoden, Ähnliches und Details.
+
+<p>
+  <img src="docs/screenshots/horizon-home.jpg" width="49%" alt="Horizon: Startseite mit Karussell und Pfeilen" />
+  <img src="docs/screenshots/horizon-card.jpg" width="49%" alt="Horizon: aufgeklappte Karte mit Aktionen und Beschreibung" />
+</p>
+
+### Constellation
+
+Ein Sternenhimmel als Hintergrund, eine Icon-Leiste, die bei Fokus aufklappt, Banner mit Nachbarn am Rand und große, leuchtende Kacheln für Bibliotheken und Sammlungen.
+
+<p>
+  <img src="docs/screenshots/constellation-home.jpg" width="49%" alt="Constellation: Startseite mit Bannern und Kacheln" />
+  <img src="docs/screenshots/constellation-series.jpg" width="49%" alt="Constellation: Serie mit Episodenreihe" />
+</p>
+
+Die Bilder zeigen den Demo-Modus mit erfundenen Titeln und generierten Bildern.
+
+## Funktionen
+
+- **Anmeldung:** mehrere Server, Profilauswahl, Passwort oder Quick Connect. Gespeichert wird nur das Zugangs-Token, nie das Passwort.
+- **Startseite:** Weiterschauen, nächste Folgen, Neues je Bibliothek, Favoriten, Sammlungen und Genres, in der Reihenfolge deiner Jellyfin-Bibliotheken.
+- **Bibliotheken:** schnelles Raster auch bei tausenden Titeln, Sortierung, Filter (Genre, Jahr, gesehen, Favoriten) und eine Sprungleiste von A bis Z.
+- **Details und Serien:** Besetzung, Ton- und Untertitelspuren, Trailer, Staffeln, Episoden mit Fortschritt, nächste Folge hervorgehoben. Live-Suche, nach Typ gruppiert.
+- **Player:** spielt direkt ab, wo der Browser es kann, sonst über HLS-Transcoding. Ton- und Untertitelwahl (Bilduntertitel werden eingebrannt), Qualität, Geschwindigkeit, Vollbild, Bild-in-Bild, Vorschaubilder auf der Zeitleiste, „Intro überspringen“, nächste Folge mit Countdown. Der Fortschritt landet in Jellyfin, „Weiterschauen“ stimmt also auf allen Geräten.
+- **Bedienung:** Maus, Touch, Tastatur und Fernbedienung. Auf Fernsehern ein TV-Modus mit größerer Schrift und einstellbarem Bildrand, in 1080p und 4K.
+- **Barrierefreiheit:** Kontraste nach WCAG AA, Fokus mindestens so deutlich wie Hover, reduzierte Bewegung auf Wunsch oder nach Systemeinstellung. Jede Seite jedes Themes wird automatisch mit axe geprüft.
+- **Sprachen:** Deutsch und Englisch.
+- **Betrieb:** ein kleines Docker-Image für amd64 und arm64, läuft ohne Root und schreibgeschützt, mit strikter Content Security Policy.
 
 ## Betrieb mit Docker
 
@@ -29,8 +101,6 @@ docker run -d --name jellymorph -p 8080:8080 \
   --read-only --tmpfs /tmp --cap-drop ALL \
   ghcr.io/lua-x/jellymorph:latest
 ```
-
-Bis zur ersten veröffentlichten Version gibt es nur den Tag `edge` (siehe unten); bis dahin steht in den Befehlen `edge` statt `latest`.
 
 Danach ist Jellymorph unter `http://<rechner>:8080` erreichbar. Ein vollständiges Beispiel für Docker Compose liegt in [docker-compose.yml](docker-compose.yml).
 
@@ -112,6 +182,7 @@ Unterstützt wird Jellyfin ab Version 10.10, auch 12.x.
 | `npm run test:e2e`                   | End-to-End-Tests gegen den Build im Demo-Modus (Playwright)        |
 | `npm run shots`                      | Prüf-Screenshots in vier Auflösungen nach `artifacts/screenshots/` |
 | `npm run previews`                   | Vorschaubilder der Themes für die Theme-Auswahl neu erzeugen       |
+| `npm run readme-shots`               | Bilder für dieses README nach `docs/screenshots/`                  |
 | `npm run check:bundle`               | Größenbudget des Basis-Bundles (250 KB gzip) prüfen                |
 | `node scripts/record-demo-clip.ts`   | Demo-Clip neu aufnehmen (dauert eine Minute)                       |
 | `node scripts/render-icons.ts`       | App-Icons aus `public/favicon.svg` neu erzeugen                    |

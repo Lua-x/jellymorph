@@ -144,9 +144,9 @@ test('banners move with the arrows and dots and open their title @desktop-only',
   ).toHaveAttribute('aria-pressed', 'true');
 
   const banner = hero.getByRole('group', { name: '6 von 6' }).getByRole('link');
-  const name = await banner.getAttribute('aria-label');
   await banner.click();
-  await expect(page.getByRole('heading', { level: 1, name: name ?? '' })).toBeVisible();
+  await expect(page).toHaveURL(/\/item\//);
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 });
 
 test('tiles glow with focus and open libraries and collections', async ({ page }) => {

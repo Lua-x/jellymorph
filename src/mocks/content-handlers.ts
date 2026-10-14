@@ -6,6 +6,7 @@ import type { Authed } from './handlers';
 import { libraryArtSvg, svgResponseInit } from './images';
 import {
   filterOptions,
+  genreById,
   genreItems,
   itemDto,
   latestItems,
@@ -102,7 +103,9 @@ export function createContentHandlers(state: MockState, authed: Authed) {
       '*/Items/:itemId',
       authed((user, _request, params) => {
         const item = itemsById.get(params.itemId ?? '');
-        return item ? HttpResponse.json(itemDto(library, user.id, item)) : notFound();
+        if (item) return HttpResponse.json(itemDto(library, user.id, item));
+        const genre = genreById(params.itemId ?? '');
+        return genre ? HttpResponse.json(genre) : notFound();
       }),
     ),
     http.get(

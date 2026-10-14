@@ -1,6 +1,6 @@
 {
   "name": "jellymorph",
-  "version": "0.10.0",
+  "version": "1.0.0",
   "private": true,
   "description": "Self-hosted Jellyfin web client with complete, switchable UI themes",
   "license": "AGPL-3.0-only",
@@ -16,9 +16,10 @@
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test --grep-invert \"@shots|@previews\"",
+    "test:e2e": "playwright test --grep-invert \"@shots|@previews|@readme\"",
     "shots": "playwright test --grep @shots",
     "previews": "playwright test --grep @previews --project=chromium",
+    "readme-shots": "playwright test --grep @readme --project=chromium",
     "check:bundle": "node scripts/check-bundle.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check ."

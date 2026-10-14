@@ -16,6 +16,7 @@ Dieser Leitfaden beschreibt den Stand des Theme-Vertrags Version 1 (`src/themes/
 8. [Live-Vorschau](#8-live-vorschau)
 9. [Texte](#9-texte)
 10. [Prüfliste vor dem Abschluss](#10-prüfliste-vor-dem-abschluss)
+11. [Die mitgelieferten Themes](#11-die-mitgelieferten-themes)
 
 ## 1. Aufbau eines Themes
 
@@ -245,9 +246,25 @@ Daraus folgt für `Hero`, `Row` und `MediaCard`:
 
 - [ ] `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `npm run check:bundle` fehlerfrei; Theme-Chunk unter 80 KB JS gzip
 - [ ] Lade-, Leer- und Fehlerzustände auf jeder Seite
-- [ ] `npm run test:e2e` grün, inklusive axe-Prüfung in jedem Farbschema
+- [ ] `npm run test:e2e` grün, inklusive axe-Prüfung in jedem Farbschema; das neue Theme in `e2e/accessibility.spec.ts` eintragen (prüft jede Seite, auch die von Classic übernommenen)
 - [ ] `npm run shots`: 1920×1080, 3840×2160, 1280×800, 390×844 angesehen; TV-Modus 1080p und 4K
 - [ ] Alle Seiten nur mit Pfeiltasten, Enter und Zurück bedienbar; Fokus = Hover
 - [ ] Reduzierte Bewegung geprüft; Effekte nur über Bildern und Überschriften, nie über Fließtext
-- [ ] `npm run previews` ausgeführt, Vorschaubilder eingecheckt
+- [ ] `npm run previews` ausgeführt, Vorschaubilder eingecheckt; README-Bilder per `npm run readme-shots` (Eintrag in `e2e/readme.spec.ts`)
+- [ ] Ladezustände ohne Sprünge: Platzhalter haben die Höhe des geladenen Inhalts, auch für Zeilen unter dem Hero (Punkte, Pause-Knopf)
 - [ ] **Rechtliches:** keine Logos, Markennamen, Original-Schriften oder Icons von Streaming-Anbietern – weder im Code noch in Dateinamen, Kommentaren oder Texten. Farben nur in ähnlicher Stimmung, keine exakten Markenfarben. Schriften frei lizenziert über `@fontsource`. Icons selbst gezeichnet. Kein „im Stil von …“ im UI.
+
+## 11. Die mitgelieferten Themes
+
+Was jedes Theme selbst zeichnet und was es von Classic übernimmt. Gute Vorlagen für ein neues Theme sind Horizon und Constellation (wenige, klar getrennte Komponenten) sowie Neon Grid (eigene Anmeldung und eigene Zustände).
+
+| Theme               | Eigene Komponenten                                                                                                                                       | Von Classic                                               | Optionen                                                                    | Schrift                             |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------- | ----------------------------------- |
+| Classic (`default`) | alle (Referenz)                                                                                                                                          | –                                                         | –                                                                           | Inter                               |
+| Neon Grid           | AppShell, LoginPage, ProfileSelect, HomePage, ItemDetailPage, SeriesPage, SearchPage, PlayerOverlay, ResumePrompt, Hero, Row, MediaCard, Toast, Zustände | Bibliothek, Favoriten, Einstellungen                      | `heroItemCount: 6`                                                          | Orbitron, Rajdhani, Share Tech Mono |
+| Crimson             | AppShell, ProfileSelect, HomePage, ItemDetailPage, SeriesPage, SearchPage, PlayerOverlay, Hero, Row, MediaCard                                           | Anmeldung, Bibliothek, Favoriten, Einstellungen, Zustände | `detailPresentation: 'modal'`, `heroItemCount: 1`, `cardShape: 'landscape'` | Inter                               |
+| Glass               | AppShell, HomePage, ItemDetailPage, SeriesPage, SearchPage, PlayerOverlay, Hero, Row, MediaCard                                                          | Anmeldung, Bibliothek, Favoriten, Einstellungen, Zustände | `heroItemCount: 6`                                                          | Inter                               |
+| Horizon             | AppShell, HomePage, ItemDetailPage, SeriesPage, SearchPage, PlayerOverlay, Hero, Row, MediaCard                                                          | Anmeldung, Bibliothek, Favoriten, Einstellungen, Zustände | `heroItemCount: 6`, `cardShape: 'landscape'`                                | Figtree                             |
+| Constellation       | AppShell, HomePage, ItemDetailPage, SeriesPage, SearchPage, PlayerOverlay, Hero, Row, MediaCard                                                          | Anmeldung, Bibliothek, Favoriten, Einstellungen, Zustände | `heroItemCount: 6`, `cardShape: 'landscape'`                                | Nunito Sans                         |
+
+Bilder aller Themes stehen im [README](../README.md#themes), die Entscheidungen zu jedem Theme in CLAUDE.md §12.

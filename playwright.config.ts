@@ -26,7 +26,7 @@ export default defineConfig({
     {
       name: 'mobile',
       use: { ...devices['Pixel 7'] },
-      grepInvert: /@desktop-only|@shots|@previews/,
+      grepInvert: /@desktop-only|@shots|@previews|@readme/,
     },
   ],
   webServer: EXTERNAL_BASE_URL

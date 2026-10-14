@@ -127,7 +127,13 @@ export function Hero({ items, context }: HeroProps) {
   }, [running, safeIndex, count]);
 
   if (items.status === 'pending') {
-    return <div className={`${styles.hero} ${styles.skeleton}`} aria-hidden="true" />;
+    // Same height as the loaded hero (banner and the row of dots), so nothing below jumps.
+    return (
+      <div className={styles.hero} data-context={context} aria-hidden="true">
+        <div className={`${styles.viewport} ${styles.skeleton}`} />
+        <div className={styles.controls} />
+      </div>
+    );
   }
   // The hero is decoration on top of the rows; without featured items it simply disappears.
   if (count === 0) return null;

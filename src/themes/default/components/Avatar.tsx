@@ -30,7 +30,7 @@ export function Avatar({ name, imageUrl, size = 'sm', className }: AvatarProps) 
       style={{ '--avatar-hue': hueFor(name) } as CSSProperties}
       aria-hidden="true"
     >
-      <span className={styles.initials}>{initials(name)}</span>
+      <span className={styles.initials} data-initials={initials(name)} />
       {showImage && (
         <img
           className={styles.image}

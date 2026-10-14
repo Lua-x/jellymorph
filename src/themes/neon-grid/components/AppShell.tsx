@@ -78,14 +78,15 @@ function OperatorMenu({ nav }: { nav: NavModel }) {
         className={styles.operatorButton}
         aria-expanded={open}
         aria-controls={panelId}
-        aria-label={t('nav.userMenuFor', { name: nav.user.name })}
+        // The visible label reads "OPERATOR <name>"; voice control users say what they see.
+        aria-label={t('nav.userMenuFor', { name: `${tNeon('hud.operator')} ${nav.user.name}` })}
         onClick={() => {
           setOpen((value) => !value);
         }}
       >
         <Avatar name={nav.user.name} imageUrl={nav.user.imageUrl} className={styles.avatar} />
         <span className={styles.operatorText}>
-          <span className={styles.operatorLabel}>{tNeon('hud.operator')}</span>
+          <span className={styles.operatorLabel}>{tNeon('hud.operator')}</span>{' '}
           <span className={styles.operatorName}>{nav.user.name}</span>
         </span>
         <Icon name="chevronDown" className={styles.chevron} />

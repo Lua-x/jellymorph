@@ -26,6 +26,10 @@
   font-size: clamp(1.75rem, 30cqi, 3rem);
 }
 
+.initials::before {
+  content: attr(data-initials);
+}
+
 .initials {
   letter-spacing: 0.02em;
 }

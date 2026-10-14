@@ -500,6 +500,12 @@ export function similarItems(library: UserLibrary, userId: string, itemId: strin
     .map(({ candidate }) => itemDto(library, userId, candidate));
 }
 
+/** A genre by its id, as Jellyfin answers `/Items/{id}` for genres (the genre page heading). */
+export function genreById(id: string) {
+  const genre = GENRES.find((name) => GENRE_IDS.get(name) === id);
+  return genre ? { ...SERVER, Id: id, Name: genre, Type: 'Genre', ImageTags: {} } : null;
+}
+
 export function genreItems(includeTypes: string[] | undefined) {
   const relevant = allItems.filter((item) => !includeTypes || includeTypes.includes(item.type));
   return GENRES.filter((genre) => relevant.some((item) => item.genres.includes(genre))).map(

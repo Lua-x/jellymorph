@@ -93,6 +93,7 @@ export function CardExpand({
           {isPlayable(item) && (
             <HorizonButton
               variant="primary"
+              className={styles.play}
               icon={<Icon name="play" filled />}
               onFocus={actions.preparePlayback}
               onPointerEnter={actions.preparePlayback}
@@ -106,6 +107,7 @@ export function CardExpand({
           )}
           <HorizonButton
             variant="round"
+            className={styles.tool}
             aria-label={item.userData.favorite ? t('actions.unfavorite') : t('actions.favorite')}
             aria-pressed={item.userData.favorite}
             icon={<Icon name={item.userData.favorite ? 'check' : 'plus'} />}
@@ -116,6 +118,7 @@ export function CardExpand({
           <HorizonLink
             to={linkTo(item)}
             variant="round"
+            className={styles.tool}
             aria-label={t('actions.details')}
             icon={<Icon name="info" />}
             onClick={onDone}

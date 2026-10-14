@@ -10,7 +10,6 @@
 }
 
 .skeleton {
-  height: clamp(22rem, 40vw, 44rem);
   background: linear-gradient(120deg, var(--color-surface-raised), var(--color-bg));
 }
 
@@ -193,6 +192,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  min-height: 2.75rem;
 }
 
 .dots {

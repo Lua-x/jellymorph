@@ -1,4 +1,4 @@
-import { useEffect, useId, useState, type CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MediaItem } from '@/domain/types';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
@@ -13,8 +13,11 @@ import styles from './Hero.module.css';
 
 const ROTATE_MS = 8_000;
 
-/** Title logo (or title), facts and the start of the description on the left of a banner. */
-function BannerText({ item, overviewId }: { item: MediaItem; overviewId: string }) {
+/**
+ * Title logo (or title), facts and the start of the description on the left of a banner. They
+ * name the banner link, so the title stays in its text even when the logo shows it.
+ */
+function BannerText({ item, current }: { item: MediaItem; current: boolean }) {
   const { t } = useTranslation('content');
   const facts = [
     yearText(t, item),
@@ -33,7 +36,9 @@ function BannerText({ item, overviewId }: { item: MediaItem; overviewId: string 
             sizes="(min-width: 64rem) 26vw, 55vw"
             maxWidth={960}
             fit="contain"
+            priority={current}
           />
+          <span className="visually-hidden">{item.name}</span>
         </span>
       ) : (
         <span className={styles.title}>{item.name}</span>
@@ -42,11 +47,7 @@ function BannerText({ item, overviewId }: { item: MediaItem; overviewId: string 
         {item.officialRating && <span className={styles.badge}>{item.officialRating}</span>}
         {facts.join(' · ')}
       </span>
-      {item.overview && (
-        <span id={overviewId} className={styles.overview}>
-          {item.overview}
-        </span>
-      )}
+      {item.overview && <span className={styles.overview}>{item.overview}</span>}
     </span>
   );
 }
@@ -59,7 +60,6 @@ function BannerText({ item, overviewId }: { item: MediaItem; overviewId: string 
 export function Hero({ items, context }: HeroProps) {
   const { t } = useTranslation('content');
   const { t: tTheme } = useTranslation('theme-constellation');
-  const baseId = useId();
   const [index, setIndex] = useState(0);
   const [held, setHeld] = useState(false);
   const [stopped, setStopped] = useState(false);
@@ -92,6 +92,8 @@ export function Hero({ items, context }: HeroProps) {
         <div className={styles.viewport}>
           <div className={`${styles.banner} ${styles.skeleton}`} />
         </div>
+        {/* The row of dots keeps its place, so nothing below jumps when the titles arrive. */}
+        <div className={styles.controls} />
       </div>
     );
   }
@@ -128,7 +130,6 @@ export function Hero({ items, context }: HeroProps) {
           {slides.map((item, slideIndex) => {
             const current = slideIndex === safeIndex;
             const near = Math.abs(slideIndex - safeIndex) <= 1;
-            const overviewId = `${baseId}-${String(slideIndex)}`;
             return (
               <div
                 key={item.id}
@@ -143,8 +144,6 @@ export function Hero({ items, context }: HeroProps) {
                 <AppLink
                   to={linkTo(item)}
                   className={styles.banner}
-                  aria-label={item.name}
-                  aria-describedby={item.overview ? overviewId : undefined}
                   tabIndex={page ? undefined : -1}
                   data-autofocus={(page && current) || undefined}
                 >
@@ -168,7 +167,7 @@ export function Hero({ items, context }: HeroProps) {
                     )}
                     <span className={styles.shade} />
                   </span>
-                  {near && <BannerText item={item} overviewId={overviewId} />}
+                  {near && <BannerText item={item} current={current} />}
                 </AppLink>
               </div>
             );

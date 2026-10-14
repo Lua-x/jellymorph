@@ -865,6 +865,19 @@ Lazy: jedes Theme, Player inkl. hls.js (~140 KB gzip), Bibliothek (TanStack Virt
 
 Theme- und Default-Chunk werden parallel zur Session-Wiederherstellung geladen. Das Hero-Backdrop bekommt `fetchpriority="high"` und eine passende `srcset`-Größe; alle anderen Bilder `loading="lazy"` + `decoding="async"`. Featured-Items werden pro Sitzung gecacht. Gemessen per Playwright im Demo-Modus (PerformanceObserver) und in Phase 11 zusätzlich per Lighthouse (`npx`, nicht im `package.json`).
 
+**Gemessen (Phase 11, 2026-10-14):** Produktions-Build im Demo-Modus, angemeldet, Startseite, 1920×1080 bzw. Lighthouse 12 mit Desktop-Profil. Lighthouse startet in dieser Umgebung kein eigenes Chromium; es hängt sich per `--port` an ein von Playwright gestartetes Chromium mit angemeldetem Profil (`--disable-storage-reset`).
+
+| Theme         | LCP (Playwright) | CLS   | Lighthouse Leistung / Barrierefreiheit / Best Practices |
+| ------------- | ---------------- | ----- | ------------------------------------------------------- |
+| Classic       | 1,2 s            | 0,002 | 100 / 100 / 100                                         |
+| Neon Grid     | 1,0 s            | 0,003 | 99 / 100 / 100                                          |
+| Crimson       | 0,8 s            | 0,001 | 100 / 100 / 100                                         |
+| Glass         | 0,8 s            | 0,008 | 100 / 100 / 100                                         |
+| Horizon       | 1,3 s            | 0,001 | 99 / 100 / 100                                          |
+| Constellation | 1,3 s            | 0,000 | 99 / 100 / 100                                          |
+
+Total Blocking Time überall 0 ms, keine Long Tasks. Gefunden und behoben: Die Hero-Platzhalter von Horizon und Constellation waren um die Zeile mit den Punkten zu niedrig (CLS 0,05), die zentrierte Leiste von Constellation verschob sich beim Nachladen der Bibliotheken. Offene Lighthouse-Hinweise betreffen nur Cache-Header (setzt im Container nginx, nicht `vite preview`) und dass das LCP-Bild einer SPA nicht im ersten HTML steht.
+
 ### 13.3 60 fps und keine Layout-Sprünge
 
 - Kartencontainer haben feste `aspect-ratio`. Der BlurHash wird auf einem 32×32-Canvas dekodiert, mit Cache je Hash, und darunter skaliert. Das Bild blendet per `opacity` ein.

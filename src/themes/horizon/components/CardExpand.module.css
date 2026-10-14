@@ -32,6 +32,7 @@
 /* The panel unfolds downwards (scale from the top edge, then fade in). */
 .panel {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.625rem;
   padding: 0.875rem 1rem 1.125rem;
   transform-origin: top center;
@@ -58,6 +59,20 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+/* Narrow cards (smaller windows): the buttons get a little more compact instead of leaving the
+   panel; the play label shortens only as a last resort. */
+.actions .play {
+  flex: 0 1 auto;
+  min-width: 0;
+  padding: 0 0.875rem;
+  font-size: 0.9375rem;
+}
+
+.actions .tool {
+  width: 2.5rem;
+  min-height: 2.5rem;
 }
 
 .facts {

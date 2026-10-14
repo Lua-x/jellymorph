@@ -427,11 +427,15 @@ async function demoE2e() {
   const port = 18090;
   const container = start('demo', port, { DEMO_MODE: 'true' });
   await waitHealthy(port, container);
-  const result = spawnSync('npx', ['playwright', 'test', '--grep-invert', '@shots|@previews'], {
-    stdio: 'inherit',
-    env: { ...process.env, E2E_BASE_URL: `http://localhost:${String(port)}` },
-    shell: process.platform === 'win32',
-  });
+  const result = spawnSync(
+    'npx',
+    ['playwright', 'test', '--grep-invert', '@shots|@previews|@readme'],
+    {
+      stdio: 'inherit',
+      env: { ...process.env, E2E_BASE_URL: `http://localhost:${String(port)}` },
+      shell: process.platform === 'win32',
+    },
+  );
   if (result.status !== 0) {
     failures += 1;
     report('Playwright suite in demo mode', `exited with ${String(result.status)}`);
