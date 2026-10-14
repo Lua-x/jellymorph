@@ -7,6 +7,7 @@ import { useThemeComponent } from '../../context';
 import { runtimeText } from '../../default/components/meta';
 import { EmptyState, ErrorState, LoadingState } from '../../default/components/States';
 import styles from './Detail.module.css';
+import { TrackList } from '../../default/components/Expandable';
 
 export interface DetailTab {
   id: string;
@@ -111,7 +112,7 @@ export function DetailsPanel({ item }: { item: ItemDetail }) {
     : item.year !== null
       ? String(item.year)
       : null;
-  const rows: [string, string | null][] = [
+  const rows: [string, ReactNode][] = [
     [tHorizon('detail.genres'), item.genres.join(', ') || null],
     [tHorizon('detail.released'), released],
     [
@@ -124,10 +125,16 @@ export function DetailsPanel({ item }: { item: ItemDetail }) {
       directors.map((person) => person.name).join(', ') || null,
     ],
     [t('detail.studios'), item.studios.join(', ') || null],
-    [t('detail.audio'), item.audioTracks.map((track) => track.title).join(', ') || null],
-    [t('detail.subtitles'), item.subtitleTracks.map((track) => track.title).join(', ') || null],
+    [
+      t('detail.audio'),
+      item.audioTracks.length > 0 ? <TrackList tracks={item.audioTracks} /> : null,
+    ],
+    [
+      t('detail.subtitles'),
+      item.subtitleTracks.length > 0 ? <TrackList tracks={item.subtitleTracks} /> : null,
+    ],
   ];
-  const shown = rows.filter((row): row is [string, string] => Boolean(row[1]));
+  const shown = rows.filter(([, value]) => value !== null && value !== '');
   return (
     <div className={styles.details}>
       <dl className={styles.facts}>

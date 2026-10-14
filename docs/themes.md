@@ -251,6 +251,7 @@ Daraus folgt für `Hero`, `Row` und `MediaCard`:
 - [ ] Alle Seiten nur mit Pfeiltasten, Enter und Zurück bedienbar; Fokus = Hover
 - [ ] Reduzierte Bewegung geprüft; Effekte nur über Bildern und Überschriften, nie über Fließtext
 - [ ] `npm run previews` ausgeführt, Vorschaubilder eingecheckt; README-Bilder per `npm run readme-shots` (Eintrag in `e2e/readme.spec.ts`)
+- [ ] Lange Inhalte: Beschreibungen über `ExpandableText`, Spuren über `TrackList`, eine Navigation mit Bibliotheken über `OverflowNav` (alle in `default/components/`), damit echte Bibliotheken mit langen Texten und vielen Einträgen lesbar bleiben
 - [ ] Ladezustände ohne Sprünge: Platzhalter haben die Höhe des geladenen Inhalts, auch für Zeilen unter dem Hero (Punkte, Pause-Knopf)
 - [ ] **Rechtliches:** keine Logos, Markennamen, Original-Schriften oder Icons von Streaming-Anbietern – weder im Code noch in Dateinamen, Kommentaren oder Texten. Farben nur in ähnlicher Stimmung, keine exakten Markenfarben. Schriften frei lizenziert über `@fontsource`. Icons selbst gezeichnet. Kein „im Stil von …“ im UI.
 

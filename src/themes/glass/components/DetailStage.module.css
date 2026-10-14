@@ -115,15 +115,14 @@
 }
 
 .overview {
-  display: -webkit-box;
-  margin: 0;
-  overflow: hidden;
   color: rgb(255 255 255 / 92%);
   font-size: 1.0625rem;
   line-height: 1.6;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
-  line-clamp: 4;
+}
+
+/* The stage is dark in both schemes: the toggle stays white. */
+.more {
+  color: #ffffff;
 }
 
 .actions {

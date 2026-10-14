@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useId, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CastMember, ItemDetail, MediaItem, QueryResult } from '@/domain/types';
 import { paths } from '@/navigation/paths';
@@ -8,6 +8,7 @@ import { ThemeSlot } from '../../ThemeSlot';
 import { Icon } from '../../default/components/icons';
 import { runtimeText } from '../../default/components/meta';
 import styles from './DetailSections.module.css';
+import { TrackList } from '../../default/components/Expandable';
 
 /** Cast and crew as round portraits in a row; each one leads to the person's titles. */
 export function CastShelf({ cast }: { cast: CastMember[] }) {
@@ -76,7 +77,7 @@ export function InfoPanel({ item }: { item: ItemDetail }) {
     : item.year !== null
       ? String(item.year)
       : null;
-  const rows: [string, string | null][] = [
+  const rows: [string, ReactNode][] = [
     [tGlass('detail.genres'), item.genres.join(', ') || null],
     [tGlass('detail.released'), released],
     [tGlass('detail.runtime'), item.kind === 'series' ? null : runtimeText(t, item.runtimeMinutes)],
@@ -86,10 +87,16 @@ export function InfoPanel({ item }: { item: ItemDetail }) {
       directors.map((person) => person.name).join(', ') || null,
     ],
     [t('detail.studios'), item.studios.join(', ') || null],
-    [t('detail.audio'), item.audioTracks.map((track) => track.title).join(', ') || null],
-    [t('detail.subtitles'), item.subtitleTracks.map((track) => track.title).join(', ') || null],
+    [
+      t('detail.audio'),
+      item.audioTracks.length > 0 ? <TrackList tracks={item.audioTracks} /> : null,
+    ],
+    [
+      t('detail.subtitles'),
+      item.subtitleTracks.length > 0 ? <TrackList tracks={item.subtitleTracks} /> : null,
+    ],
   ];
-  const shown = rows.filter((row): row is [string, string] => Boolean(row[1]));
+  const shown = rows.filter(([, value]) => value !== null && value !== '');
   if (shown.length === 0) return null;
   return (
     <section className={styles.section} aria-labelledby={headingId}>

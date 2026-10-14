@@ -77,8 +77,6 @@
   gap: 0.25rem;
   margin: 0;
   padding: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
   list-style: none;
 }
 
@@ -406,4 +404,32 @@ span.avatar {
   .bottomActive {
     color: #ffffff;
   }
+}
+
+/* The "More" menu of the navigation (OverflowNav): a button like the links, the menu opens below
+   it, aligned to the left. */
+.moreButton {
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.morePanel {
+  right: auto;
+  left: 0;
+  display: grid;
+  gap: 0.125rem;
+  margin: 0;
+  list-style: none;
+  transform-origin: top left;
+}
+
+.menuActive {
+  font-weight: 800;
+}
+
+.moreChevron {
+  margin-left: 0.25rem;
+  font-size: 0.875em;
 }

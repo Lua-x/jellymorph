@@ -11,6 +11,7 @@ import { runtimeText } from '../../default/components/meta';
 import { EmptyState, ErrorState, LoadingState } from '../../default/components/States';
 import styles from './Detail.module.css';
 import { Track, TrackSlot } from './Track';
+import { TrackList } from '../../default/components/Expandable';
 
 /** A titled part of a details page; `tools` stand next to the title (the season choice). */
 function Section({
@@ -211,7 +212,7 @@ export function DetailsSection({ item }: { item: ItemDetail }) {
     : item.year !== null
       ? String(item.year)
       : null;
-  const rows: [string, string | null][] = [
+  const rows: [string, ReactNode][] = [
     [tTheme('detail.genres'), item.genres.join(', ') || null],
     [tTheme('detail.released'), released],
     [tTheme('detail.runtime'), item.kind === 'series' ? null : runtimeText(t, item.runtimeMinutes)],
@@ -221,10 +222,16 @@ export function DetailsSection({ item }: { item: ItemDetail }) {
       directors.map((person) => person.name).join(', ') || null,
     ],
     [t('detail.studios'), item.studios.join(', ') || null],
-    [t('detail.audio'), item.audioTracks.map((track) => track.title).join(', ') || null],
-    [t('detail.subtitles'), item.subtitleTracks.map((track) => track.title).join(', ') || null],
+    [
+      t('detail.audio'),
+      item.audioTracks.length > 0 ? <TrackList tracks={item.audioTracks} /> : null,
+    ],
+    [
+      t('detail.subtitles'),
+      item.subtitleTracks.length > 0 ? <TrackList tracks={item.subtitleTracks} /> : null,
+    ],
   ];
-  const shown = rows.filter((row): row is [string, string] => Boolean(row[1]));
+  const shown = rows.filter(([, value]) => value !== null && value !== '');
   return (
     <Section title={tTheme('detail.details')}>
       <div className={styles.details}>

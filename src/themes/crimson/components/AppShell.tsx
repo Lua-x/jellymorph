@@ -7,6 +7,7 @@ import type { AppShellProps } from '../../contract';
 import { Avatar } from '../../default/components/Avatar';
 import { Icon } from '../../default/components/icons';
 import styles from './AppShell.module.css';
+import { OverflowNav } from '../../default/components/OverflowNav';
 
 function ProfileMenu({ nav }: { nav: NavModel }) {
   const { t } = useTranslation();
@@ -158,21 +159,34 @@ export function AppShell({ nav, children }: AppShellProps) {
             <span className={styles.brandName}>{nav.appTitle}</span>
           </AppLink>
           <nav className={styles.nav} aria-label={t('nav.mainNavigation')}>
-            <ul className={styles.navList}>
-              {links.map((item) => (
-                <li key={item.id}>
-                  <AppLink
-                    nav
-                    end={item.id === 'home'}
-                    to={item.to}
-                    className={styles.navLink}
-                    activeClassName={styles.active}
-                  >
-                    {item.label}
-                  </AppLink>
-                </li>
-              ))}
-            </ul>
+            <OverflowNav
+              items={links}
+              classes={{
+                list: styles.navList,
+                more: `${styles.navLink} ${styles.moreButton}`,
+                moreActive: styles.active,
+                panel: `${styles.panel} ${styles.morePanel}`,
+                link: styles.menuItem,
+                linkActive: styles.menuActive,
+              }}
+              renderMore={(label) => (
+                <>
+                  {label}
+                  <Icon name="chevronDown" className={styles.moreChevron} />
+                </>
+              )}
+              renderItem={(item) => (
+                <AppLink
+                  nav
+                  end={item.id === 'home'}
+                  to={item.to}
+                  className={styles.navLink}
+                  activeClassName={styles.active}
+                >
+                  {item.label}
+                </AppLink>
+              )}
+            />
           </nav>
           <div className={styles.tools}>
             {search && (

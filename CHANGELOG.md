@@ -20,6 +20,9 @@ Die erste stabile Version: sechs Themes, der vollständige Funktionsumfang und e
 
 ### Behoben
 
+- Beschreibungen mit HTML aus den Metadaten zeigten Zeilenumbrüche als `<br>`. Jetzt werden daraus Absätze.
+- Lange Beschreibungen sind auf vier Zeilen gekürzt, „Mehr anzeigen“ klappt sie auf. Ton- und Untertitelspuren stehen untereinander, nach drei Einträgen geht es mit „+ n weitere“ weiter.
+- Mit vielen Bibliotheken lief die Navigation über den Rand. Was nicht passt, steht jetzt im Menü „Mehr“; Startseite, Suche und Favoriten bleiben immer sichtbar.
 - Demo-Modus: Genre-Seiten zeigten „Nicht gefunden“, weil der Demo-Server Genres nicht über ihre ID fand.
 
 ## 0.10.0 – 2026-10-13

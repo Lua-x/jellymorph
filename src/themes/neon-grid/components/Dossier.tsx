@@ -1,6 +1,6 @@
 import { useId, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { CastMember, ItemDetail, MediaItem, MediaTrack } from '@/domain/types';
+import type { CastMember, ItemDetail, MediaItem } from '@/domain/types';
 import { isPlayable, useMediaActions } from '@/hooks/useMediaActions';
 import { paths } from '@/navigation/paths';
 import { AppLink } from '@/ui/AppLink';
@@ -12,10 +12,7 @@ import styles from './Dossier.module.css';
 import type { DataField } from './itemFields';
 import { NeonButton } from './NeonButton';
 import { ScrambleText } from './ScrambleText';
-
-function trackList(tracks: MediaTrack[]): string {
-  return tracks.map((track) => track.title).join(' · ');
-}
+import { ExpandableText, TrackList } from '../../default/components/Expandable';
 
 /** "Play", or "Resume from …" plus "Start over" for a started video. */
 export function PlayActions({ item }: { item: Pick<MediaItem, 'id' | 'kind' | 'userData'> }) {
@@ -89,13 +86,22 @@ function useDetailFields(item: ItemDetail): DataField[] {
         }
       : null,
     item.audioTracks.length > 0
-      ? { key: 'audio', label: t('detail.audio'), value: trackList(item.audioTracks) }
+      ? {
+          key: 'audio',
+          label: t('detail.audio'),
+          value: <TrackList tracks={item.audioTracks} />,
+        }
       : null,
     item.audioTracks.length > 0 || item.subtitleTracks.length > 0
       ? {
           key: 'subtitles',
           label: t('detail.subtitles'),
-          value: item.subtitleTracks.length > 0 ? trackList(item.subtitleTracks) : t('detail.none'),
+          value:
+            item.subtitleTracks.length > 0 ? (
+              <TrackList tracks={item.subtitleTracks} />
+            ) : (
+              t('detail.none')
+            ),
         }
       : null,
     item.studios.length > 0
@@ -161,7 +167,9 @@ export function DossierHeader({ item, children }: { item: ItemDetail; children?:
           )}
           <DataFields item={item} compact />
           {item.tagline && <p className={styles.tagline}>{item.tagline}</p>}
-          {item.overview && <p className={styles.overview}>{item.overview}</p>}
+          {item.overview && (
+            <ExpandableText text={item.overview} classes={{ text: styles.overview }} />
+          )}
           <div className={styles.actions}>
             <PlayActions item={item} />
             {children}

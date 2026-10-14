@@ -14,6 +14,7 @@ type IconName =
   | 'switch'
   | 'logout'
   | 'chevronDown'
+  | 'more'
   | 'chevronRight'
   | 'alert'
   | 'check'
@@ -90,6 +91,7 @@ const paths: Record<IconName, string> = {
   switch: 'M7 7h11l-3-3M17 17H6l3 3',
   logout: 'M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 16l-4-4 4-4M6 12h10',
   chevronDown: 'M6 9l6 6 6-6',
+  more: 'M4.5 12h1M11.5 12h1M18.5 12h1',
   chevronRight: 'M9 6l6 6-6 6',
   alert: 'M12 4 2.8 19.5h18.4zM12 10v4M12 17h.01',
   check: 'M5 12.5l4.5 4.5L19 7.5',

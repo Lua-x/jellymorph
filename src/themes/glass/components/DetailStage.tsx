@@ -10,6 +10,7 @@ import { Icon } from '../../default/components/icons';
 import { episodeCode, ratingText, runtimeText, yearText } from '../../default/components/meta';
 import styles from './DetailStage.module.css';
 import { GlassButton } from './GlassButton';
+import { ExpandableText } from '../../default/components/Expandable';
 
 /** "Play" or "Resume from …", plus "Start over" for a started video. */
 function PlayButtons({ item }: { item: Pick<MediaItem, 'id' | 'kind' | 'userData'> }) {
@@ -119,7 +120,12 @@ export function DetailStage({
           )}
         </p>
         {item.tagline && <p className={styles.tagline}>{item.tagline}</p>}
-        {item.overview && <p className={styles.overview}>{item.overview}</p>}
+        {item.overview && (
+          <ExpandableText
+            text={item.overview}
+            classes={{ text: styles.overview, toggle: styles.more }}
+          />
+        )}
         <div className={styles.actions}>
           {mainActions ?? <PlayButtons item={item} />}
           <GlassButton

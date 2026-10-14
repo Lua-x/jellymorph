@@ -10,6 +10,7 @@ import { Icon } from '../../default/components/icons';
 import { episodeCode, ratingText, runtimeText, yearText } from '../../default/components/meta';
 import styles from './DetailHeader.module.css';
 import { ConstellationButton } from './ConstellationButton';
+import { ExpandableText } from '../../default/components/Expandable';
 
 /** "Play" or "Resume from …", plus "Start over" for a started video. */
 function PlayButtons({ item }: { item: Pick<MediaItem, 'id' | 'kind' | 'userData'> }) {
@@ -153,7 +154,9 @@ export function DetailHeader({
             }}
           />
         </div>
-        {item.overview && <p className={styles.overview}>{item.overview}</p>}
+        {item.overview && (
+          <ExpandableText text={item.overview} classes={{ text: styles.overview }} />
+        )}
         {item.genres.length > 0 && (
           <p className={styles.genres}>{item.genres.slice(0, 4).join(' · ')}</p>
         )}

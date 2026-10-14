@@ -1,19 +1,16 @@
 import { useId, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { CastMember, ItemDetail, MediaItem, MediaTrack } from '@/domain/types';
+import type { CastMember, ItemDetail, MediaItem } from '@/domain/types';
 import { isPlayable, useMediaActions } from '@/hooks/useMediaActions';
 import { paths } from '@/navigation/paths';
 import { AppLink } from '@/ui/AppLink';
 import { JellyImage } from '@/ui/JellyImage';
 import { formatClock } from '@/ui/time';
 import { Button } from './Button';
+import { ExpandableText, TrackList } from './Expandable';
 import styles from './DetailHeader.module.css';
 import { Icon } from './icons';
 import { MetaLine } from './MetaLine';
-
-function trackList(tracks: MediaTrack[]): string {
-  return tracks.map((track) => track.title).join(' · ');
-}
 
 /** "Play", or "Resume from …" plus "Start over" for a started video. */
 export function PlayActions({ item }: { item: Pick<MediaItem, 'id' | 'kind' | 'userData'> }) {
@@ -116,7 +113,9 @@ export function DetailHeader({ item, children }: { item: ItemDetail; children?: 
           <MetaLine item={item} extra={item.videoLabel} />
           {item.genres.length > 0 && <p className={styles.genres}>{item.genres.join(' · ')}</p>}
           {item.tagline && <p className={styles.tagline}>{item.tagline}</p>}
-          {item.overview && <p className={styles.overview}>{item.overview}</p>}
+          {item.overview && (
+            <ExpandableText text={item.overview} classes={{ text: styles.overview }} />
+          )}
           <div className={styles.actions}>
             <PlayActions item={item} />
             {children}
@@ -167,16 +166,20 @@ export function DetailHeader({ item, children }: { item: ItemDetail; children?: 
             {item.audioTracks.length > 0 && (
               <div>
                 <dt>{t('detail.audio')}</dt>
-                <dd>{trackList(item.audioTracks)}</dd>
+                <dd>
+                  <TrackList tracks={item.audioTracks} />
+                </dd>
               </div>
             )}
             {(item.audioTracks.length > 0 || item.subtitleTracks.length > 0) && (
               <div>
                 <dt>{t('detail.subtitles')}</dt>
                 <dd>
-                  {item.subtitleTracks.length > 0
-                    ? trackList(item.subtitleTracks)
-                    : t('detail.none')}
+                  {item.subtitleTracks.length > 0 ? (
+                    <TrackList tracks={item.subtitleTracks} />
+                  ) : (
+                    t('detail.none')
+                  )}
                 </dd>
               </div>
             )}

@@ -8,6 +8,7 @@ import styles from './AppShell.module.css';
 import { Avatar } from './Avatar';
 import { Icon } from './icons';
 import { Spinner } from './Spinner';
+import { OverflowNav } from './OverflowNav';
 
 function UserMenu({ nav }: { nav: NavModel }) {
   const { t } = useTranslation();
@@ -141,22 +142,35 @@ export function AppShell({ nav, children }: AppShellProps) {
             <span className={styles.brandName}>{nav.appTitle}</span>
           </AppLink>
           <nav className={styles.nav} aria-label={t('nav.mainNavigation')}>
-            <ul className={styles.navList}>
-              {[...home, ...libraries, ...tools].map((item) => (
-                <li key={item.id}>
-                  <AppLink
-                    nav
-                    end={item.id === 'home'}
-                    to={item.to}
-                    className={styles.navLink}
-                    activeClassName={styles.active}
-                  >
-                    <Icon name={item.icon} className={styles.navIcon} />
-                    <span>{item.label}</span>
-                  </AppLink>
-                </li>
-              ))}
-            </ul>
+            <OverflowNav
+              items={[...home, ...libraries, ...tools]}
+              classes={{
+                list: styles.navList,
+                more: `${styles.navLink} ${styles.moreButton}`,
+                moreActive: styles.active,
+                panel: `${styles.panel} ${styles.morePanel}`,
+                link: styles.menuItem,
+                linkActive: styles.menuActive,
+              }}
+              renderMore={(label) => (
+                <>
+                  <Icon name="more" className={styles.navIcon} />
+                  <span>{label}</span>
+                </>
+              )}
+              renderItem={(item) => (
+                <AppLink
+                  nav
+                  end={item.id === 'home'}
+                  to={item.to}
+                  className={styles.navLink}
+                  activeClassName={styles.active}
+                >
+                  <Icon name={item.icon} className={styles.navIcon} />
+                  <span>{item.label}</span>
+                </AppLink>
+              )}
+            />
           </nav>
           <UserMenu nav={nav} />
         </div>

@@ -8,6 +8,7 @@ import { Avatar } from '../../default/components/Avatar';
 import { Icon } from '../../default/components/icons';
 import styles from './AppShell.module.css';
 import { GlassMotion } from './motion';
+import { OverflowNav } from '../../default/components/OverflowNav';
 
 function ProfileMenu({ nav }: { nav: NavModel }) {
   const { t } = useTranslation();
@@ -113,6 +114,22 @@ function ProfileMenu({ nav }: { nav: NavModel }) {
   );
 }
 
+/**
+ * Room for the centered pill: the header's width without the brand and the profile on either
+ * side (the wider of the two counts twice, so the pill stays centered).
+ */
+function roomForPill(list: HTMLUListElement): number {
+  const header = list.closest('header');
+  if (!header) return list.parentElement?.clientWidth ?? 0;
+  const style = getComputedStyle(header);
+  const gap = parseFloat(style.columnGap) || 0;
+  const padding = (parseFloat(style.paddingLeft) || 0) + (parseFloat(style.paddingRight) || 0);
+  const nav = list.parentElement;
+  const sides = [...header.children].filter((child) => child !== nav);
+  const side = Math.max(0, ...sides.map((child) => child.getBoundingClientRect().width));
+  return header.clientWidth - padding - 2 * side - 2 * gap;
+}
+
 /** Whether the page has scrolled away from the top (the bar gets its frosted backing). */
 function useScrolled(): boolean {
   const [scrolled, setScrolled] = useState(false);
@@ -164,22 +181,36 @@ export function AppShell({ nav, children }: AppShellProps) {
             <span className={styles.brandName}>{nav.appTitle}</span>
           </AppLink>
           <nav className={styles.nav} aria-label={t('nav.mainNavigation')}>
-            <ul className={styles.pill}>
-              {pillItems.map((item) => (
-                <li key={item.id}>
-                  <AppLink
-                    nav
-                    end={item.id === 'home'}
-                    to={item.to}
-                    className={item.id === 'search' ? styles.searchTab : styles.tab}
-                    activeClassName={styles.active}
-                    aria-label={item.id === 'search' ? item.label : undefined}
-                  >
-                    {item.id === 'search' ? <Icon name="search" /> : item.label}
-                  </AppLink>
-                </li>
-              ))}
-            </ul>
+            <OverflowNav
+              items={pillItems}
+              available={roomForPill}
+              classes={{
+                list: styles.pill,
+                more: `${styles.tab} ${styles.moreButton}`,
+                moreActive: styles.active,
+                panel: `${styles.panel} ${styles.morePanel}`,
+                link: styles.menuItem,
+                linkActive: styles.menuActive,
+              }}
+              renderMore={(label) => (
+                <>
+                  {label}
+                  <Icon name="chevronDown" className={styles.moreChevron} />
+                </>
+              )}
+              renderItem={(item) => (
+                <AppLink
+                  nav
+                  end={item.id === 'home'}
+                  to={item.to}
+                  className={item.id === 'search' ? styles.searchTab : styles.tab}
+                  activeClassName={styles.active}
+                  aria-label={item.id === 'search' ? item.label : undefined}
+                >
+                  {item.id === 'search' ? <Icon name="search" /> : item.label}
+                </AppLink>
+              )}
+            />
           </nav>
           <div className={styles.tools}>
             <ProfileMenu nav={nav} />

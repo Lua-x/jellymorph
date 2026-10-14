@@ -17,6 +17,7 @@ import type {
   Season,
   UserItemData,
 } from './types';
+import { plainText } from './text';
 
 export type ImageType = 'Primary' | 'Backdrop' | 'Thumb' | 'Logo' | 'Banner';
 export type ImageUrlFactory = (
@@ -112,7 +113,7 @@ export function toMediaItem(dto: BaseItemDto, urls: ImageUrlFactory): MediaItem 
     communityRating: dto.CommunityRating ?? null,
     criticRating: dto.CriticRating ?? null,
     genres: dto.Genres ?? [],
-    overview: dto.Overview ?? null,
+    overview: plainText(dto.Overview),
     tagline: dto.Taglines?.[0] ?? null,
     premiereDate: dto.PremiereDate ?? null,
     images: {

@@ -71,13 +71,12 @@
   min-width: 0;
 }
 
+/* Libraries that do not fit move into the "More" menu (OverflowNav), so nothing scrolls. */
 .navList {
   display: flex;
   gap: 0.25rem;
   margin: 0;
   padding: 0.25rem;
-  overflow-x: auto;
-  scrollbar-width: none;
   list-style: none;
 }
 
@@ -198,6 +197,22 @@
 .panelServer {
   color: var(--color-text-muted);
   font-size: 0.8125rem;
+}
+
+/* The "More" menu of the navigation opens below its button, aligned to the left. */
+.morePanel {
+  right: auto;
+  left: 0;
+  display: grid;
+  gap: 0.125rem;
+  margin: 0;
+  list-style: none;
+  transform-origin: top left;
+}
+
+.menuActive {
+  background: var(--color-surface);
+  font-weight: 700;
 }
 
 .menuList {
@@ -343,4 +358,12 @@
   .bottomActive {
     color: var(--color-accent-text);
   }
+}
+
+/* The "More" button of the navigation looks like the links. */
+.moreButton {
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
 }

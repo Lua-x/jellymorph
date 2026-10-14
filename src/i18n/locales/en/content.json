@@ -14,7 +14,10 @@
     "restart": "Start over",
     "playEpisode": "Play “{{name}}”",
     "trailer": "Trailer",
-    "trailerFailed": "The trailer could not be loaded."
+    "trailerFailed": "The trailer could not be loaded.",
+    "showMore": "Show more",
+    "showLess": "Show less",
+    "showMoreCount": "+ {{count}} more"
   },
   "meta": {
     "played": "Watched",

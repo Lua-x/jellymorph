@@ -14,7 +14,10 @@
     "restart": "Von vorne",
     "playEpisode": "„{{name}}“ abspielen",
     "trailer": "Trailer",
-    "trailerFailed": "Der Trailer konnte nicht geladen werden."
+    "trailerFailed": "Der Trailer konnte nicht geladen werden.",
+    "showMore": "Mehr anzeigen",
+    "showLess": "Weniger anzeigen",
+    "showMoreCount": "+ {{count}} weitere"
   },
   "meta": {
     "played": "Gesehen",

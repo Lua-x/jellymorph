@@ -19,7 +19,8 @@
     "search": "Search",
     "favorites": "Favorites",
     "userMenuFor": "{{name}} – user menu",
-    "settings": "Settings"
+    "settings": "Settings",
+    "more": "More"
   },
   "home": {
     "kinds": {

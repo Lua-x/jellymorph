@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { ItemDetail, MediaItem, MediaTrack } from '@/domain/types';
+import type { ItemDetail, MediaItem } from '@/domain/types';
 import { isPlayable, useMediaActions } from '@/hooks/useMediaActions';
 import { paths } from '@/navigation/paths';
 import { AppLink } from '@/ui/AppLink';
@@ -10,10 +10,7 @@ import { Icon } from '../../default/components/icons';
 import { episodeCode, ratingText, runtimeText, yearText } from '../../default/components/meta';
 import { CrimsonButton } from './CrimsonButton';
 import styles from './DetailHeader.module.css';
-
-function trackList(tracks: MediaTrack[]): string {
-  return tracks.map((track) => track.title).join(', ');
-}
+import { ExpandableText, TrackList } from '../../default/components/Expandable';
 
 /** "Play" or "Resume", plus "Start over" for a started video. */
 function PlayButtons({ item }: { item: Pick<MediaItem, 'id' | 'kind' | 'userData'> }) {
@@ -167,7 +164,9 @@ export function DetailHeader({
             )}
           </p>
           {item.tagline && <p className={styles.tagline}>{item.tagline}</p>}
-          {item.overview && <p className={styles.overview}>{item.overview}</p>}
+          {item.overview && (
+            <ExpandableText text={item.overview} classes={{ text: styles.overview }} />
+          )}
         </div>
         <dl className={styles.side}>
           {actors.length > 0 && (
@@ -200,13 +199,17 @@ export function DetailHeader({
           {item.audioTracks.length > 0 && (
             <div>
               <dt>{tCrimson('detail.audio')}</dt>
-              <dd>{trackList(item.audioTracks)}</dd>
+              <dd>
+                <TrackList tracks={item.audioTracks} />
+              </dd>
             </div>
           )}
           {item.subtitleTracks.length > 0 && (
             <div>
               <dt>{tCrimson('detail.subtitles')}</dt>
-              <dd>{trackList(item.subtitleTracks)}</dd>
+              <dd>
+                <TrackList tracks={item.subtitleTracks} />
+              </dd>
             </div>
           )}
         </dl>

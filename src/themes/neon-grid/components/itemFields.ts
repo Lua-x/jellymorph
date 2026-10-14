@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MediaItem } from '@/domain/types';
 import { episodeCode, ratingText, runtimeText, yearText } from '../../default/components/meta';
@@ -5,7 +6,7 @@ import { episodeCode, ratingText, runtimeText, yearText } from '../../default/co
 export interface DataField {
   key: string;
   label: string;
-  value: string;
+  value: ReactNode;
 }
 
 /** The standard HUD fields of an item: episode, year, runtime or seasons, age rating, score. */

@@ -721,6 +721,48 @@ export const collections: MockItem[] = COLLECTION_PLANS.map((plan, index) => {
   return collection;
 });
 
+/**
+ * One title with metadata the way real providers deliver it: a long description with HTML line
+ * breaks and many sound and subtitle tracks, which the detail pages shorten. Set after the
+ * generation, so no other demo data changes.
+ */
+const longRead = movies.find((movie) => movie.name === 'Kupferherz');
+if (longRead) {
+  longRead.overview = [
+    'Ein Jahr nach dem Stillstand der großen Gießerei kehrt die Ingenieurin Wanda Roth in ihre Heimatstadt zurück, um das Werk endgültig zu schließen.',
+    'Doch in den Hallen arbeitet noch etwas: eine Maschine aus Kupfer und Glas, die niemand gebaut haben will und die jede Nacht ein Stück weiterwächst. Während die Stadt über den Verkauf des Geländes streitet, folgt Wanda den Spuren ihres verschwundenen Vaters durch Archive, Kellergänge und alte Werkszeitungen.',
+    'Was sie findet, stellt alles infrage, was sie über die Gießerei, ihre Familie und den Unfall von damals zu wissen glaubte. Und die Maschine scheint auf sie gewartet zu haben.',
+    'Quelle: Begleitheft zur Restaurierung &amp; Neuveröffentlichung (2011)',
+  ].join('<br>');
+  const [video, firstAudio] = longRead.streams.filter((stream) => stream.type !== 'Subtitle');
+  const track = (type: 'Audio' | 'Subtitle', language: string, codec: string, title: string) => ({
+    type,
+    language,
+    codec,
+    title,
+    isDefault: false,
+    ...(type === 'Audio' ? { channels: 6, bitrate: 1_500_000 } : {}),
+  });
+  if (video && firstAudio) {
+    longRead.streams = [
+      video,
+      firstAudio,
+      track('Audio', 'ger', 'dts', 'Deutsch - DTS-HD MA 5.1'),
+      track('Audio', 'eng', 'dts', 'English - DTS-HD MA 5.1'),
+      track('Audio', 'eng', 'ac3', 'English - Dolby Digital 5.1'),
+      track('Audio', 'fre', 'ac3', 'Français - Dolby Digital 5.1'),
+      track('Audio', 'ger', 'aac', 'Deutsch - Audiodeskription - AAC Stereo'),
+      track('Audio', 'eng', 'aac', 'English - Kommentar - AAC Stereo'),
+      track('Subtitle', 'ger', 'subrip', 'Deutsch - SRT'),
+      track('Subtitle', 'ger', 'subrip', 'Deutsch (erzwungen) - SRT'),
+      track('Subtitle', 'eng', 'subrip', 'English - SRT'),
+      track('Subtitle', 'fre', 'subrip', 'Français - SRT'),
+      track('Subtitle', 'ger', 'PGSSUB', 'Deutsch - PGS'),
+      track('Subtitle', 'eng', 'PGSSUB', 'English - PGS'),
+    ];
+  }
+}
+
 export const allItems: MockItem[] = [
   ...movies,
   ...series,
