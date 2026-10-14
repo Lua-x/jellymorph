@@ -61,7 +61,8 @@ function LibraryTiles({ libraries }: { libraries: QueryResult<Library[]> }) {
                     maxWidth={960}
                     fallback={<span className={styles.tileFallback} />}
                   />
-                  <span className={styles.tileLabel}>
+                  {/* Jellyfin draws the name into the library pictures it generates; it is not laid over them again. */}
+                  <span className={library.image ? 'visually-hidden' : styles.tileLabel}>
                     <Icon name={KIND_ICONS[library.kind]} />
                     <span>{library.name}</span>
                     {tCommon(`home.kinds.${library.kind}`) !== library.name && (

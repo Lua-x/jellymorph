@@ -8,7 +8,7 @@ import { ThemeSlot } from '../../ThemeSlot';
 import { Icon } from '../../default/components/icons';
 import { runtimeText } from '../../default/components/meta';
 import styles from './DetailSections.module.css';
-import { TrackList } from '../../default/components/Expandable';
+import { ShortList, TrackList } from '../../default/components/Expandable';
 
 /** Cast and crew as round portraits in a row; each one leads to the person's titles. */
 export function CastShelf({ cast }: { cast: CastMember[] }) {
@@ -84,9 +84,9 @@ export function InfoPanel({ item }: { item: ItemDetail }) {
     [tGlass('detail.rated'), item.officialRating],
     [
       t('detail.director', { count: directors.length }),
-      directors.map((person) => person.name).join(', ') || null,
+      directors.length > 0 ? <ShortList entries={directors.map((person) => person.name)} /> : null,
     ],
-    [t('detail.studios'), item.studios.join(', ') || null],
+    [t('detail.studios'), item.studios.length > 0 ? <ShortList entries={item.studios} /> : null],
     [
       t('detail.audio'),
       item.audioTracks.length > 0 ? <TrackList tracks={item.audioTracks} /> : null,

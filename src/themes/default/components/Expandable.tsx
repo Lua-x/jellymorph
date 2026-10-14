@@ -76,30 +76,30 @@ export function ExpandableText({
 }
 
 /**
- * Sound or subtitle tracks one per line; beyond `limit` the rest opens with "+ n more".
+ * Entries one per line (tracks, studios); beyond `limit` the rest opens with "+ n more".
  */
-export function TrackList({
-  tracks,
+export function ShortList({
+  entries,
   limit = 3,
   classes = {},
 }: {
-  tracks: readonly MediaTrack[];
+  entries: readonly string[];
   limit?: number;
   classes?: ExpandableClasses;
 }) {
   const { t } = useTranslation('content');
   const id = useId();
   const [open, setOpen] = useState(false);
-  const hidden = tracks.length - limit;
-  // One more line costs less room than the button, so a single extra track is just shown.
+  const hidden = entries.length - limit;
+  // One more line costs less room than the button, so a single extra entry is just shown.
   const collapsible = hidden > 1;
-  const shown = collapsible && !open ? tracks.slice(0, limit) : tracks;
+  const shown = collapsible && !open ? entries.slice(0, limit) : entries;
 
   return (
     <div className={styles.root}>
       <ul id={id} className={join(styles.tracks, classes.text)}>
-        {shown.map((track) => (
-          <li key={`${String(track.index)}-${track.title}`}>{track.title}</li>
+        {shown.map((entry, index) => (
+          <li key={`${String(index)}-${entry}`}>{entry}</li>
         ))}
       </ul>
       {collapsible && (
@@ -117,4 +117,17 @@ export function TrackList({
       )}
     </div>
   );
+}
+
+/** Sound or subtitle tracks, three shown, the rest behind "+ n more". */
+export function TrackList({
+  tracks,
+  limit,
+  classes,
+}: {
+  tracks: readonly MediaTrack[];
+  limit?: number;
+  classes?: ExpandableClasses;
+}) {
+  return <ShortList entries={tracks.map((track) => track.title)} limit={limit} classes={classes} />;
 }

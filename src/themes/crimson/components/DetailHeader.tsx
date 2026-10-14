@@ -10,7 +10,7 @@ import { Icon } from '../../default/components/icons';
 import { episodeCode, ratingText, runtimeText, yearText } from '../../default/components/meta';
 import { CrimsonButton } from './CrimsonButton';
 import styles from './DetailHeader.module.css';
-import { ExpandableText, TrackList } from '../../default/components/Expandable';
+import { ExpandableText, ShortList, TrackList } from '../../default/components/Expandable';
 
 /** "Play" or "Resume", plus "Start over" for a started video. */
 function PlayButtons({ item }: { item: Pick<MediaItem, 'id' | 'kind' | 'userData'> }) {
@@ -193,7 +193,9 @@ export function DetailHeader({
           {directors.length > 0 && (
             <div>
               <dt>{tCrimson('detail.director')}</dt>
-              <dd>{directors.map((person) => person.name).join(', ')}</dd>
+              <dd>
+                <ShortList entries={directors.map((person) => person.name)} />
+              </dd>
             </div>
           )}
           {item.audioTracks.length > 0 && (

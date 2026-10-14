@@ -7,7 +7,7 @@ import { AppLink } from '@/ui/AppLink';
 import { JellyImage } from '@/ui/JellyImage';
 import { formatClock } from '@/ui/time';
 import { Button } from './Button';
-import { ExpandableText, TrackList } from './Expandable';
+import { ExpandableText, ShortList, TrackList } from './Expandable';
 import styles from './DetailHeader.module.css';
 import { Icon } from './icons';
 import { MetaLine } from './MetaLine';
@@ -160,7 +160,9 @@ export function DetailHeader({ item, children }: { item: ItemDetail; children?: 
             {directors.length > 0 && (
               <div>
                 <dt>{t('detail.director', { count: directors.length })}</dt>
-                <dd>{directors.join(', ')}</dd>
+                <dd>
+                  <ShortList entries={directors} />
+                </dd>
               </div>
             )}
             {item.audioTracks.length > 0 && (
@@ -186,7 +188,9 @@ export function DetailHeader({ item, children }: { item: ItemDetail; children?: 
             {item.studios.length > 0 && (
               <div>
                 <dt>{t('detail.studios')}</dt>
-                <dd>{item.studios.join(', ')}</dd>
+                <dd>
+                  <ShortList entries={item.studios} />
+                </dd>
               </div>
             )}
           </dl>

@@ -12,8 +12,11 @@ import {
 import styles from './VirtualGrid.module.css';
 
 export interface VirtualGridHandle {
-  /** Scrolls the item into view and moves focus into it. */
-  focusIndex: (index: number) => void;
+  /**
+   * Scrolls the item into view and moves focus into it. `start` puts its row at the top (a jump
+   * to a letter); the default scrolls only as far as needed (arrow keys).
+   */
+  focusIndex: (index: number, align?: 'nearest' | 'start') => void;
 }
 
 interface VirtualGridProps {
@@ -116,9 +119,11 @@ export function VirtualGrid({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resetKey]);
 
-  const focusIndex = (index: number) => {
+  const focusIndex = (index: number, align: 'nearest' | 'start' = 'nearest') => {
     const target = Math.max(0, Math.min(count - 1, index));
-    virtualizer.scrollToIndex(Math.floor(target / columns), { align: 'auto' });
+    virtualizer.scrollToIndex(Math.floor(target / columns), {
+      align: align === 'start' ? 'start' : 'auto',
+    });
     let attempts = 0;
     const tryFocus = () => {
       const cell = containerRef.current?.querySelector<HTMLElement>(
@@ -127,7 +132,8 @@ export function VirtualGrid({
       const focusable = cell?.querySelector<HTMLElement>(FOCUSABLE);
       if (focusable) {
         focusable.focus({ preventScroll: true });
-        focusable.scrollIntoView({ block: 'nearest' });
+        // The cell's scroll margin keeps the row clear of a sticky header.
+        (align === 'start' ? cell : focusable)?.scrollIntoView({ block: align });
       } else if (attempts < 20) {
         attempts += 1;
         requestAnimationFrame(tryFocus);

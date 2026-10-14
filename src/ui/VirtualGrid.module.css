@@ -13,4 +13,5 @@
 
 .cell {
   min-width: 0;
+  scroll-margin-top: 6rem;
 }

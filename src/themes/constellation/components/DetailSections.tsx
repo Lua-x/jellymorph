@@ -11,7 +11,7 @@ import { runtimeText } from '../../default/components/meta';
 import { EmptyState, ErrorState, LoadingState } from '../../default/components/States';
 import styles from './Detail.module.css';
 import { Track, TrackSlot } from './Track';
-import { TrackList } from '../../default/components/Expandable';
+import { ShortList, TrackList } from '../../default/components/Expandable';
 
 /** A titled part of a details page; `tools` stand next to the title (the season choice). */
 function Section({
@@ -219,9 +219,9 @@ export function DetailsSection({ item }: { item: ItemDetail }) {
     [tTheme('detail.rated'), item.officialRating],
     [
       t('detail.director', { count: directors.length }),
-      directors.map((person) => person.name).join(', ') || null,
+      directors.length > 0 ? <ShortList entries={directors.map((person) => person.name)} /> : null,
     ],
-    [t('detail.studios'), item.studios.join(', ') || null],
+    [t('detail.studios'), item.studios.length > 0 ? <ShortList entries={item.studios} /> : null],
     [
       t('detail.audio'),
       item.audioTracks.length > 0 ? <TrackList tracks={item.audioTracks} /> : null,

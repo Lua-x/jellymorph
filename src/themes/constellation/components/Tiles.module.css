@@ -86,6 +86,11 @@
   );
 }
 
+/* A picture that shows its name needs no shade for a label on top. */
+.tile[data-titled] .shade {
+  opacity: 0.25;
+}
+
 .name {
   position: relative;
   display: -webkit-box;

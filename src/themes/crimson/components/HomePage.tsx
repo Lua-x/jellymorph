@@ -39,7 +39,10 @@ function LibraryRow({ libraries }: { libraries: QueryResult<Library[]> }) {
                 maxWidth={960}
                 fallback={<span className={styles.libraryFallback} />}
               />
-              <span className={styles.libraryName}>{library.name}</span>
+              {/* Jellyfin draws the name into the library pictures it generates; it is not laid over them again. */}
+              <span className={library.image ? 'visually-hidden' : styles.libraryName}>
+                {library.name}
+              </span>
             </AppLink>
           </li>
         ))}

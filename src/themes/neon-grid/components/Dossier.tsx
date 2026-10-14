@@ -12,7 +12,7 @@ import styles from './Dossier.module.css';
 import type { DataField } from './itemFields';
 import { NeonButton } from './NeonButton';
 import { ScrambleText } from './ScrambleText';
-import { ExpandableText, TrackList } from '../../default/components/Expandable';
+import { ExpandableText, ShortList, TrackList } from '../../default/components/Expandable';
 
 /** "Play", or "Resume from …" plus "Start over" for a started video. */
 export function PlayActions({ item }: { item: Pick<MediaItem, 'id' | 'kind' | 'userData'> }) {
@@ -82,7 +82,7 @@ function useDetailFields(item: ItemDetail): DataField[] {
       ? {
           key: 'director',
           label: t('detail.director', { count: directors.length }),
-          value: directors.join(', '),
+          value: <ShortList entries={directors} />,
         }
       : null,
     item.audioTracks.length > 0
@@ -105,7 +105,11 @@ function useDetailFields(item: ItemDetail): DataField[] {
         }
       : null,
     item.studios.length > 0
-      ? { key: 'studios', label: t('detail.studios'), value: item.studios.join(', ') }
+      ? {
+          key: 'studios',
+          label: t('detail.studios'),
+          value: <ShortList entries={item.studios} />,
+        }
       : null,
   ];
   return fields.filter((field): field is DataField => field !== null);

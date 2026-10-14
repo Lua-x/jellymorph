@@ -70,7 +70,8 @@ function Sectors({ libraries }: { libraries: QueryResult<Library[]> }) {
                   <span className={styles.sectorNumber} aria-hidden="true">
                     {String(index + 1).padStart(2, '0')}
                   </span>
-                  <span className={styles.sectorLabel}>
+                  {/* Jellyfin draws the name into the library pictures it generates; it is not laid over them again. */}
+                  <span className={library.image ? 'visually-hidden' : styles.sectorLabel}>
                     <Icon name={KIND_ICONS[library.kind]} />
                     <span>{library.name}</span>
                     {tCommon(`home.kinds.${library.kind}`) !== library.name && (

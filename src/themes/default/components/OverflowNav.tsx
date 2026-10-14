@@ -10,7 +10,7 @@ import styles from './OverflowNav.module.css';
 export interface OverflowNavClasses {
   list?: string;
   more?: string;
-  /** On the button while the current page is one of the folded-away entries. */
+  /** On the button while its menu is open or the current page is one of the folded-away entries. */
   moreActive?: string;
   panel?: string;
   link?: string;
@@ -148,7 +148,7 @@ export function OverflowNav({
         type="button"
         className={[
           classes.more,
-          folded.some((item) => current(pathname, item)) && classes.moreActive,
+          (open || folded.some((item) => current(pathname, item))) && classes.moreActive,
         ]
           .filter(Boolean)
           .join(' ')}

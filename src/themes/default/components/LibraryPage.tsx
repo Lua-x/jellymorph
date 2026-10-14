@@ -305,7 +305,7 @@ export function LibraryPage({ browser }: LibraryPageProps) {
                 aria-label={t('library.jumpTo', { letter })}
                 onClick={() => {
                   void browser.jumpTo(letter).then((index) => {
-                    gridRef.current?.focusIndex(index);
+                    gridRef.current?.focusIndex(index, 'start');
                   });
                 }}
               >

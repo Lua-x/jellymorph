@@ -27,7 +27,7 @@ const IMAGE_TYPES: readonly string[] = ['Primary', 'Backdrop', 'Thumb', 'Logo'];
 
 function artwork(itemId: string, type: string): Response {
   const view = DEMO_VIEWS.find((candidate) => candidate.id === itemId);
-  if (view) return new HttpResponse(libraryArtSvg(view.hue), svgResponseInit());
+  if (view) return new HttpResponse(libraryArtSvg(view.hue, view.name), svgResponseInit());
   const item = itemsById.get(itemId);
   if (!item || !IMAGE_TYPES.includes(type) || !item.images.includes(type as MockImageType))
     return notFound();

@@ -7,7 +7,7 @@ import { useThemeComponent } from '../../context';
 import { runtimeText } from '../../default/components/meta';
 import { EmptyState, ErrorState, LoadingState } from '../../default/components/States';
 import styles from './Detail.module.css';
-import { TrackList } from '../../default/components/Expandable';
+import { ShortList, TrackList } from '../../default/components/Expandable';
 
 export interface DetailTab {
   id: string;
@@ -122,9 +122,9 @@ export function DetailsPanel({ item }: { item: ItemDetail }) {
     [tHorizon('detail.rated'), item.officialRating],
     [
       t('detail.director', { count: directors.length }),
-      directors.map((person) => person.name).join(', ') || null,
+      directors.length > 0 ? <ShortList entries={directors.map((person) => person.name)} /> : null,
     ],
-    [t('detail.studios'), item.studios.join(', ') || null],
+    [t('detail.studios'), item.studios.length > 0 ? <ShortList entries={item.studios} /> : null],
     [
       t('detail.audio'),
       item.audioTracks.length > 0 ? <TrackList tracks={item.audioTracks} /> : null,

@@ -13,6 +13,8 @@ interface Tile {
   to: string;
   name: string;
   image: ImageRef | null;
+  /** The picture already shows the name (Jellyfin generates library pictures with it). */
+  titled: boolean;
 }
 
 const SKELETON_COUNT = 5;
@@ -42,6 +44,7 @@ export function Tiles({
           to: paths.library(library.id),
           name: library.name,
           image: library.image,
+          titled: library.image !== null,
         }))
       : []),
     ...(collections?.status === 'success'
@@ -50,6 +53,7 @@ export function Tiles({
           to: linkTo(item),
           name: item.name,
           image: item.images.thumb ?? item.images.backdrop ?? item.images.primary,
+          titled: false,
         }))
       : []),
   ];
@@ -69,7 +73,11 @@ export function Tiles({
             ))
           : tiles.map((tile) => (
               <TrackSlot key={tile.id}>
-                <AppLink to={tile.to} className={styles.tile}>
+                <AppLink
+                  to={tile.to}
+                  className={styles.tile}
+                  data-titled={tile.titled || undefined}
+                >
                   <span className={styles.frame} aria-hidden="true">
                     <JellyImage
                       image={tile.image}
@@ -79,7 +87,7 @@ export function Tiles({
                     />
                     <span className={styles.shade} />
                   </span>
-                  <span className={styles.name}>{tile.name}</span>
+                  <span className={tile.titled ? 'visually-hidden' : styles.name}>{tile.name}</span>
                 </AppLink>
               </TrackSlot>
             ))}

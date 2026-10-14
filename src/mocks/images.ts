@@ -15,7 +15,12 @@ export function avatarSvg(hue: number): string {
 }
 
 /** Abstract artwork; the library name is shown by the UI, so the image carries no text. */
-export function libraryArtSvg(hue: number): string {
+function xmlText(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/** A library picture: shapes in the library's hue and its name, as Jellyfin generates them. */
+export function libraryArtSvg(hue: number, name: string): string {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
@@ -29,6 +34,7 @@ export function libraryArtSvg(hue: number): string {
     <rect x="300" y="60" width="180" height="270" rx="16" transform="rotate(-8 390 195)"/>
     <rect x="70" y="150" width="150" height="225" rx="14" transform="rotate(-14 145 262)"/>
   </g>
+  <text x="320" y="200" text-anchor="middle" font-family="system-ui, 'Segoe UI', sans-serif" font-size="64" font-weight="800" fill="#ffffff" stroke="rgb(0 0 0 / 40%)" stroke-width="3" paint-order="stroke">${xmlText(name)}</text>
 </svg>`;
 }
 
