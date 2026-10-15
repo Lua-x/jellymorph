@@ -25,6 +25,12 @@ Verwaltung direkt in Jellymorph: Administratoren pflegen ihre Titel, ohne zur Je
 
 ### Behoben
 
+- Beschreibungen mit HTML aus den Metadaten zeigten Zeilenumbrüche als `<br>`. Jetzt werden daraus Absätze.
+- Lange Beschreibungen sind auf vier Zeilen gekürzt, „Mehr anzeigen“ klappt sie auf. Ton- und Untertitelspuren stehen untereinander, nach drei Einträgen geht es mit „+ n weitere“ weiter.
+- Studios und Regie stehen ebenfalls untereinander und sind nach drei Einträgen gekürzt.
+- Die Bibliotheksbilder von Jellyfin enthalten den Namen schon; die Themes schreiben ihn nicht mehr ein zweites Mal darüber.
+- Die Sprungleiste der Bibliothek setzt den gewählten Buchstaben an den oberen Rand statt an den unteren.
+- Mit vielen Bibliotheken lief die Navigation über den Rand. Was nicht passt, steht jetzt im Menü „Mehr“; Startseite, Suche und Favoriten bleiben immer sichtbar.
 - Glass auf dem Handy: Der Link mit dem Logo hatte für Screenreader keinen Namen.
 - Crimson: Nach dem Schließen der Details landete der Fokus selten auf einem anderen Link zum selben Titel (z. B. im Hero) statt auf der Karte, die sie geöffnet hatte. Die Details merken sich jetzt den angeklickten Link.
 - Sprachlisten zeigten für Sprachen ohne Übersetzung im Browser nur das Kürzel (z. B. „aa“) statt des Namens.
@@ -47,12 +53,6 @@ Die erste stabile Version: sechs Themes, der vollständige Funktionsumfang und e
 
 ### Behoben
 
-- Beschreibungen mit HTML aus den Metadaten zeigten Zeilenumbrüche als `<br>`. Jetzt werden daraus Absätze.
-- Lange Beschreibungen sind auf vier Zeilen gekürzt, „Mehr anzeigen“ klappt sie auf. Ton- und Untertitelspuren stehen untereinander, nach drei Einträgen geht es mit „+ n weitere“ weiter.
-- Studios und Regie stehen ebenfalls untereinander und sind nach drei Einträgen gekürzt.
-- Die Bibliotheksbilder von Jellyfin enthalten den Namen schon; die Themes schreiben ihn nicht mehr ein zweites Mal darüber.
-- Die Sprungleiste der Bibliothek setzt den gewählten Buchstaben an den oberen Rand statt an den unteren.
-- Mit vielen Bibliotheken lief die Navigation über den Rand. Was nicht passt, steht jetzt im Menü „Mehr“; Startseite, Suche und Favoriten bleiben immer sichtbar.
 - Demo-Modus: Genre-Seiten zeigten „Nicht gefunden“, weil der Demo-Server Genres nicht über ihre ID fand.
 
 ## 0.10.0 – 2026-10-13
