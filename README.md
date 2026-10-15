@@ -5,98 +5,98 @@
 <h1 align="center">Jellymorph</h1>
 
 <p align="center">
-  Ein selbst gehosteter Web-Client für <a href="https://jellyfin.org">Jellyfin</a> mit austauschbaren Themes.<br />
-  Jedes Theme bringt sein eigenes Bedienkonzept mit: Layout, Navigation, Karten, Detailseiten,
-  Player und Animationen – im Browser, auf dem Handy und auf dem Fernseher.
+  A self-hosted web client for <a href="https://jellyfin.org">Jellyfin</a> with interchangeable themes.<br />
+  Every theme brings its own way of using the app: layout, navigation, cards, detail pages,
+  player and motion – in the browser, on the phone and on the TV.
 </p>
 
 <p align="center">
   <a href="https://github.com/Lua-x/jellymorph/actions/workflows/release.yml?query=branch%3Amain"><img src="https://img.shields.io/github/actions/workflow/status/Lua-x/jellymorph/release.yml?branch=main&event=push&label=CI&logo=github" alt="CI" /></a>
   <a href="https://github.com/Lua-x/jellymorph/releases"><img src="https://img.shields.io/github/v/release/Lua-x/jellymorph?include_prereleases&label=release" alt="Release" /></a>
-  <a href="https://github.com/Lua-x/jellymorph/pkgs/container/jellymorph"><img src="https://img.shields.io/badge/image-ghcr.io-2496ed?logo=docker&logoColor=white" alt="Docker-Image auf ghcr.io" /></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="Lizenz: AGPL-3.0" /></a>
+  <a href="https://github.com/Lua-x/jellymorph/pkgs/container/jellymorph"><img src="https://img.shields.io/badge/image-ghcr.io-2496ed?logo=docker&logoColor=white" alt="Docker image on ghcr.io" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="License: AGPL-3.0" /></a>
 </p>
 
-> **Version 1.2:** Sechs Themes, der volle Funktionsumfang, die Verwaltung einzelner Titel für Administratoren und jetzt eigene Anordnung und Gestaltung. Was sich geändert hat, steht im [Changelog](CHANGELOG.md).
+> **Version 1.2:** six themes, the full feature set, administration of single titles for administrators and now your own arrangement and styling. What changed is in the [changelog](CHANGELOG.md).
 
 ## Themes
 
-Ein Theme ist mehr als ein Farbschema: Jedes ordnet Navigation, Startseite, Karten, Detailseiten und Player anders an und bewegt sich anders. Gewechselt wird in den Einstellungen, ohne Neuladen und mit Live-Vorschau. Die Wahl gilt pro Benutzer auf allen Geräten.
+A theme is more than a color scheme: each one arranges navigation, home page, cards, detail pages and player differently and moves differently. You switch in the settings, without a reload and with a live preview. The choice is stored per user and applies on every device.
 
 ### Classic
 
-Schlicht und übersichtlich, die Grundlage für alle anderen Themes. Hell und dunkel.
+Plain and clear, the foundation of all other themes. Light and dark.
 
 <p>
-  <img src="docs/screenshots/classic-home.jpg" width="49%" alt="Classic: Startseite" />
-  <img src="docs/screenshots/classic-series.jpg" width="49%" alt="Classic: Serie mit Staffeln und Episoden" />
+  <img src="docs/screenshots/classic-home.jpg" width="49%" alt="Classic: home page" />
+  <img src="docs/screenshots/classic-series.jpg" width="49%" alt="Classic: a series with seasons and episodes" />
 </p>
 
 ### Neon Grid
 
-Das eigene Design des Projekts: ein futuristisches HUD mit Neonlicht, perspektivischem Raster, Glitch-Effekten, Boot-Sequenz bei der Anmeldung und einer Suche im Terminal-Stil.
+The project's own design: a futuristic HUD with neon light, a perspective grid, glitch effects, a boot sequence at sign-in and a terminal-style search.
 
 <p>
-  <img src="docs/screenshots/neon-grid-home.jpg" width="49%" alt="Neon Grid: Startseite mit HUD-Leiste und Raster" />
-  <img src="docs/screenshots/neon-grid-movie.jpg" width="49%" alt="Neon Grid: Film als Dossier mit Datenfeldern" />
+  <img src="docs/screenshots/neon-grid-home.jpg" width="49%" alt="Neon Grid: home page with HUD bar and grid" />
+  <img src="docs/screenshots/neon-grid-movie.jpg" width="49%" alt="Neon Grid: a movie as a dossier with data fields" />
 </p>
 
 ### Crimson
 
-Großes Kino: bildfüllendes Hero mit Trailer-Vorschau, Reihen mit Vorschaukarten, Details als Fenster über der Seite und eine Profilauswahl mit großen Kacheln.
+Big cinema: a full-bleed hero with trailer preview, rows with preview cards, details as a sheet above the page and a profile picker with large tiles.
 
 <p>
-  <img src="docs/screenshots/crimson-home.jpg" width="49%" alt="Crimson: Startseite mit großem Hero" />
-  <img src="docs/screenshots/crimson-preview.jpg" width="49%" alt="Crimson: vergrößerte Vorschaukarte in einer Reihe" />
+  <img src="docs/screenshots/crimson-home.jpg" width="49%" alt="Crimson: home page with a large hero" />
+  <img src="docs/screenshots/crimson-preview.jpg" width="49%" alt="Crimson: enlarged preview card in a row" />
 </p>
 
 ### Glass
 
-Ruhige Milchglasflächen, ein Vollbild-Karussell und Karten, die sich bei Fokus heben und zur Maus neigen. Hell und dunkel.
+Calm frosted-glass surfaces, a full-screen carousel and cards that lift on focus and tilt towards the pointer. Light and dark.
 
 <p>
-  <img src="docs/screenshots/glass-home.jpg" width="49%" alt="Glass: Startseite mit Vollbild-Karussell" />
-  <img src="docs/screenshots/glass-series-light.jpg" width="49%" alt="Glass im hellen Schema: Episoden einer Serie" />
+  <img src="docs/screenshots/glass-home.jpg" width="49%" alt="Glass: home page with full-screen carousel" />
+  <img src="docs/screenshots/glass-series-light.jpg" width="49%" alt="Glass in the light scheme: episodes of a series" />
 </p>
 
 ### Horizon
 
-Klare 16:9-Reihen, Karten, die bei Fokus nach unten aufklappen, und Detailseiten mit Tabs für Episoden, Ähnliches und Details.
+Clear 16:9 rows, cards that unfold downwards on focus and detail pages with tabs for episodes, related titles and details.
 
 <p>
-  <img src="docs/screenshots/horizon-home.jpg" width="49%" alt="Horizon: Startseite mit Karussell und Pfeilen" />
-  <img src="docs/screenshots/horizon-card.jpg" width="49%" alt="Horizon: aufgeklappte Karte mit Aktionen und Beschreibung" />
+  <img src="docs/screenshots/horizon-home.jpg" width="49%" alt="Horizon: home page with carousel and arrows" />
+  <img src="docs/screenshots/horizon-card.jpg" width="49%" alt="Horizon: unfolded card with actions and description" />
 </p>
 
 ### Constellation
 
-Ein Sternenhimmel als Hintergrund, eine Icon-Leiste, die bei Fokus aufklappt, Banner mit Nachbarn am Rand und große, leuchtende Kacheln für Bibliotheken und Sammlungen.
+A starry sky as background, an icon rail that expands on focus, banners with their neighbors peeking in and large glowing tiles for libraries and collections.
 
 <p>
-  <img src="docs/screenshots/constellation-home.jpg" width="49%" alt="Constellation: Startseite mit Bannern und Kacheln" />
-  <img src="docs/screenshots/constellation-series.jpg" width="49%" alt="Constellation: Serie mit Episodenreihe" />
+  <img src="docs/screenshots/constellation-home.jpg" width="49%" alt="Constellation: home page with banners and tiles" />
+  <img src="docs/screenshots/constellation-series.jpg" width="49%" alt="Constellation: a series with a row of episodes" />
 </p>
 
-Die Bilder zeigen den Demo-Modus mit erfundenen Titeln und generierten Bildern.
+The pictures show the demo mode with made-up titles and generated artwork.
 
-## Funktionen
+## Features
 
-- **Anmeldung:** mehrere Server, Profilauswahl, Passwort oder Quick Connect. Gespeichert wird nur das Zugangs-Token, nie das Passwort.
-- **Startseite:** Weiterschauen, nächste Folgen, Neues je Bibliothek, Favoriten, Sammlungen und Genres, in der Reihenfolge deiner Jellyfin-Bibliotheken.
-- **Bibliotheken:** schnelles Raster auch bei tausenden Titeln, Sortierung, Filter (Genre, Jahr, gesehen, Favoriten) und eine Sprungleiste von A bis Z.
-- **Details und Serien:** Besetzung, Ton- und Untertitelspuren, Trailer, Staffeln, Episoden mit Fortschritt, nächste Folge hervorgehoben. Live-Suche, nach Typ gruppiert.
-- **Player:** spielt direkt ab, wo der Browser es kann, sonst über HLS-Transcoding. Ton- und Untertitelwahl (Bilduntertitel werden eingebrannt), Qualität, Geschwindigkeit, Vollbild, Bild-in-Bild, Vorschaubilder auf der Zeitleiste, „Intro überspringen“, nächste Folge mit Countdown. Der Fortschritt landet in Jellyfin, „Weiterschauen“ stimmt also auf allen Geräten.
-- **Verwaltung (für Administratoren):** Auf jeder Detailseite das Menü „Bearbeiten“: identifizieren, Metadaten bearbeiten, Bilder wählen, hochladen oder löschen, Untertitel suchen, hochladen oder löschen, Metadaten aktualisieren, Eintrag löschen. Dazu „Bibliothek scannen“ und im Profilmenü ein Link zur Server-Verwaltung von Jellyfin (dort meldest du dich einmal mit deinem Jellyfin-Konto an). Andere Benutzer sehen davon nichts.
-- **Anordnung:** Reihenfolge und Sichtbarkeit der Bereiche der Startseite, der Navigation sowie der Knöpfe und Angaben auf Detailseiten, per Ziehen oder Pfeiltasten. Administratoren legen eine Vorgabe für alle fest; eigene Anordnungen gehen vor.
-- **Eigene Gestaltung:** eigene Farben, Schriften und CSS je Theme aus einem gemappten Ordner (siehe unten).
-- **Bedienung:** Maus, Touch, Tastatur und Fernbedienung. Auf Fernsehern ein TV-Modus mit größerer Schrift und einstellbarem Bildrand, in 1080p und 4K.
-- **Barrierefreiheit:** Kontraste nach WCAG AA, Fokus mindestens so deutlich wie Hover, reduzierte Bewegung auf Wunsch oder nach Systemeinstellung. Jede Seite jedes Themes wird automatisch mit axe geprüft.
-- **Sprachen:** Deutsch und Englisch.
-- **Betrieb:** ein kleines Docker-Image für amd64 und arm64, läuft ohne Root und schreibgeschützt, mit strikter Content Security Policy.
+- **Sign-in:** several servers, profile picker, password or Quick Connect. Only the access token is stored, never the password.
+- **Home page:** continue watching, next up, new per library, favorites, collections and genres, in the order of your Jellyfin libraries.
+- **Libraries:** a fast grid even with thousands of titles, sorting, filters (genre, year, watched, favorites) and an A–Z jump bar.
+- **Details and series:** cast, audio and subtitle tracks, trailers, seasons, episodes with progress, the next episode highlighted. Live search, grouped by type.
+- **Player:** plays directly where the browser can, otherwise through HLS transcoding. Audio and subtitle choice (picture subtitles are burned in), quality, speed, full screen, picture-in-picture, preview thumbnails on the timeline, "Skip intro", next episode with countdown. Progress goes back to Jellyfin, so "Continue watching" is right on every device.
+- **Administration (for administrators):** an "Edit" menu on every detail page: identify, edit metadata, choose, upload or delete pictures, search, upload or delete subtitles, refresh metadata, delete the item. Plus "Scan library" and a link to Jellyfin's dashboard in the profile menu (you sign in there once with your Jellyfin account). Other users see none of this.
+- **Arrangement:** order and visibility of the home page areas, the navigation and the buttons and details on detail pages, by dragging or with the arrow keys. Administrators set a default for everybody; own arrangements take precedence.
+- **Own styling:** your own colors, fonts and CSS per theme from a mounted folder (see below).
+- **Input:** mouse, touch, keyboard and remote control. On TVs a TV mode with larger type and an adjustable overscan margin, in 1080p and 4K.
+- **Accessibility:** contrast according to WCAG AA, focus at least as clear as hover, reduced motion on request or by system setting. Every page of every theme is checked automatically with axe.
+- **Languages:** German and English.
+- **Operation:** a small Docker image for amd64 and arm64 that runs without root and read-only, with a strict Content Security Policy.
 
-## Betrieb mit Docker
+## Running with Docker
 
-Das Image gibt es für `linux/amd64` und `linux/arm64` (z. B. Raspberry Pi 4/5):
+The image is available for `linux/amd64` and `linux/arm64` (e.g. Raspberry Pi 4/5):
 
 ```bash
 docker run -d --name jellymorph -p 8080:8080 \
@@ -105,140 +105,140 @@ docker run -d --name jellymorph -p 8080:8080 \
   ghcr.io/lua-x/jellymorph:latest
 ```
 
-Danach ist Jellymorph unter `http://<rechner>:8080` erreichbar. Ein vollständiges Beispiel für Docker Compose liegt in [docker-compose.yml](docker-compose.yml).
+Jellymorph is then available at `http://<host>:8080`. A complete Docker Compose example is in [docker-compose.yml](docker-compose.yml).
 
-### Variablen
+### Variables
 
-| Variable                | Zweck                                                                                                                      | Standard     |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| `JELLYFIN_PROXY_TARGET` | Adresse deines Jellyfin-Servers. Jellymorph reicht ihn unter `/jellyfin` durch (empfohlen).                                | leer         |
-| `JELLYFIN_URL`          | Server-Adresse, die bei der Anmeldung vorbelegt ist. Der Browser verbindet sich direkt.                                    | leer         |
-| `LOCK_SERVER`           | `true`: Die Adresse aus `JELLYFIN_URL` ist fest und lässt sich in der App nicht ändern.                                    | `false`      |
-| `DEFAULT_THEME`         | Theme für Benutzer ohne eigene Wahl: `default` (Classic), `neon-grid`, `crimson`, `glass`, `horizon` oder `constellation`. | `default`    |
-| `APP_TITLE`             | Name im Browser-Tab und beim Installieren als App                                                                          | `Jellymorph` |
-| `DEMO_MODE`             | `true`: Demo mit erfundenen Daten, ganz ohne Jellyfin-Server                                                               | `false`      |
+| Variable                | Purpose                                                                                                                            | Default      |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| `JELLYFIN_PROXY_TARGET` | Address of your Jellyfin server. Jellymorph passes it through under `/jellyfin` (recommended).                                     | empty        |
+| `JELLYFIN_URL`          | Server address pre-filled at sign-in. The browser connects directly.                                                               | empty        |
+| `LOCK_SERVER`           | `true`: the address from `JELLYFIN_URL` is fixed and cannot be changed in the app.                                                 | `false`      |
+| `DEFAULT_THEME`         | Theme for users without a choice of their own: `default` (Classic), `neon-grid`, `crimson`, `glass`, `horizon` or `constellation`. | `default`    |
+| `APP_TITLE`             | Name in the browser tab and when installed as an app                                                                               | `Jellymorph` |
+| `DEMO_MODE`             | `true`: a demo with made-up data, without any Jellyfin server                                                                      | `false`      |
 
-Änderungen brauchen keinen neuen Build: Variable anpassen, Container neu starten. Ungültige Werte, etwa ein Tippfehler im Theme-Namen, stoppen den Container mit einer Meldung im Log (`docker logs jellymorph`), die die Variable nennt.
+Changes need no new build: adjust the variable, restart the container. Invalid values, such as a typo in the theme name, stop the container with a message in the log (`docker logs jellymorph`) that names the variable.
 
-### Mit oder ohne Proxy
+### With or without the proxy
 
-- **Mit `JELLYFIN_PROXY_TARGET` (empfohlen):** Jellyfin erscheint unter derselben Adresse wie Jellymorph. Es gibt keine CORS- oder Mixed-Content-Probleme, die Server-Auswahl entfällt, und der Browser darf ausschließlich mit Jellymorph selbst sprechen. Der Container startet auch, wenn Jellyfin noch nicht läuft, und findet einen neu gestarteten Jellyfin-Container von selbst wieder. In Kubernetes den vollständigen DNS-Namen angeben (z. B. `http://jellyfin.media.svc.cluster.local:8096`), weil nginx keine Suchdomänen kennt.
-- **Mit `JELLYFIN_URL`:** Der Browser verbindet sich direkt mit Jellyfin. Läuft Jellymorph über HTTPS, muss auch Jellyfin per HTTPS erreichbar sein. Ohne `LOCK_SERVER` können Benutzer weitere Server hinzufügen.
+- **With `JELLYFIN_PROXY_TARGET` (recommended):** Jellyfin appears under the same address as Jellymorph. There are no CORS or mixed-content problems, there is no server selection, and the browser may only talk to Jellymorph itself. The container also starts while Jellyfin is not running yet, and it finds a restarted Jellyfin container again on its own. In Kubernetes, give the full DNS name (e.g. `http://jellyfin.media.svc.cluster.local:8096`), because nginx does not know search domains.
+- **With `JELLYFIN_URL`:** the browser connects to Jellyfin directly. If Jellymorph runs on HTTPS, Jellyfin has to be reachable over HTTPS too. Without `LOCK_SERVER`, users can add further servers.
 
-### HTTPS, App-Installation und Sicherheit
+### HTTPS, installing as an app and security
 
-- Für HTTPS stellst du einen Reverse Proxy (z. B. Caddy, Traefik oder nginx) vor den Container. Erst mit HTTPS (oder auf `localhost`) lässt sich Jellymorph über das Browser-Menü als App installieren, und erst dann läuft der Demo-Modus auch auf anderen Geräten.
-- Jellymorph läuft als unprivilegierter Benutzer (UID 101) und braucht nur `/tmp` zum Schreiben, deshalb funktionieren `--read-only` und `--cap-drop ALL`. Der Container setzt eine strikte Content Security Policy und weitere Sicherheits-Header. Bilder dürfen von allen HTTPS-Adressen kommen, weil die Bildvorschläge der Metadaten-Anbieter (z. B. TMDB) direkt von deren Seiten laden.
-- Gesundheitsprüfung: `GET /healthz` antwortet mit `ok`. Das Image bringt einen passenden `HEALTHCHECK` mit.
-- Damit Jellyfin im Proxy-Betrieb die echten Client-Adressen sieht, kannst du die Adresse des Jellymorph-Containers in Jellyfin unter _Netzwerk → Bekannte Proxys_ eintragen.
+- For HTTPS, put a reverse proxy (e.g. Caddy, Traefik or nginx) in front of the container. Only with HTTPS (or on `localhost`) can Jellymorph be installed as an app from the browser menu, and only then does the demo mode run on other devices too.
+- Jellymorph runs as an unprivileged user (UID 101) and only writes to `/tmp`, which is why `--read-only` and `--cap-drop ALL` work. The container sets a strict Content Security Policy and further security headers. Pictures may come from any HTTPS address, because the picture suggestions of metadata providers (e.g. TMDB) load directly from their sites.
+- Health check: `GET /healthz` answers `ok`. The image comes with a matching `HEALTHCHECK`.
+- So that Jellyfin sees the real client addresses behind the proxy, you can add the address of the Jellymorph container in Jellyfin under _Networking → Known proxies_.
 
-### Image-Tags
+### Image tags
 
-| Tag            | Inhalt                                                                   |
-| -------------- | ------------------------------------------------------------------------ |
-| `latest`       | neueste stabile Version                                                  |
-| `1.2.3`, `1.2` | eine bestimmte Version bzw. die neueste Patch-Version                    |
-| `1`            | neueste Version mit derselben Hauptversion (ab 1.0)                      |
-| `edge`         | jeder Stand von `main` nach bestandener CI, nicht für den Alltag gedacht |
+| Tag            | Contents                                                       |
+| -------------- | -------------------------------------------------------------- |
+| `latest`       | newest stable version                                          |
+| `1.2.3`, `1.2` | a specific version, or the newest patch version                |
+| `1`            | newest version with the same major version (from 1.0)          |
+| `edge`         | every state of `main` after a passing CI, not for everyday use |
 
-## Ausprobieren ohne Server (Demo-Modus)
+## Trying it without a server (demo mode)
 
-Mit Docker:
+With Docker:
 
 ```bash
 docker run --rm -p 8080:8080 -e DEMO_MODE=true ghcr.io/lua-x/jellymorph:latest
 ```
 
-Oder aus dem Quellcode:
+Or from the source:
 
 ```bash
 npm install
 npm run dev
 ```
 
-Ohne `JELLYFIN_DEV_URL` startet die App mit einem eingebauten Mock-Server und erfundenen Beispieldaten. Das Passwort aller Demo-Profile lautet `demo`. Quick-Connect-Codes werden nach wenigen Sekunden automatisch bestätigt.
+Without `JELLYFIN_DEV_URL` the app starts with a built-in mock server and made-up sample data. The password of all demo profiles is `demo`. Quick Connect codes are approved automatically after a few seconds.
 
-Im Demo-Modus spielt jeder Titel denselben 60-Sekunden-Clip, mit Intro, Abspann, Kapiteln, Untertiteln und Vorschaubildern. Daran lassen sich alle Player-Funktionen ausprobieren: Direct Play, HLS, Spurwechsel, „Intro überspringen“ und die nächste Folge.
+In demo mode every title plays the same 60-second clip, with intro, credits, chapters, subtitles and preview thumbnails. It lets you try every player feature: direct play, HLS, switching tracks, "Skip intro" and the next episode.
 
-## Einstellungen und Bedienung
+## Settings and input
 
-Theme, Farbschema, Sprache, Bewegung und Trailer-Autoplay speichert Jellymorph pro Benutzer auf dem Jellyfin-Server. Sie gelten also auf allen Geräten. Ton- und Untertitelsprache, Untertitelmodus und „Nächste Folge automatisch“ stehen in deinem Jellyfin-Konto und gelten auch für die anderen Jellyfin-Apps. Streaming-Qualität, Bedienmodus und Bildrand bleiben auf dem jeweiligen Gerät.
+Jellymorph stores theme, color scheme, language, motion and trailer autoplay per user on the Jellyfin server, so they apply on every device. Audio and subtitle language, subtitle mode and "Play next episode automatically" live in your Jellyfin account and also apply to the other Jellyfin apps. Streaming quality, input mode and overscan stay on the device.
 
-Alles lässt sich mit Maus, Touch, Tastatur oder Fernbedienung bedienen: Pfeiltasten bewegen den Fokus, Enter wählt aus, Esc oder die Zurück-Taste gehen zurück. Auf Fernsehern schaltet Jellymorph automatisch in den TV-Modus mit größerer Schrift und einstellbarem Bildrand. In den Einstellungen lässt er sich auch fest einschalten.
+Everything works with mouse, touch, keyboard or remote control: the arrow keys move the focus, Enter selects, Esc or the back key goes back. On TVs Jellymorph switches to the TV mode with larger type and an adjustable overscan margin by itself. It can also be switched on permanently in the settings.
 
-## Eigene Gestaltung
+## Own styling
 
-### Anordnung
+### Arrangement
 
-Unter _Einstellungen → Anordnung_ legst du fest, welche Bereiche die Startseite zeigt (Titelbild, Bibliotheken, Weiterschauen, „Neu in …“ je Bibliothek, Favoriten, Sammlungen, Genres), welche Einträge die Navigation hat und welche Knöpfe und Angaben die Detailseiten zeigen, jeweils in deiner Reihenfolge. Zieh einen Eintrag am Griff an seinen Platz oder nimm die Pfeile (Tastatur, Fernbedienung); das Auge blendet ihn aus. Die Anordnung gilt auf allen deinen Geräten und in jedem Theme. Was du nicht anordnest, folgt der Vorgabe des Themes.
+In _Settings → Arrangement_ you choose which areas the home page shows (title picture, libraries, continue watching, "New in …" per library, favorites, collections, genres), which entries the navigation has and which buttons and details the detail pages show, each in your order. Drag an entry by its handle into place or use the arrows (keyboard, remote control); the eye hides it. The arrangement applies on all your devices and in every theme. Whatever you leave alone follows the theme.
 
-Administratoren können umschalten auf _Alle (Vorgabe)_. Die Vorgabe gilt für alle, die eine Liste nicht selbst angeordnet haben. Beim Speichern kopiert Jellymorph sie in die Jellyfin-Einstellungen jedes Benutzers; Benutzer, die später dazukommen, bekommen sie, sobald ein Administrator Jellymorph öffnet.
+Administrators can switch to _Everybody (default)_. The default applies to everybody who has not arranged a list themselves. When saved, Jellymorph copies it into the Jellyfin settings of every user; users added later receive it as soon as an administrator opens Jellymorph.
 
-### Eigene Farben, Schriften und CSS
+### Own colors, fonts and CSS
 
-Mappe einen Ordner nach `/custom` (schreibgeschützt genügt):
+Mount a folder to `/custom` (read-only is enough):
 
 ```yaml
 volumes:
   - ./custom:/custom:ro
 ```
 
-- `custom.css` gilt für alle Themes, `<theme>.css` nur für eines: `default.css` (Classic), `neon-grid.css`, `crimson.css`, `glass.css`, `horizon.css`, `constellation.css`.
-- Schriften und Bilder legst du daneben (z. B. `custom/fonts/`) und verweist relativ darauf.
-- Jellymorph liefert aus dem Ordner nur CSS, Schriften (woff2, woff, ttf, otf) und Bilder aus. Änderungen an vorhandenen Dateien wirken beim nächsten Laden der Seite, neue Dateien nach einem Neustart des Containers.
+- `custom.css` applies to every theme, `<theme>.css` to one: `default.css` (Classic), `neon-grid.css`, `crimson.css`, `glass.css`, `horizon.css`, `constellation.css`.
+- Put fonts and pictures next to them (e.g. `custom/fonts/`) and refer to them relatively.
+- Jellymorph serves only CSS, fonts (woff2, woff, ttf, otf) and pictures from the folder. Changes to existing files apply on the next page load, new files after a restart of the container.
 
-Am einfachsten überschreibst du die Design-Tokens, also die CSS-Variablen der Themes (Liste in [docs/themes.md](docs/themes.md#4-tokens-und-scoping)). Stabil sind außerdem die Attribute `data-theme`, `data-color-scheme` und `data-device` am `<html>`-Element; die Klassennamen der Bausteine werden beim Bauen erzeugt und ändern sich mit jeder Version.
+The easiest way is to override the design tokens, the CSS variables of the themes (list in [docs/themes.md](docs/themes.md#4-tokens-and-scoping)). The attributes `data-theme`, `data-color-scheme` and `data-device` on the `<html>` element are stable too; the class names of the components are generated at build time and change with every version.
 
 ```css
-/* custom/custom.css: eine eigene Schrift für alle Themes */
+/* custom/custom.css: an own font for every theme */
 @font-face {
-  font-family: 'Meine Schrift';
-  src: url('fonts/meine-schrift.woff2') format('woff2');
+  font-family: 'My Font';
+  src: url('fonts/my-font.woff2') format('woff2');
 }
 
 [data-theme] {
-  --font-body: 'Meine Schrift', system-ui, sans-serif;
+  --font-body: 'My Font', system-ui, sans-serif;
 }
 
-/* custom/crimson.css: ein anderer Akzent für Crimson */
+/* custom/crimson.css: another accent for Crimson */
 [data-theme='crimson'] {
   --color-accent: #e0a100;
 }
 ```
 
-Achte bei eigenen Farben auf genug Kontrast; die Prüfungen der Themes gelten nur für ihre eigenen Werte.
+Keep an eye on contrast with your own colors; the checks of the themes only cover their own values.
 
-## Entwicklung mit einem echten Jellyfin-Server
+## Development with a real Jellyfin server
 
-1. `.env.example` nach `.env.local` kopieren. Die Datei wird nicht eingecheckt.
-2. `JELLYFIN_DEV_URL` auf deinen Server setzen, z. B. `http://192.168.1.10:8096`.
-3. `npm run dev` starten. Der Dev-Server leitet `/jellyfin` an deinen Server weiter, so entstehen keine CORS-Probleme.
+1. Copy `.env.example` to `.env.local`. The file is not checked in.
+2. Set `JELLYFIN_DEV_URL` to your server, e.g. `http://192.168.1.10:8096`.
+3. Run `npm run dev`. The dev server forwards `/jellyfin` to your server, so there are no CORS problems.
 
-Unterstützt wird Jellyfin ab Version 10.10, auch 12.x.
+Jellyfin 10.10 and later is supported, including 12.x.
 
-## Befehle
+## Commands
 
-| Befehl                               | Zweck                                                              |
-| ------------------------------------ | ------------------------------------------------------------------ |
-| `npm run dev`                        | Entwicklungsserver                                                 |
-| `npm run build`                      | Produktions-Build nach `dist/`                                     |
-| `npm run lint` / `npm run typecheck` | ESLint / TypeScript                                                |
-| `npm test`                           | Unit- und Integrationstests (Vitest, MSW)                          |
-| `npm run test:e2e`                   | End-to-End-Tests gegen den Build im Demo-Modus (Playwright)        |
-| `npm run shots`                      | Prüf-Screenshots in vier Auflösungen nach `artifacts/screenshots/` |
-| `npm run previews`                   | Vorschaubilder der Themes für die Theme-Auswahl neu erzeugen       |
-| `npm run readme-shots`               | Bilder für dieses README nach `docs/screenshots/`                  |
-| `npm run check:bundle`               | Größenbudget des Basis-Bundles (250 KB gzip) prüfen                |
-| `node scripts/record-demo-clip.ts`   | Demo-Clip neu aufnehmen (dauert eine Minute)                       |
-| `node scripts/render-icons.ts`       | App-Icons aus `public/favicon.svg` neu erzeugen                    |
-| `docker build -t jellymorph .`       | Image lokal bauen                                                  |
+| Command                              | Purpose                                                              |
+| ------------------------------------ | -------------------------------------------------------------------- |
+| `npm run dev`                        | Development server                                                   |
+| `npm run build`                      | Production build into `dist/`                                        |
+| `npm run lint` / `npm run typecheck` | ESLint / TypeScript                                                  |
+| `npm test`                           | Unit and integration tests (Vitest, MSW)                             |
+| `npm run test:e2e`                   | End-to-end tests against the build in demo mode (Playwright)         |
+| `npm run shots`                      | Review screenshots in four resolutions into `artifacts/screenshots/` |
+| `npm run previews`                   | Render the theme preview pictures for the theme picker again         |
+| `npm run readme-shots`               | Pictures for this README into `docs/screenshots/`                    |
+| `npm run check:bundle`               | Check the size budget of the base bundle (250 KB gzip)               |
+| `node scripts/record-demo-clip.ts`   | Record the demo clip again (takes a minute)                          |
+| `node scripts/render-icons.ts`       | Render the app icons from `public/favicon.svg` again                 |
+| `docker build -t jellymorph .`       | Build the image locally                                              |
 
-Die Architektur beschreibt [docs/architecture.md](docs/architecture.md), wie man ein Theme baut [docs/themes.md](docs/themes.md).
+[docs/architecture.md](docs/architecture.md) describes the architecture, [docs/themes.md](docs/themes.md) how to build a theme.
 
-## Hinweise
+## Notes
 
-Die Themes orientieren sich an gängigen Streaming-Oberflächen. Jellymorph steht in keiner Verbindung zu den Anbietern dieser Dienste und beansprucht keine Markenrechte. Jellymorph ist außerdem ein inoffizieller Client und kein Projekt des Jellyfin-Teams.
+The themes take their cues from common streaming interfaces. Jellymorph is not affiliated with the providers of these services and claims no trademark rights. Jellymorph is also an unofficial client and not a project of the Jellyfin team.
 
-## Lizenz
+## License
 
 [AGPL-3.0](LICENSE)

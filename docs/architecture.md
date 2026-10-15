@@ -1,300 +1,300 @@
-# Architektur
+# Architecture
 
-> Stand: Phase 0 (Plan), 2026-10-07. Die Anforderungen stehen verbindlich in `CLAUDE.md`. Dieses Dokument beschreibt, **wie** sie umgesetzt werden.
-> Ergänzungen und Abweichungen sind mit **[Entscheidung]** markiert. Punkte, die eine Antwort brauchen, sind mit **[Frage n]** markiert und in §19 gesammelt.
-> Mit „verifiziert“ markierte Aussagen wurden gegen die installierten Pakete geprüft (SDK-Typen, npm-Metadaten). Mit „in Phase n prüfen“ markierte Aussagen beruhen auf Server-Verhalten, das nur ein echter Jellyfin-Server bestätigen kann.
+> As of: phase 0 (plan), 2026-10-07. The requirements are binding in `CLAUDE.md`. This document describes **how** they are implemented.
+> Additions and deviations are marked with **[Decision]**. Points that need an answer are marked with **[Question n]** and collected in §19.
+> Statements marked "verified" were checked against the installed packages (SDK types, npm metadata). Statements marked "check in phase n" rely on server behavior that only a real Jellyfin server can confirm.
 
-## Inhalt
+## Contents
 
-1. Ausgangslage und geprüfte Fakten
-2. Abhängigkeiten
-3. Schichten, Ordner, Importregeln
-4. Start und Laufzeit-Konfiguration
-5. API-Schicht und Anmeldung
-6. Datenschicht (headless Hooks)
-7. Theme-System
-8. Navigation und Eingabe
+1. Starting point and verified facts
+2. Dependencies
+3. Layers, folders, import rules
+4. Startup and runtime configuration
+5. API layer and sign-in
+6. Data layer (headless hooks)
+7. Theme system
+8. Navigation and input
 9. Player
-10. Einstellungen und Persistenz
-11. Internationalisierung
-12. Barrierefreiheit
-13. Performance und Budgets
-14. Sicherheit
-15. Docker und Betrieb (Ausblick Phase 5)
-16. Tests und CI
-17. Phasenplan im Detail
-18. Risiken
-19. Offene Fragen
+10. Settings and persistence
+11. Internationalization
+12. Accessibility
+13. Performance and budgets
+14. Security
+15. Docker and operation (outlook to phase 5)
+16. Tests and CI
+17. Phase plan in detail
+18. Risks
+19. Open questions
 
 ---
 
-## 1. Ausgangslage und geprüfte Fakten
+## 1. Starting point and verified facts
 
-### 1.1 Jellyfin-Server
+### 1.1 Jellyfin server
 
-| Version | Status                                                                     | Relevanz                                |
-| ------- | -------------------------------------------------------------------------- | --------------------------------------- |
-| 10.10.x | Mindestversion laut Spezifikation und `MINIMUM_VERSION` des SDK            | MediaSegments-API ist ab hier verfügbar |
-| 10.11.x | verbreitet                                                                 | –                                       |
-| 12.0.x  | seit 07.09.2026 aktuell, neues Versionsschema („10.12“ heißt jetzt „12.0“) | siehe unten                             |
+| Version | Status                                                                      | Relevance                                |
+| ------- | --------------------------------------------------------------------------- | ---------------------------------------- |
+| 10.10.x | Minimum version according to the spec and the SDK's `MINIMUM_VERSION`       | MediaSegments API is available from here |
+| 10.11.x | widespread                                                                  | –                                        |
+| 12.0.x  | current since 2026-09-07, new version scheme ("10.12" is now called "12.0") | see below                                |
 
-Was Jellyfin 12.0 für Clients ändert (aus den Release Notes):
+What Jellyfin 12.0 changes for clients (from the release notes):
 
-- Veraltete Authentifizierungswege sind standardmäßig abgeschaltet. Wir nutzen ausschließlich den Header `Authorization: MediaBrowser …` (SDK-Standard) und für Medien-URLs den Query-Parameter `ApiKey` (SDK-Konstante `AUTHORIZATION_PARAMETER`, verifiziert).
-- `/emby/`- und `/mediabrowser/`-Präfixe entfernt: Wir verwenden sie nicht.
-- `GET /QuickConnect/Initiate` entfernt: Das SDK nutzt `POST`, sowohl in 1.0.0 als auch in 0.11.0 (verifiziert), funktioniert also auf 10.10 bis 12.0.
-- `GetItems` liefert bei `includeItemTypes` zusammen mit Filtern unter Umständen andere Ergebnismengen als 10.11. Bibliotheksfilter testen wir daher gegen 10.11 **und** 12.0 (Phase 2, siehe [Frage 2]).
-- Versionsvergleiche laufen ausschließlich über `compareVersions()` aus dem SDK, nie über eigenes String-Parsing.
+- Deprecated authentication methods are switched off by default. We only use the `Authorization: MediaBrowser …` header (SDK default) and, for media URLs, the `ApiKey` query parameter (SDK constant `AUTHORIZATION_PARAMETER`, verified).
+- `/emby/` and `/mediabrowser/` prefixes removed: we do not use them.
+- `GET /QuickConnect/Initiate` removed: the SDK uses `POST`, in 1.0.0 as well as in 0.11.0 (verified), so it works on 10.10 through 12.0.
+- With `includeItemTypes` combined with filters, `GetItems` may return different result sets than 10.11. We therefore test library filters against 10.11 **and** 12.0 (phase 2, see [Question 2]).
+- Version comparisons go exclusively through the SDK's `compareVersions()`, never through our own string parsing.
 
-### 1.2 @jellyfin/sdk 1.0.0 (veröffentlicht 11.09.2026)
+### 1.2 @jellyfin/sdk 1.0.0 (published 2026-09-11)
 
-- Generiert aus der OpenAPI von Jellyfin 12.0. Viele Klassen wurden umbenannt oder verschoben. Für uns relevant (verifiziert):
+- Generated from the OpenAPI of Jellyfin 12.0. Many classes were renamed or moved. Relevant for us (verified):
 
-  | Zweck                                          | SDK 1.0.0                                                                                                                                                   |
+  | Purpose                                        | SDK 1.0.0                                                                                                                                                   |
   | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-  | Items, Resume, Latest, Similar, lokale Trailer | `getLibraryApi` → `getItems`, `getItem`, `getResumeItems`, `getLatestMedia`, `getSimilarItems`, `getLocalTrailers`                                          |
-  | Favorit, gesehen                               | `getUserDataApi` → `markFavoriteItem`, `unmarkFavoriteItem`, `markPlayedItem`, `markUnplayedItem`                                                           |
-  | Serien                                         | `getShowApi` → `getSeasons`, `getEpisodes` (mit `startItemId`/`adjacentTo`), `getNextUp`                                                                    |
-  | Bibliotheken                                   | `getUserViewApi` → `getUserViews`                                                                                                                           |
-  | Login, Quick Connect                           | `getAuthenticationApi` → `authenticateUserByName`, `getQuickConnectEnabled`, `initiateQuickConnect`, `getQuickConnectState`, `authenticateWithQuickConnect` |
-  | Benutzer                                       | `getUserApi` → `getCurrentUser`, `getPublicUsers`, `updateUserConfiguration`                                                                                |
-  | Wiedergabe                                     | `getMediaInfoApi` → `getPostedPlaybackInfo`, `getBitrateTestBytes`                                                                                          |
+  | Items, resume, latest, similar, local trailers | `getLibraryApi` → `getItems`, `getItem`, `getResumeItems`, `getLatestMedia`, `getSimilarItems`, `getLocalTrailers`                                          |
+  | Favorite, played                               | `getUserDataApi` → `markFavoriteItem`, `unmarkFavoriteItem`, `markPlayedItem`, `markUnplayedItem`                                                           |
+  | Series                                         | `getShowApi` → `getSeasons`, `getEpisodes` (with `startItemId`/`adjacentTo`), `getNextUp`                                                                   |
+  | Libraries                                      | `getUserViewApi` → `getUserViews`                                                                                                                           |
+  | Sign-in, Quick Connect                         | `getAuthenticationApi` → `authenticateUserByName`, `getQuickConnectEnabled`, `initiateQuickConnect`, `getQuickConnectState`, `authenticateWithQuickConnect` |
+  | Users                                          | `getUserApi` → `getCurrentUser`, `getPublicUsers`, `updateUserConfiguration`                                                                                |
+  | Playback                                       | `getMediaInfoApi` → `getPostedPlaybackInfo`, `getBitrateTestBytes`                                                                                          |
   | Reporting                                      | `getSessionApi` → `reportPlaybackStart`, `reportPlaybackProgress`, `reportPlaybackStopped`, `pingPlaybackSession`, `postFullCapabilities`                   |
-  | Segmente, Trickplay                            | `getMediaSegmentApi` → `getItemSegments`; `getTrickPlayApi`                                                                                                 |
-  | Einstellungen                                  | `getDisplayPreferenceApi` → `getDisplayPreferences`, `updateDisplayPreferences`                                                                             |
-  | Suche, Filter, Genres                          | `getLibraryApi.getItems({ searchTerm })`, `getFilterApi.getQueryFilters`, `getGenreApi.getGenres`                                                           |
-  | Server-Erkennung                               | `jellyfin.discovery.getRecommendedServerCandidates()` / `findBestServer()`                                                                                  |
-  | Bild-URLs                                      | `getImageApi(api)` liefert `ImageUrlsApi` mit `getItemImageUrl()`, `getItemImageUrlById()`, `getUserImageUrl()`                                             |
-  | Live-Updates                                   | `api.subscribe()` über WebSocket (`UserDataChanged`, `LibraryChanged`, `UserUpdated` …)                                                                     |
+  | Segments, trickplay                            | `getMediaSegmentApi` → `getItemSegments`; `getTrickPlayApi`                                                                                                 |
+  | Settings                                       | `getDisplayPreferenceApi` → `getDisplayPreferences`, `updateDisplayPreferences`                                                                             |
+  | Search, filters, genres                        | `getLibraryApi.getItems({ searchTerm })`, `getFilterApi.getQueryFilters`, `getGenreApi.getGenres`                                                           |
+  | Server discovery                               | `jellyfin.discovery.getRecommendedServerCandidates()` / `findBestServer()`                                                                                  |
+  | Image URLs                                     | `getImageApi(api)` returns `ImageUrlsApi` with `getItemImageUrl()`, `getItemImageUrlById()`, `getUserImageUrl()`                                            |
+  | Live updates                                   | `api.subscribe()` over WebSocket (`UserDataChanged`, `LibraryChanged`, `UserUpdated` …)                                                                     |
 
-- **Kompatibilität mit 10.10, verifiziert:** Ich habe alle Endpunkt-Pfade aus dem generierten Client von 1.0.0 extrahiert und mit SDK 0.11.0 (generiert für 10.10) verglichen. Nur in 1.0.0 vorhanden: `/Backup*`, `/Items/{id}/Collections`, `/SyncPlay/{id}`, `/System/Configuration/Branding`, `/System/Info/Storage`. Keinen davon brauchen wir. Alle Pfade, die der Client nutzt, sind in 10.10 identisch.
-- **Fehlt in 1.0.0:** die dynamischen HLS-Endpunkte (`master.m3u8` …) und `DELETE /Videos/ActiveEncodings`. HLS brauchen wir nicht direkt, denn die URL kommt fertig als `MediaSourceInfo.TranscodingUrl` vom Server. `ActiveEncodings` brauchen wir beim Spurwechsel (§9.7) und rufen es deshalb über die SDK-Axios-Instanz auf. **[Entscheidung]**, dokumentiert in CLAUDE.md §12.
-- Der `Api`-Konstruktor akzeptiert eine eigene Axios-Instanz. Jede Methode nimmt Axios-Optionen an, also auch `signal` (Abbruch durch TanStack Query) und `fetchOptions: { keepalive: true }` (Stop-Meldung beim Schließen des Tabs; axios 1.20 unterstützt `fetchOptions`, verifiziert).
-- `getBrowserDeviceProfile()` erzeugt nur Untertitelprofile. Den DeviceProfile-Generator schreiben wir selbst (§9.3).
-- **Erkenntnisse aus Phase 1:**
-  - `getImageApi(api).getUserImageUrl()` baut `/Users/{id}/Images/Primary`. Diesen Pfad gibt es weder in der 10.10- noch in der 12.0-Spezifikation; beide liefern `/UserImage?userId=…&tag=…`.
-  - Die `ImageUrlsApi`-Helfer ziehen die komplette generierte `ImageApi` ins Bundle (~48 KB minifiziert). Bild-URLs entstehen deshalb in `api/urls.ts` über `api.getUri()`.
-  - `UserDto.HasPassword` und `HasConfiguredPassword` sind in 12.0 ohne Ersatz als veraltet markiert, werden aber von 10.10 bis 12.0 geliefert. Wir lesen `HasPassword`, damit wir keine Anmeldung mit leerem Passwort probieren müssen; ein solcher Versuch zählt zur Kontosperre.
-  - `api.logout()` ist veraltet. Wir nutzen stattdessen `getSessionApi(api).reportSessionEnded()`.
-- `axios` ist Peer-Dependency (`^1.12`) und damit zwingend.
+- **Compatibility with 10.10, verified:** I extracted all endpoint paths from the generated client of 1.0.0 and compared them with SDK 0.11.0 (generated for 10.10). Only present in 1.0.0: `/Backup*`, `/Items/{id}/Collections`, `/SyncPlay/{id}`, `/System/Configuration/Branding`, `/System/Info/Storage`. We need none of them. All paths the client uses are identical in 10.10.
+- **Missing in 1.0.0:** the dynamic HLS endpoints (`master.m3u8` …) and `DELETE /Videos/ActiveEncodings`. We do not need HLS directly, because the URL comes ready-made from the server as `MediaSourceInfo.TranscodingUrl`. We need `ActiveEncodings` when switching tracks (§9.7) and therefore call it through the SDK's Axios instance. **[Decision]**, documented in CLAUDE.md §12.
+- The `Api` constructor accepts its own Axios instance. Every method takes Axios options, so also `signal` (cancellation by TanStack Query) and `fetchOptions: { keepalive: true }` (stop report when the tab closes; axios 1.20 supports `fetchOptions`, verified).
+- `getBrowserDeviceProfile()` only creates subtitle profiles. We write the DeviceProfile generator ourselves (§9.3).
+- **Findings from phase 1:**
+  - `getImageApi(api).getUserImageUrl()` builds `/Users/{id}/Images/Primary`. This path exists in neither the 10.10 nor the 12.0 specification; both provide `/UserImage?userId=…&tag=…`.
+  - The `ImageUrlsApi` helpers pull the complete generated `ImageApi` into the bundle (~48 KB minified). Image URLs are therefore built in `api/urls.ts` through `api.getUri()`.
+  - `UserDto.HasPassword` and `HasConfiguredPassword` are marked deprecated in 12.0 without a replacement, but are returned from 10.10 through 12.0. We read `HasPassword` so we never have to try a sign-in with an empty password; such an attempt counts towards the account lockout.
+  - `api.logout()` is deprecated. We use `getSessionApi(api).reportSessionEnded()` instead.
+- `axios` is a peer dependency (`^1.12`) and therefore mandatory.
 
-### 1.3 Werkzeuge (npm-Stand 07.10.2026)
+### 1.3 Tools (npm as of 2026-10-07)
 
-| Paket             | Version       | Anmerkung                                                                                                                                |
-| ----------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Node              | 24.19 (lokal) | CI ebenfalls Node 24                                                                                                                     |
-| react / react-dom | 19.3.0        |                                                                                                                                          |
-| vite              | 8.3.3         |                                                                                                                                          |
-| typescript        | **~6.0**      | 7.0.2 existiert, aber typescript-eslint 8.71 verlangt `<6.1.0` (verifiziert). **[Entscheidung]**                                         |
-| eslint            | 10.x          | `eslint-plugin-jsx-a11y` unterstützt ESLint 10 nicht; im Projekt Crystal hat `eslint-plugin-jsx-a11y-x` funktioniert. In Phase 1 prüfen. |
-| vitest            | 5.0           |                                                                                                                                          |
-| msw               | 3.0           | Node ≥ 22.12                                                                                                                             |
-| @playwright/test  | 1.63          |                                                                                                                                          |
+| Package           | Version       | Note                                                                                                                             |
+| ----------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Node              | 24.19 (local) | CI also Node 24                                                                                                                  |
+| react / react-dom | 19.3.0        |                                                                                                                                  |
+| vite              | 8.3.3         |                                                                                                                                  |
+| typescript        | **~6.0**      | 7.0.2 exists, but typescript-eslint 8.71 requires `<6.1.0` (verified). **[Decision]**                                            |
+| eslint            | 10.x          | `eslint-plugin-jsx-a11y` does not support ESLint 10; in the Crystal project `eslint-plugin-jsx-a11y-x` worked. Check in phase 1. |
+| vitest            | 5.0           |                                                                                                                                  |
+| msw               | 3.0           | Node ≥ 22.12                                                                                                                     |
+| @playwright/test  | 1.63          |                                                                                                                                  |
 
-### 1.4 Browser-Ziele **[Entscheidung, Frage 3]**
+### 1.4 Browser targets **[Decision, Question 3]**
 
-Chrome/Edge ≥ 111, Firefox ≥ 128 (ESR), Safari/iOS ≥ 16.4. Damit stehen Container Queries, `:has()`, `color-mix()`, `inert`, `dvh` und `aspect-ratio` ohne Polyfills zur Verfügung. View Transitions setzen wir nur als progressive Verbesserung ein. Fernseher werden über ihren Browser unterstützt, wenn dieser die Basis erfüllt (aktuelle Android-/Google-TV- und Fire-TV-Browser, neuere webOS-/Tizen-Generationen). Ältere TV-Engines (Chromium < 111) werden nicht per Polyfill unterstützt.
-
----
-
-## 2. Abhängigkeiten
-
-### 2.1 Laufzeit (laut Spezifikation)
-
-| Paket                                          | Zweck           | Begründung                                                                                                                       | Geladen                   |
-| ---------------------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| `react`, `react-dom` 19.3                      | UI              | Spezifikation                                                                                                                    | Basis                     |
-| `react-router` 8.4                             | Routing         | Data Router mit `lazy`-Routen, Modal-Routen über `state.backgroundLocation`                                                      | Basis                     |
-| `@jellyfin/sdk` 1.0.0 + `axios` 1.20           | API             | Spezifikation; axios ist Peer-Dependency. Importe über Unterpfade (`@jellyfin/sdk/lib/utils/api/...`), damit Tree-Shaking greift | Basis                     |
-| `@tanstack/react-query` 5.104                  | Server-State    | Caching, Abbruch, Hintergrund-Refresh, optimistische Updates                                                                     | Basis                     |
-| `zustand` 5                                    | App-State       | Session, Einstellungen, Player-Zustand; ~1 KB                                                                                    | Basis                     |
-| `@tanstack/react-virtual` 3.14                 | Virtualisierung | Bibliotheksraster                                                                                                                | Lazy (Bibliotheksroute)   |
-| `hls.js` 1.7                                   | HLS             | Transcoding-Wiedergabe außerhalb von Safari                                                                                      | Lazy (Player-Chunk)       |
-| `motion` 14                                    | Animation       | Nur über `LazyMotion` + `m.*`, Features asynchron nachladen. Noch nicht installiert, kommt mit dem ersten Theme, das es braucht  | Basis (klein) + Lazy      |
-| ~~`@noriginmedia/norigin-spatial-navigation`~~ | Fernbedienung   | In Phase 4 durch eine eigene DOM-basierte Navigation ersetzt (§8), keine Abhängigkeit                                            | –                         |
-| `i18next` 26 + `react-i18next` 17              | i18n            | Spezifikation; `react-i18next` ist die zugehörige React-Bindung                                                                  | Basis; Sprachdateien Lazy |
-| `@fontsource/*`                                | Schriften       | Spezifikation; Import im jeweiligen Theme-Einstieg                                                                               | Lazy (Theme-Chunk)        |
-
-### 2.2 Zusätzlich vorgeschlagen **[Frage 4]**
-
-| Paket                                                                                                                                            | Art                  | Warum                                                                                                                                            |
-| ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `blurhash` 2.0                                                                                                                                   | Laufzeit, ~1 KB gzip | BlurHash-Platzhalter sind Pflicht. Die Referenzimplementierung ist kleiner als jeder eigene Nachbau und getestet. Encoder nur im Fixture-Skript. |
-| `@testing-library/user-event`, `@testing-library/jest-dom`, `jsdom`                                                                              | Dev                  | Übliches Zubehör zu React Testing Library                                                                                                        |
-| `@axe-core/playwright`                                                                                                                           | Dev                  | Automatische Barrierefreiheitsprüfung in E2E (WCAG AA ist Pflicht)                                                                               |
-| `typescript-eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh`, `eslint-plugin-jsx-a11y-x`, `eslint-config-prettier`, `globals` | Dev                  | ESLint-Grundausstattung für React + TS + a11y                                                                                                    |
-| `@vitejs/plugin-react` 6                                                                                                                         | Dev                  | Vite-Integration                                                                                                                                 |
-
-### 2.3 Bewusst **nicht** verwendet
-
-UI-Komponentenbibliotheken, CSS-in-JS, Tailwind, Datums-Bibliotheken (`Intl` reicht), `vite-plugin-pwa`/Workbox (Manifest und Icons sind von Hand schneller erstellt als konfiguriert; einen Service Worker gibt es nicht, §15.1), JASSUB/libass (ASS-Rendering im Browser, mehrere MB WASM, siehe [Frage 9]), React Compiler (später möglich, aktuell kein Bedarf).
+Chrome/Edge ≥ 111, Firefox ≥ 128 (ESR), Safari/iOS ≥ 16.4. That makes container queries, `:has()`, `color-mix()`, `inert`, `dvh` and `aspect-ratio` available without polyfills. View transitions are only used as a progressive enhancement. TVs are supported through their browser if it meets the baseline (current Android/Google TV and Fire TV browsers, newer webOS/Tizen generations). Older TV engines (Chromium < 111) are not supported through polyfills.
 
 ---
 
-## 3. Schichten, Ordner, Importregeln
+## 2. Dependencies
 
-### 3.1 Schichten
+### 2.1 Runtime (according to the spec)
+
+| Package                                        | Purpose        | Reasoning                                                                                                                      | Loaded                    |
+| ---------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------- |
+| `react`, `react-dom` 19.3                      | UI             | Spec                                                                                                                           | Base                      |
+| `react-router` 8.4                             | Routing        | Data router with `lazy` routes, modal routes through `state.backgroundLocation`                                                | Base                      |
+| `@jellyfin/sdk` 1.0.0 + `axios` 1.20           | API            | Spec; axios is a peer dependency. Imports through subpaths (`@jellyfin/sdk/lib/utils/api/...`) so tree shaking works           | Base                      |
+| `@tanstack/react-query` 5.104                  | Server state   | Caching, cancellation, background refresh, optimistic updates                                                                  | Base                      |
+| `zustand` 5                                    | App state      | Session, settings, player state; ~1 KB                                                                                         | Base                      |
+| `@tanstack/react-virtual` 3.14                 | Virtualization | Library grid                                                                                                                   | Lazy (library route)      |
+| `hls.js` 1.7                                   | HLS            | Transcoded playback outside Safari                                                                                             | Lazy (player chunk)       |
+| `motion` 14                                    | Animation      | Only through `LazyMotion` + `m.*`, features loaded asynchronously. Not installed yet, comes with the first theme that needs it | Base (small) + lazy       |
+| ~~`@noriginmedia/norigin-spatial-navigation`~~ | Remote control | Replaced in phase 4 by our own DOM-based navigation (§8), no dependency                                                        | –                         |
+| `i18next` 26 + `react-i18next` 17              | i18n           | Spec; `react-i18next` is the matching React binding                                                                            | Base; language files lazy |
+| `@fontsource/*`                                | Fonts          | Spec; imported in the entry point of each theme                                                                                | Lazy (theme chunk)        |
+
+### 2.2 Additionally proposed **[Question 4]**
+
+| Package                                                                                                                                          | Kind                | Why                                                                                                                                                       |
+| ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `blurhash` 2.0                                                                                                                                   | Runtime, ~1 KB gzip | BlurHash placeholders are mandatory. The reference implementation is smaller than any rebuild of our own, and tested. Encoder only in the fixture script. |
+| `@testing-library/user-event`, `@testing-library/jest-dom`, `jsdom`                                                                              | Dev                 | The usual companions of React Testing Library                                                                                                             |
+| `@axe-core/playwright`                                                                                                                           | Dev                 | Automatic accessibility checks in E2E (WCAG AA is mandatory)                                                                                              |
+| `typescript-eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh`, `eslint-plugin-jsx-a11y-x`, `eslint-config-prettier`, `globals` | Dev                 | Basic ESLint setup for React + TS + a11y                                                                                                                  |
+| `@vitejs/plugin-react` 6                                                                                                                         | Dev                 | Vite integration                                                                                                                                          |
+
+### 2.3 Deliberately **not** used
+
+UI component libraries, CSS-in-JS, Tailwind, date libraries (`Intl` is enough), `vite-plugin-pwa`/Workbox (manifest and icons are made by hand faster than configured; there is no service worker, §15.1), JASSUB/libass (ASS rendering in the browser, several MB of WASM, see [Question 9]), React Compiler (possible later, no need at the moment).
+
+---
+
+## 3. Layers, folders, import rules
+
+### 3.1 Layers
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
-│ themes/<id>/        Darstellung + Bewegung (CSS Modules, Tokens, m.*)  │
-│   ▲ Props (Domänentypen, QueryResult, Modelle)  ▲ gemeinsame Hooks     │
+│ themes/<id>/        presentation + motion (CSS Modules, tokens, m.*)   │
+│   ▲ props (domain types, QueryResult, models)   ▲ shared hooks         │
 ├───┴───────────────────────────────────────────────┴────────────────────┤
-│ app/routes/         Container: rufen Hooks, bauen Props, <ThemeSlot>   │
+│ app/routes/         containers: call hooks, build props, <ThemeSlot>   │
 ├────────────────────────────────────────────────────────────────────────┤
-│ hooks/  player/  navigation/  settings/  ui/ (theme-neutrale Bausteine)│
+│ hooks/  player/  navigation/  settings/  ui/ (theme-neutral blocks)    │
 ├────────────────────────────────────────────────────────────────────────┤
-│ domain/             Typen + Mapper (BaseItemDto → MediaItem …)         │
+│ domain/             types + mappers (BaseItemDto → MediaItem …)        │
 ├────────────────────────────────────────────────────────────────────────┤
-│ api/                SDK-Instanz, Session, Auth, URLs, Fehlerabbildung  │
+│ api/                SDK instance, session, auth, URLs, error mapping   │
 ├────────────────────────────────────────────────────────────────────────┤
-│ config/             window.__APP_CONFIG__ validiert                    │
+│ config/             window.__APP_CONFIG__ validated                    │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
-### 3.2 Ordnerstruktur (verfeinert)
+### 3.2 Folder structure (refined)
 
-Gegenüber CLAUDE.md §4 kommen `domain/`, `ui/` und `app/routes/` dazu. **[Entscheidung]**
+Compared with CLAUDE.md §4, `domain/`, `ui/` and `app/routes/` are added. **[Decision]**
 
 ```
 src/
   app/
-    main.tsx               # Einstieg: Config → (Demo) → Provider → Router
+    main.tsx               # entry: config → (demo) → providers → router
     providers/             # QueryClient, I18n, Theme, Focus, MotionConfig
-    router.tsx             # Routen inkl. Modal-Routen, lazy
-    routes/                # Container je Seite (Home, Library, Item, Series, Search, …)
-  config/                  # AppConfig-Typ, Validierung, Defaults
+    router.tsx             # routes incl. modal routes, lazy
+    routes/                # container per page (Home, Library, Item, Series, Search, …)
+  config/                  # AppConfig type, validation, defaults
   api/
-    client.ts              # Jellyfin- und Api-Instanz, Axios-Interceptors
-    device.ts              # Device-ID und -Name, ClientInfo
-    servers.ts             # Server speichern, prüfen (Discovery)
-    session.ts             # Token-Speicher, Login, Logout, 401-Handling
-    urls.ts                # Bild-, Stream-, Untertitel- und Trickplay-URLs
+    client.ts              # Jellyfin and Api instance, Axios interceptors
+    device.ts              # device ID and name, ClientInfo
+    servers.ts             # store and check servers (discovery)
+    session.ts             # token storage, sign-in, sign-out, 401 handling
+    urls.ts                # image, stream, subtitle and trickplay URLs
     errors.ts              # AxiosError → AppError
   domain/
     types.ts               # MediaItem, ItemDetail, Episode, Season, Library, Person, …
-    map.ts                 # BaseItemDto → Domäne (rein, getestet)
-    query-result.ts        # QueryResult<T> + Adapter von TanStack Query
-  hooks/                   # headless, siehe §6
+    map.ts                 # BaseItemDto → domain (pure, tested)
+    query-result.ts        # QueryResult<T> + adapter from TanStack Query
+  hooks/                   # headless, see §6
   player/
-    capabilities.ts        # Browser-Fähigkeiten erkennen (async, gecacht)
-    device-profile.ts      # Fähigkeiten → DeviceProfile (rein, getestet)
-    playback-info.ts       # PlaybackInfo anfordern, Quelle wählen, URLs bauen
-    controller.ts          # Zustandsautomat einer Wiedergabe
-    engines/native.ts      # <video src> (Direct Play, Safari-HLS)
-    engines/hlsjs.ts       # hls.js (dynamischer Import)
-    reporting.ts           # Start/Progress/Pause/Stop/Ping
-    segments.ts            # MediaSegments → aktive Segmente
-    trickplay.ts           # Kachel/Offset für Zeitpunkt (rein, getestet)
-    subtitles.ts           # VTT laden, <track> verwalten
+    capabilities.ts        # detect browser capabilities (async, cached)
+    device-profile.ts      # capabilities → DeviceProfile (pure, tested)
+    playback-info.ts       # request PlaybackInfo, choose the source, build URLs
+    controller.ts          # state machine of one playback
+    engines/native.ts      # <video src> (direct play, Safari HLS)
+    engines/hlsjs.ts       # hls.js (dynamic import)
+    reporting.ts           # start/progress/pause/stop/ping
+    segments.ts            # MediaSegments → active segments
+    trickplay.ts           # tile/offset for a point in time (pure, tested)
+    subtitles.ts           # load VTT, manage <track>
     next-episode.ts
-    store.ts               # zustand: PlayerModel für das Overlay
-  navigation/              # Spatial-Navigation-Setup, Back-Stack, Tastenkürzel, Eingabemodus
-  settings/                # Store, Schema, Sync mit DisplayPreferences/UserConfiguration
+    store.ts               # zustand: PlayerModel for the overlay
+  navigation/              # spatial navigation setup, back stack, shortcuts, input mode
+  settings/                # store, schema, sync with DisplayPreferences/UserConfiguration
   ui/                      # theme-neutral: JellyImage, BlurHashCanvas, Focusable, VirtualGrid,
                            #   AppLink, Portal, VisuallyHidden, RouteAnnouncer
-  i18n/                    # Setup, Typen; locales/de/*.json, locales/en/*.json
+  i18n/                    # setup, types; locales/de/*.json, locales/en/*.json
   themes/
     contract.ts  registry.ts  ThemeProvider.tsx  ThemeSlot.tsx  tokens.ts
     default/  neon-grid/  crimson/  glass/  horizon/  constellation/
-  mocks/                   # MSW-Handler, Fixtures, Generator-Skripte, Demo-Medien
+  mocks/                   # MSW handlers, fixtures, generator scripts, demo media
 docker/  e2e/  docs/  scripts/  .github/workflows/
 ```
 
-### 3.3 Importregeln (per ESLint erzwungen) **[Entscheidung]**
+### 3.3 Import rules (enforced by ESLint) **[Decision]**
 
-| Bereich                                                        | darf nicht importieren                                                                                                                                                                  | Zweck                                                    |
-| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| `src/themes/**`                                                | `@/api/**`, `@jellyfin/sdk*`, `axios`, `@tanstack/react-query`, `@/mocks/**`, `@/player/engines/**`, andere Themes (außer `default`); Globals `fetch`, `XMLHttpRequest`, `localStorage` | Themes bleiben reine Darstellung und rufen keine API auf |
-| `src/hooks/**`, `src/api/**`, `src/domain/**`, `src/player/**` | `@/themes/**`                                                                                                                                                                           | Headless bleibt headless                                 |
-| alles außer `src/app/main.tsx`                                 | `@/mocks/**`                                                                                                                                                                            | MSW landet nie im Basis-Bundle                           |
+| Area                                                           | must not import                                                                                                                                                                         | Purpose                                              |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| `src/themes/**`                                                | `@/api/**`, `@jellyfin/sdk*`, `axios`, `@tanstack/react-query`, `@/mocks/**`, `@/player/engines/**`, other themes (except `default`); globals `fetch`, `XMLHttpRequest`, `localStorage` | Themes stay pure presentation and never call the API |
+| `src/hooks/**`, `src/api/**`, `src/domain/**`, `src/player/**` | `@/themes/**`                                                                                                                                                                           | Headless stays headless                              |
+| everything except `src/app/main.tsx`                           | `@/mocks/**`                                                                                                                                                                            | MSW never ends up in the base bundle                 |
 
-Umgesetzt mit `no-restricted-imports` und `no-restricted-globals` als Overrides je Dateimuster. Dafür braucht es kein zusätzliches Plugin.
+Implemented with `no-restricted-imports` and `no-restricted-globals` as overrides per file pattern. No additional plugin is needed for this.
 
 ---
 
-## 4. Start und Laufzeit-Konfiguration
+## 4. Startup and runtime configuration
 
 ### 4.1 `config.js`
 
-`index.html` lädt `<script src="/config.js">` (no-cache, kein Inline-Skript, CSP-kompatibel) vor dem Modul-Einstieg.
+`index.html` loads `<script src="/config.js">` (no-cache, no inline script, CSP-compatible) before the module entry.
 
 ```ts
 export interface AppConfig {
   jellyfinUrl: string | null; // JELLYFIN_URL
   lockServer: boolean; // LOCK_SERVER
-  proxyPath: string | null; // '/jellyfin' wenn JELLYFIN_PROXY_TARGET gesetzt ist, sonst null
-  defaultTheme: ThemeId; // DEFAULT_THEME, unbekannte IDs → 'default' + Warnung
+  proxyPath: string | null; // '/jellyfin' when JELLYFIN_PROXY_TARGET is set, otherwise null
+  defaultTheme: ThemeId; // DEFAULT_THEME, unknown IDs → 'default' + warning
   appTitle: string; // APP_TITLE
-  demoMode: boolean; // DEMO_MODE – [Frage 5]
+  demoMode: boolean; // DEMO_MODE – [Question 5]
 }
 ```
 
-`config/` validiert `window.__APP_CONFIG__` per Type Guard. Fehlende oder ungültige Werte führen zu Defaults und einer Konsolenwarnung, nie zum Absturz. Ist `proxyPath` gesetzt, ist der Server `${location.origin}${proxyPath}`. Die Server-Auswahl entfällt dann, wie bei `lockServer`.
+`config/` validates `window.__APP_CONFIG__` with a type guard. Missing or invalid values lead to defaults and a console warning, never to a crash. If `proxyPath` is set, the server is `${location.origin}${proxyPath}`. Server selection is then dropped, as with `lockServer`.
 
-In der Entwicklung liefert ein kleines Vite-Plugin `/config.js` aus `.env.local`. `JELLYFIN_DEV_URL` gesetzt → Dev-Proxy unter `/jellyfin` (gleicher Weg wie in Produktion). Nicht gesetzt → `demoMode: true`.
+In development a small Vite plugin serves `/config.js` from `.env.local`. `JELLYFIN_DEV_URL` set → dev proxy under `/jellyfin` (the same path as in production). Not set → `demoMode: true`.
 
-### 4.2 Startablauf
+### 4.2 Startup sequence
 
-1. `config.js` lesen und validieren.
-2. Im Demo-Modus `import('@/mocks/browser')` laden und den MSW-Worker starten, **bevor** die erste Anfrage läuft.
-3. Theme-ID synchron aus `localStorage` lesen (sonst `defaultTheme`). Sofort parallel `load()` des aktiven Themes und des Default-Themes anstoßen.
-4. Session synchron aus `localStorage` wiederherstellen. Die App rendert mit gespeichertem Token sofort die Startseite (schnelles LCP). `getCurrentUser` validiert im Hintergrund, ein 401 führt zum Login.
-5. Rendern. Bis die Theme-Chunks da sind, zeigt `index.html` einen neutralen CSS-Splash ohne Layout-Sprung.
+1. Read and validate `config.js`.
+2. In demo mode, load `import('@/mocks/browser')` and start the MSW worker **before** the first request runs.
+3. Read the theme ID synchronously from `localStorage` (otherwise `defaultTheme`). Immediately start `load()` of the active theme and the default theme in parallel.
+4. Restore the session synchronously from `localStorage`. With a stored token the app renders the home page right away (fast LCP). `getCurrentUser` validates in the background; a 401 leads to the sign-in.
+5. Render. Until the theme chunks have arrived, `index.html` shows a neutral CSS splash without a layout shift.
 
 ---
 
-## 5. API-Schicht und Anmeldung
+## 5. API layer and sign-in
 
-### 5.1 Client und Gerät
+### 5.1 Client and device
 
-- Eine `Jellyfin`-Instanz mit `clientInfo { name: 'Jellymorph', version }` und `deviceInfo { name, id, languages }`. `languages` ist die UI-Sprache und erzeugt den `Accept-Language`-Header.
-- **Device-ID:** zufällig (`crypto.getRandomValues`, funktioniert auch in unsicheren HTTP-Kontexten im LAN), einmalig pro Browser in `localStorage`. Gerätename aus User-Agent-Daten (z. B. „Chrome · Windows“).
-- **Risiko R6:** Jellyfin bindet Tokens an die Device-ID. Ob ein Login von Benutzer B auf derselben Device-ID das Token von A ungültig macht, prüfe ich in Phase 1 am echten Server. Falls ja: Device-ID pro Benutzer mit Suffix.
+- One `Jellyfin` instance with `clientInfo { name: 'Jellymorph', version }` and `deviceInfo { name, id, languages }`. `languages` is the UI language and produces the `Accept-Language` header.
+- **Device ID:** random (`crypto.getRandomValues`, also works in insecure HTTP contexts on the LAN), once per browser in `localStorage`. Device name from user agent data (e.g. "Chrome · Windows").
+- **Risk R6:** Jellyfin binds tokens to the device ID. Whether a sign-in of user B on the same device ID invalidates A's token, I will check on a real server in phase 1. If so: a device ID per user with a suffix.
 
 ### 5.2 Server
 
-- Eingabe wird mit `discovery.getRecommendedServerCandidates(input)` geprüft (probiert Schema und Ports, ruft `/System/Info/Public` ab) und mit `findBestServer()` bewertet. Version < 10.10 → klare Meldung.
-- Gespeichert werden: `{ id (ServerId), name, url, version, lastUsed }`, mehrere Server möglich. Bei `lockServer` oder Proxy entfällt die Auswahl.
+- The input is checked with `discovery.getRecommendedServerCandidates(input)` (tries schemes and ports, calls `/System/Info/Public`) and rated with `findBestServer()`. Version < 10.10 → a clear message.
+- Stored: `{ id (ServerId), name, url, version, lastUsed }`, several servers possible. With `lockServer` or the proxy, the selection is dropped.
 
-### 5.3 Anmeldung
+### 5.3 Sign-in
 
-- **Passwort:** `authenticateUserByName`. Gespeichert wird nur `{ serverId, userId, userName, accessToken }`, nie das Passwort.
-- **Quick Connect:** `getQuickConnectEnabled` → bei `false` ausgeblendet. `initiateQuickConnect` → Code anzeigen → `getQuickConnectState` alle 3 s (abbrechbar, Timeout nach 5 min mit „Neuen Code anfordern“) → `authenticateWithQuickConnect`.
-- **Profilauswahl:** `getPublicUsers`. Ohne Passwort (`HasPassword === false`) direkt anmelden, sonst Passwortfeld bzw. Quick Connect. Zeigt der Server keine öffentlichen Benutzer, geht es direkt zum Login-Formular.
-- **Gemerkte Profile:** **[Frage 8]** Für „Wer schaut?“ ohne erneute Passworteingabe würde ich pro Gerät mehrere Sessions (Token je Benutzer) speichern. Jedes Profil lässt sich einzeln abmelden.
-- **Abmelden:** `api.logout()` (`POST /Sessions/Logout`) beendet die Session am Server. Danach Token löschen, Query-Cache leeren, Player stoppen.
-- **401:** Axios-Interceptor → Session als abgelaufen markieren → Login mit Hinweis. Laufende Anfragen werden abgebrochen.
+- **Password:** `authenticateUserByName`. Only `{ serverId, userId, userName, accessToken }` is stored, never the password.
+- **Quick Connect:** `getQuickConnectEnabled` → hidden when `false`. `initiateQuickConnect` → show the code → `getQuickConnectState` every 3 s (cancellable, timeout after 5 min with "Request a new code") → `authenticateWithQuickConnect`.
+- **Profile picker:** `getPublicUsers`. Without a password (`HasPassword === false`) sign in directly, otherwise a password field or Quick Connect. If the server shows no public users, go straight to the sign-in form.
+- **Remembered profiles:** **[Question 8]** For "Who's watching?" without entering the password again, I would store several sessions per device (one token per user). Each profile can be signed out on its own.
+- **Sign-out:** `api.logout()` (`POST /Sessions/Logout`) ends the session on the server. Then delete the token, clear the query cache, stop the player.
+- **401:** Axios interceptor → mark the session as expired → sign-in with a notice. Running requests are cancelled.
 
-### 5.4 Fehler
+### 5.4 Errors
 
-`api/errors.ts` bildet Fehler auf `AppError { kind: 'network' | 'auth' | 'forbidden' | 'notFound' | 'server' | 'unsupported' | 'aborted', status?, messageKey }` ab. Themes sehen nur `AppError`. Texte kommen aus i18n.
+`api/errors.ts` maps errors to `AppError { kind: 'network' | 'auth' | 'forbidden' | 'notFound' | 'server' | 'unsupported' | 'aborted', status?, messageKey }`. Themes only see `AppError`. Texts come from i18n.
 
-### 5.5 Abbruch und Wiederholung
+### 5.5 Cancellation and retries
 
-Jeder Query-Aufruf reicht `signal` an das SDK durch. Retries: 2 bei Netzwerk- oder 5xx-Fehlern mit Backoff, keine bei 4xx.
+Every query call passes `signal` through to the SDK. Retries: 2 on network or 5xx errors with backoff, none on 4xx.
 
-axios nutzt global den **Fetch-Adapter** (`axios.defaults.adapter = 'fetch'`, gilt auch für die SDK-interne Server-Erkennung). Gründe: `keepalive` für die Stop-Meldung beim Schließen des Tabs (§9.8) und gleiches Verhalten in Browser und Tests. MSW 3 fängt im Test-DOM `fetch` ab, aber nicht `XMLHttpRequest`. **[Entscheidung]**
+axios uses the **fetch adapter** globally (`axios.defaults.adapter = 'fetch'`, which also applies to the SDK's internal server discovery). Reasons: `keepalive` for the stop report when the tab closes (§9.8) and the same behavior in the browser and in tests. MSW 3 intercepts `fetch` in the test DOM, but not `XMLHttpRequest`. **[Decision]**
 
 ### 5.6 URLs
 
-| Ziel               | Aufbau                                                                                                                                                                                                                                                                                             |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Bilder             | `api/urls.ts` → `api.getUri('/Items/{id}/Images/{type}', { tag, maxWidth, quality: 85 })` (nicht `ImageUrlsApi`, siehe §1.2). Breite = gerenderte Breite × DPR, gerundet auf eine Stufenleiter (240/360/480/720/960/1280/1920/2560/3840). `srcset` für Hero/Backdrops. Bilder brauchen kein Token. |
-| Direct-Play-Stream | `api.getUri('/Videos/{id}/stream', { static: true, mediaSourceId, PlaySessionId, Tag, ApiKey })`                                                                                                                                                                                                   |
-| Transcoding        | `TranscodingUrl` aus PlaybackInfo, wie geliefert, an Basis-URL gehängt                                                                                                                                                                                                                             |
-| Untertitel         | Abruf über `getSubtitleApi` als Text → Blob-URL für `<track>` (§9.6)                                                                                                                                                                                                                               |
-| Trickplay-Kacheln  | `api.getUri('/Videos/{id}/Trickplay/{width}/{index}.jpg', { MediaSourceId, ApiKey })`                                                                                                                                                                                                              |
+| Target             | Construction                                                                                                                                                                                                                                                                       |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Images             | `api/urls.ts` → `api.getUri('/Items/{id}/Images/{type}', { tag, maxWidth, quality: 85 })` (not `ImageUrlsApi`, see §1.2). Width = rendered width × DPR, rounded to a ladder of steps (240/360/480/720/960/1280/1920/2560/3840). `srcset` for hero/backdrops. Images need no token. |
+| Direct play stream | `api.getUri('/Videos/{id}/stream', { static: true, mediaSourceId, PlaySessionId, Tag, ApiKey })`                                                                                                                                                                                   |
+| Transcoding        | `TranscodingUrl` from PlaybackInfo, as delivered, appended to the base URL                                                                                                                                                                                                         |
+| Subtitles          | Fetched through `getSubtitleApi` as text → blob URL for `<track>` (§9.6)                                                                                                                                                                                                           |
+| Trickplay tiles    | `api.getUri('/Videos/{id}/Trickplay/{width}/{index}.jpg', { MediaSourceId, ApiKey })`                                                                                                                                                                                              |
 
-`api.getUri()` gehört zum SDK. URLs für `<video>`/`<img>` sind keine Fetches, deshalb ist das kein Verstoß gegen „kein handgeschriebener Fetch“.
+`api.getUri()` belongs to the SDK. URLs for `<video>`/`<img>` are not fetches, so this does not violate "no hand-written fetch".
 
 ---
 
-## 6. Datenschicht (headless Hooks)
+## 6. Data layer (headless hooks)
 
-### 6.1 Domänentypen **[Entscheidung]**
+### 6.1 Domain types **[Decision]**
 
-Themes arbeiten mit schlanken, stabilen Typen statt mit `BaseItemDto`:
+Themes work with lean, stable types instead of `BaseItemDto`:
 
 ```ts
 export interface ImageRef {
@@ -327,7 +327,7 @@ export interface MediaItem {
 }
 ```
 
-Dazu `ItemDetail` (Besetzung, Studios, Spuren, Kapitel, `localTrailerCount`, `mediaSources`), `Season`, `Episode`, `Library`, `Person`, `Profile`, `HomeSection`, `SearchGroup`, `FavoriteGroup`. Die Mapper sind reine Funktionen mit Unit-Tests. Wenn eine künftige SDK-Version Felder ändert, ändert sich nur `domain/map.ts`.
+Plus `ItemDetail` (cast, studios, tracks, chapters, `localTrailerCount`, `mediaSources`), `Season`, `Episode`, `Library`, `Person`, `Profile`, `HomeSection`, `SearchGroup`, `FavoriteGroup`. The mappers are pure functions with unit tests. If a future SDK version changes fields, only `domain/map.ts` changes.
 
 ```ts
 export type QueryResult<T> =
@@ -338,35 +338,35 @@ export type QueryResult<T> =
 
 ### 6.2 Hooks → SDK
 
-| Hook                                           | SDK-Aufrufe                                                                                                                                                                                                                                                                       | Hinweise                                                                                                                                                                                                                                                                     |
-| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `useServerInfo(url)`                           | Discovery / `getPublicSystemInfo`                                                                                                                                                                                                                                                 |                                                                                                                                                                                                                                                                              |
-| `useLoginFlow()`                               | Authentication-API, `getPublicUsers`                                                                                                                                                                                                                                              | Modell für LoginPage (Schritte: server, credentials, quickConnect)                                                                                                                                                                                                           |
-| `useCurrentUser()`                             | `getCurrentUser`                                                                                                                                                                                                                                                                  | enthält `Configuration` (OrderedViews, Excludes, Sprachen)                                                                                                                                                                                                                   |
-| `useUserViews()`                               | `getUserViews({ includeHidden: false })`                                                                                                                                                                                                                                          | Reihenfolge `OrderedViews` und `MyMediaExcludes` wendet der Server an (Phase 2 prüfen). Nicht unterstützte Typen werden gefiltert, siehe [Frage 10].                                                                                                                         |
-| `useFeatured(n)`                               | `getItems({ sortBy: Random, includeItemTypes: [Movie, Series], hasOverview, imageTypes: [Backdrop], limit: n, recursive })`                                                                                                                                                       | Ergebnis 30 min stabil (`staleTime`), damit das Hero nicht springt                                                                                                                                                                                                           |
-| `useHomeSections()`                            | Weiterschauen `getResumeItems({ mediaTypes: [Video] })`, Nächste Folgen `getNextUp`, Neu je Bibliothek `getLatestMedia({ parentId })` ohne `LatestItemsExcludes`, Favoriten `getItems({ isFavorite })`, Genres `getGenres`, Sammlungen `getItems({ includeItemTypes: [BoxSet] })` | Jede Sektion hat ihre eigene Query und lädt parallel. Leere Sektionen werden ausgeblendet.                                                                                                                                                                                   |
-| `useLibraryBrowser(source)`                    | `getItems` seitenweise (`startIndex`, `limit: 100`, `enableTotalRecordCount`) + `getQueryFilters`                                                                                                                                                                                 | Quelle: Bibliothek, Sammlung, Genre oder Person. Sprungleiste: `getItems({ nameLessThan: x, limit: 0 })` mit kleinem Buchstaben → Gesamtzahl = Index (am echten Server noch prüfen). Filteroptionen über `getQueryFiltersLegacy` (liefert als einziger Endpunkt auch Jahre). |
-| `useItem(id)`                                  | `getItem` mit `fields`                                                                                                                                                                                                                                                            |                                                                                                                                                                                                                                                                              |
-| `useSimilar(id)`                               | `getSimilarItems`                                                                                                                                                                                                                                                                 |                                                                                                                                                                                                                                                                              |
-| `useLocalTrailers(id)`                         | `getLocalTrailers`                                                                                                                                                                                                                                                                | nur wenn `LocalTrailerCount > 0`                                                                                                                                                                                                                                             |
-| `useSeasons`, `useEpisodes`, `useSeriesNextUp` | `getSeasons`, `getEpisodes({ seasonId })`, `getNextUp({ seriesId, enableResumable: true })` (auf der Startseite `false`)                                                                                                                                                          |                                                                                                                                                                                                                                                                              |
-| `useSearch(term)`                              | `getItems({ searchTerm, includeItemTypes })` je Gruppe parallel, Personen über `getPersonApi`                                                                                                                                                                                     | Debounce 300 ms, ab 2 Zeichen, vorherige Ergebnisse bleiben bis zur neuen Antwort sichtbar, veraltete Anfragen werden abgebrochen                                                                                                                                            |
-| `useFavorites()`                               | `getItems({ isFavorite: true })` nach Typ gruppiert                                                                                                                                                                                                                               |                                                                                                                                                                                                                                                                              |
-| `useMediaActions()`                            | Favorit, gesehen, abspielen, öffnen                                                                                                                                                                                                                                               | Optimistisch: `setQueriesData` aktualisiert das Item in **allen** gecachten Listen. Bei Fehler Rollback + Toast.                                                                                                                                                             |
-| `useTrailerPreview(item)`                      | `getLocalTrailers` + Player-Engine im Vorschaumodus                                                                                                                                                                                                                               | stumm, nur Desktop/TV, nur mit Einstellung, nicht bei `saveData`                                                                                                                                                                                                             |
+| Hook                                           | SDK calls                                                                                                                                                                                                                                                                        | Notes                                                                                                                                                                                                                                                                               |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `useServerInfo(url)`                           | Discovery / `getPublicSystemInfo`                                                                                                                                                                                                                                                |                                                                                                                                                                                                                                                                                     |
+| `useLoginFlow()`                               | Authentication API, `getPublicUsers`                                                                                                                                                                                                                                             | Model for LoginPage (steps: server, credentials, quickConnect)                                                                                                                                                                                                                      |
+| `useCurrentUser()`                             | `getCurrentUser`                                                                                                                                                                                                                                                                 | contains `Configuration` (OrderedViews, excludes, languages)                                                                                                                                                                                                                        |
+| `useUserViews()`                               | `getUserViews({ includeHidden: false })`                                                                                                                                                                                                                                         | The server applies the `OrderedViews` order and `MyMediaExcludes` (check in phase 2). Unsupported types are filtered, see [Question 10].                                                                                                                                            |
+| `useFeatured(n)`                               | `getItems({ sortBy: Random, includeItemTypes: [Movie, Series], hasOverview, imageTypes: [Backdrop], limit: n, recursive })`                                                                                                                                                      | Result stable for 30 min (`staleTime`), so the hero does not jump                                                                                                                                                                                                                   |
+| `useHomeSections()`                            | Continue watching `getResumeItems({ mediaTypes: [Video] })`, next up `getNextUp`, new per library `getLatestMedia({ parentId })` without `LatestItemsExcludes`, favorites `getItems({ isFavorite })`, genres `getGenres`, collections `getItems({ includeItemTypes: [BoxSet] })` | Every section has its own query and loads in parallel. Empty sections are hidden.                                                                                                                                                                                                   |
+| `useLibraryBrowser(source)`                    | `getItems` page by page (`startIndex`, `limit: 100`, `enableTotalRecordCount`) + `getQueryFilters`                                                                                                                                                                               | Source: library, collection, genre or person. Jump bar: `getItems({ nameLessThan: x, limit: 0 })` with a lowercase letter → total count = index (still to be checked on a real server). Filter options through `getQueryFiltersLegacy` (the only endpoint that also returns years). |
+| `useItem(id)`                                  | `getItem` with `fields`                                                                                                                                                                                                                                                          |                                                                                                                                                                                                                                                                                     |
+| `useSimilar(id)`                               | `getSimilarItems`                                                                                                                                                                                                                                                                |                                                                                                                                                                                                                                                                                     |
+| `useLocalTrailers(id)`                         | `getLocalTrailers`                                                                                                                                                                                                                                                               | only when `LocalTrailerCount > 0`                                                                                                                                                                                                                                                   |
+| `useSeasons`, `useEpisodes`, `useSeriesNextUp` | `getSeasons`, `getEpisodes({ seasonId })`, `getNextUp({ seriesId, enableResumable: true })` (`false` on the home page)                                                                                                                                                           |                                                                                                                                                                                                                                                                                     |
+| `useSearch(term)`                              | `getItems({ searchTerm, includeItemTypes })` per group in parallel, people through `getPersonApi`                                                                                                                                                                                | Debounce 300 ms, from 2 characters, previous results stay visible until the new answer, outdated requests are cancelled                                                                                                                                                             |
+| `useFavorites()`                               | `getItems({ isFavorite: true })` grouped by type                                                                                                                                                                                                                                 |                                                                                                                                                                                                                                                                                     |
+| `useMediaActions()`                            | Favorite, played, play, open                                                                                                                                                                                                                                                     | Optimistic: `setQueriesData` updates the item in **all** cached lists. On error rollback + toast.                                                                                                                                                                                   |
+| `useTrailerPreview(item)`                      | `getLocalTrailers` + player engine in preview mode                                                                                                                                                                                                                               | muted, desktop/TV only, only with the setting, not with `saveData`                                                                                                                                                                                                                  |
 
-### 6.3 Query-Keys und Cache
+### 6.3 Query keys and cache
 
-- Keys beginnen immer mit `[serverId, userId, …]`. Beim Abmelden oder Profilwechsel wird `queryClient.clear()` aufgerufen. So können nie Daten eines anderen Benutzers sichtbar werden.
-- `staleTime`: Weiterschauen/Nächste Folgen 30 s (+ Refetch bei Fensterfokus und nach jeder Wiedergabe), Item-Details 60 s, Bibliotheksseiten 5 min, Genres/Filter 30 min. `gcTime` 10 min.
-- **Live-Updates:** Das SDK abonniert `UserDataChanged`, `LibraryChanged` und `UserUpdated` über WebSocket. Darauf folgen gezielte Invalidierungen. Das hält „Weiterschauen“ synchron, wenn auf einem anderen Gerät geschaut wird. Fällt der WebSocket aus, gibt es keine Fehlermeldung, sondern nur Fokus-Refetch.
+- Keys always start with `[serverId, userId, …]`. On sign-out or a profile switch, `queryClient.clear()` is called. That way data of another user can never become visible.
+- `staleTime`: continue watching/next up 30 s (+ refetch on window focus and after every playback), item details 60 s, library pages 5 min, genres/filters 30 min. `gcTime` 10 min.
+- **Live updates:** the SDK subscribes to `UserDataChanged`, `LibraryChanged` and `UserUpdated` over WebSocket. Targeted invalidations follow. This keeps "Continue watching" in sync when somebody watches on another device. If the WebSocket fails, there is no error message, only the focus refetch.
 
 ---
 
-## 7. Theme-System
+## 7. Theme system
 
-### 7.1 Vertrag (final, Version 1)
+### 7.1 Contract (final, version 1)
 
 ```ts
 // src/themes/contract.ts
@@ -541,480 +541,481 @@ export interface ErrorStateProps {
 }
 ```
 
-Gegenüber dem Richtwert in CLAUDE.md:
+Compared with the guideline in CLAUDE.md:
 
-- `ResumePrompt` (Fortsetzen-Abfrage) und `Toast` (Rückmeldung nach Aktionen) sind neu. Beide sind sichtbare, theme-spezifische Elemente.
-- `LoadingState` bekommt eine optionale `variant`.
-- `ThemeModule.options` für Unterschiede, die die Datenschicht oder das Routing betreffen. Beispiel: Crimson öffnet Details als Modal über der Startseite (`detailPresentation: 'modal'`).
-- `contractVersion`, damit spätere Vertragsänderungen auffallen.
-- Wiederverwendbare **gemeinsame Hooks und Bausteine für Themes** (alle headless oder theme-neutral): `<ThemeSlot>`, `useMediaActions()`, `useTrailerPreview()`, `useMotionPreference()`, `useAppearance()`, `<ThemePreview>`, `<JellyImage>`, `<VirtualGrid>`, `<AppLink>`, `useScrubber()`. Fokus braucht keinen eigenen Hook: Die Navigation arbeitet mit echtem DOM-Fokus (§8).
-- Seiten wie Genre, Sammlung und Person brauchen keine eigene Komponente. Sie sind `LibraryPage` mit einer anderen `source`.
-- **Stand Phase 7:** `ThemeOptions.cardShape` (`'mixed' | 'landscape'`) steuert die Kartenform der übernommenen Classic-Seiten. `presentation: 'modal'` wird seit Phase 7 tatsächlich geliefert (§7.9).
-- **Stand Phase 4:** Der Block oben ist der Plan aus Phase 0, maßgeblich ist `src/themes/contract.ts`. Dort sind u. a. `HomePageProps.user`, `RowProps` (`variant`, `seeAll: string | null`), `ResumePromptProps.positionSeconds`, `ToastProps.action` und `ErrorStateProps.variant` genauer gefasst. `THEME_SLOTS` listet alle Slots zur Laufzeit; ein Compile-Check schlägt fehl, wenn ein Slot in der Liste fehlt. Anleitung für Theme-Autoren: [themes.md](themes.md).
+- `ResumePrompt` (the resume question) and `Toast` (feedback after actions) are new. Both are visible, theme-specific elements.
+- `LoadingState` gets an optional `variant`.
+- `ThemeModule.options` for differences that affect the data layer or the routing. Example: Crimson opens details as a modal above the home page (`detailPresentation: 'modal'`).
+- `contractVersion`, so that later contract changes are noticed.
+- Reusable **shared hooks and building blocks for themes** (all headless or theme-neutral): `<ThemeSlot>`, `useMediaActions()`, `useTrailerPreview()`, `useMotionPreference()`, `useAppearance()`, `<ThemePreview>`, `<JellyImage>`, `<VirtualGrid>`, `<AppLink>`, `useScrubber()`. Focus needs no hook of its own: the navigation works with real DOM focus (§8).
+- Pages such as genre, collection and person need no component of their own. They are `LibraryPage` with another `source`.
+- **As of phase 7:** `ThemeOptions.cardShape` (`'mixed' | 'landscape'`) controls the card shape of the Classic pages taken over. `presentation: 'modal'` is actually delivered since phase 7 (§7.9).
+- **As of phase 4:** the block above is the plan from phase 0; `src/themes/contract.ts` is authoritative. There, among others, `HomePageProps.user`, `RowProps` (`variant`, `seeAll: string | null`), `ResumePromptProps.positionSeconds`, `ToastProps.action` and `ErrorStateProps.variant` are defined more precisely. `THEME_SLOTS` lists all slots at runtime; a compile check fails if a slot is missing from the list. Guide for theme authors: [themes.md](themes.md).
 
-### 7.2 Registry und Laden
+### 7.2 Registry and loading
 
-- `registry.ts` enthält nur die Manifeste (klein, Teil des Basis-Bundles) mit `load: () => import('./crimson')`. Jedes Theme ist ein eigener JS- und CSS-Chunk inklusive Schriften und Theme-Texten.
-- `ThemeProvider` lädt aktives Theme + Default-Theme parallel (`Promise.all`). Das Default-Theme ist immer nötig, weil es den Fallback stellt. Nicht aktive Themes werden nie geladen. Ausnahme: die Live-Vorschau lädt das angesehene Theme (§7.6).
-- Neues Theme = Ordner `themes/<id>/` + ein Eintrag in `registry.ts` + Textschlüssel. Ein Vertragstest prüft jedes Theme automatisch.
+- `registry.ts` only contains the manifests (small, part of the base bundle) with `load: () => import('./crimson')`. Every theme is its own JS and CSS chunk including fonts and theme texts.
+- `ThemeProvider` loads the active theme + the default theme in parallel (`Promise.all`). The default theme is always needed because it provides the fallback. Inactive themes are never loaded. Exception: the live preview loads the theme being looked at (§7.6).
+- New theme = folder `themes/<id>/` + one entry in `registry.ts` + text keys. A contract test checks every theme automatically.
 
 ```
 themes/crimson/
-  manifest.ts         # ThemeManifest (statisch)
-  index.ts            # ThemeModule – importiert tokens.css, global.css, Schriften, Komponenten
+  manifest.ts         # ThemeManifest (static)
+  index.ts            # ThemeModule – imports tokens.css, global.css, fonts, components
   tokens.css          # [data-theme="crimson"] { --color-bg: … }
-  global.css          # nur [data-theme="crimson"] …-Selektoren
+  global.css          # only [data-theme="crimson"] … selectors
   components/*.tsx + *.module.css
   i18n/de.json, en.json
   preview-dark.jpg    # npm run previews
   preview-light.jpg
 ```
 
-Stand Phase 4: Die IDs aller geplanten Themes stehen in `config/theme-ids.ts` (auch für `DEFAULT_THEME`), Name und Beschreibung im Namespace `themes`. Eine gespeicherte ID ohne Registry-Eintrag fällt auf Classic zurück. Stand Phase 6: `registry.ts` enthält Classic und Neon Grid. Neu im Vertrag (beide optional): `ThemeManifest.features` (z. B. `uiSounds`) und `ThemeModule.texts` (eigene Texte, registriert als Namespace `theme-<id>`, §11).
+As of phase 4: the IDs of all planned themes are in `config/theme-ids.ts` (also for `DEFAULT_THEME`), name and description in the `themes` namespace. A stored ID without a registry entry falls back to Classic. As of phase 6: `registry.ts` contains Classic and Neon Grid. New in the contract (both optional): `ThemeManifest.features` (e.g. `uiSounds`) and `ThemeModule.texts` (own texts, registered as the namespace `theme-<id>`, §11).
 
 ### 7.3 Fallback
 
-`useThemeComponent('MediaCard')` gibt `active.components.MediaCard ?? default.components.MediaCard` zurück. Das Default-Theme ist als `ThemeModule & { components: ThemeComponents }` typisiert und **muss** jede Komponente liefern. Das prüft der Compiler. Jeder `<ThemeSlot>` hat eine Error Boundary: Wirft eine Theme-Komponente, rendert der Slot die Default-Komponente und protokolliert den Fehler. Ein fehlerhaftes Theme legt also nie die App lahm.
+`useThemeComponent('MediaCard')` returns `active.components.MediaCard ?? default.components.MediaCard`. The default theme is typed as `ThemeModule & { components: ThemeComponents }` and **must** provide every component. The compiler checks this. Every `<ThemeSlot>` has an error boundary: if a theme component throws, the slot renders the default component and logs the error. A broken theme therefore never takes down the app.
 
-Default-Komponenten benutzen nur die gemeinsamen semantischen Tokens. Wenn sie als Fallback in einem anderen Theme laufen, übernehmen sie automatisch dessen Farben, Schriften und Radien.
+Default components only use the shared semantic tokens. When they run as the fallback in another theme, they automatically take on its colors, fonts and radii.
 
-### 7.4 Tokens und Scoping
+### 7.4 Tokens and scoping
 
-- Auf `<html>` sitzen `data-theme`, `data-color-scheme`, `data-motion` (`full`/`reduced`), `data-device` (`desktop`/`tv`/`touch`) und `data-input` (`pointer`/`keyboard`/`touch`).
-- `contract.ts` exportiert `REQUIRED_TOKENS`. Mindestumfang: `--color-bg`, `--color-surface`, `--color-surface-raised`, `--color-text`, `--color-text-muted`, `--color-accent`, `--color-on-accent`, `--color-focus`, `--color-danger`, `--color-progress`, `--font-body`, `--font-display`, `--font-mono`, `--radius-card`, `--radius-control`, `--shadow-card`, `--duration-fast`, `--duration-base`, `--duration-slow`, `--ease-standard`, `--ease-emphasized`, `--focus-ring`.
-- Ein Vitest-Test liest jede `tokens.css`. Er prüft, dass alle Pflicht-Tokens je Farbschema definiert sind, und rechnet die WCAG-Kontraste nach: Text/Hintergrund ≥ 4,5:1, Fokus/Hintergrund ≥ 3:1.
-- Globale Theme-Styles stehen ausschließlich unter `[data-theme="<id>"]`. CSS Modules sind ohnehin per Hash isoliert. Weil Theme-CSS nach einem Wechsel im Dokument bleibt, ist das Scoping zwingend. Ein Test prüft, dass jede Regel in `global.css` mit dem eigenen Scope beginnt.
-- Theme-neutrale Größen (Abstände, z-Index, Breakpoints, Safe-Area) liegen in `app/base.css` außerhalb jedes Themes.
-- Bausteine, die auch in der Live-Vorschau laufen (`Hero`, `Row`, `MediaCard`), verwenden Container Queries und `cqi` statt `vw`/`position: fixed`. So funktionieren sie in einem verkleinerten Container.
+- `<html>` carries `data-theme`, `data-color-scheme`, `data-motion` (`full`/`reduced`), `data-device` (`desktop`/`tv`/`touch`) and `data-input` (`pointer`/`keyboard`/`touch`).
+- `contract.ts` exports `REQUIRED_TOKENS`. Minimum set: `--color-bg`, `--color-surface`, `--color-surface-raised`, `--color-text`, `--color-text-muted`, `--color-accent`, `--color-on-accent`, `--color-focus`, `--color-danger`, `--color-progress`, `--font-body`, `--font-display`, `--font-mono`, `--radius-card`, `--radius-control`, `--shadow-card`, `--duration-fast`, `--duration-base`, `--duration-slow`, `--ease-standard`, `--ease-emphasized`, `--focus-ring`.
+- A Vitest test reads every `tokens.css`. It checks that all required tokens are defined per color scheme and recalculates the WCAG contrasts: text/background ≥ 4.5:1, focus/background ≥ 3:1.
+- Global theme styles live exclusively under `[data-theme="<id>"]`. CSS Modules are isolated by hash anyway. Because theme CSS stays in the document after a switch, scoping is mandatory. A test checks that every rule in `global.css` starts with its own scope.
+- Theme-neutral sizes (spacing, z-index, breakpoints, safe area) live in `app/base.css`, outside every theme.
+- Building blocks that also run in the live preview (`Hero`, `Row`, `MediaCard`) use container queries and `cqi` instead of `vw`/`position: fixed`. That way they work in a scaled-down container.
 
-### 7.5 Wechsel und Überblendung
+### 7.5 Switching and cross-fade
 
-`setTheme(id)` lädt den Chunk (bei Bedarf kurzer Ladeindikator am Auswahlelement) und tauscht dann mit `document.startViewTransition()` und einer Überblendung von etwa 250 ms. Ohne View-Transitions-Unterstützung blendet ein Overlay mit `opacity` über. Bei reduzierter Bewegung erfolgt der Wechsel sofort. Es gibt kein Neuladen der Seite, Fokus und Scrollposition bleiben erhalten.
+`setTheme(id)` loads the chunk (if needed with a short loading indicator on the picker element) and then swaps with `document.startViewTransition()` and a cross-fade of about 250 ms. Without view transition support, an overlay cross-fades with `opacity`. With reduced motion, the switch happens immediately. There is no page reload; focus and scroll position are kept.
 
-Umsetzung (`themes/loader.ts`, `themes/transition.ts`): Der Loader merkt sich jedes Theme-Promise mit Status und Wert. `use()` suspendiert deshalb nur beim ersten Laden, nie beim Zurückwechseln. Der `ThemeProvider` wartet auf den neuen Chunk und tauscht erst dann, innerhalb von `startViewTransition` per `flushSync` (Dauer 260 ms in `app/base.css`). Ersatz ohne View Transitions: ein Overlay, das in 140 ms ein- und in 220 ms ausblendet. Dasselbe gilt für den Wechsel des Farbschemas. `data-theme`, `data-color-scheme` und `data-motion` setzt der Provider auf `<html>`.
+Implementation (`themes/loader.ts`, `themes/transition.ts`): the loader remembers every theme promise with its status and value. `use()` therefore only suspends on the first load, never when switching back. The `ThemeProvider` waits for the new chunk and only then swaps, inside `startViewTransition` with `flushSync` (duration 260 ms in `app/base.css`). Replacement without view transitions: an overlay that fades in over 140 ms and out over 220 ms. The same applies to switching the color scheme. The provider sets `data-theme`, `data-color-scheme` and `data-motion` on `<html>`.
 
-### 7.6 Live-Vorschau in den Einstellungen **[Entscheidung]**
+### 7.6 Live preview in the settings **[Decision]**
 
-- Die Kacheln der Theme-Auswahl zeigen Vorschaubilder. Diese werden je Theme-Phase per Playwright im Demo-Modus erzeugt, sind also echte Screenshots mit Platzhalterbildern.
-- Die **Live-Vorschau** rendert `Hero`, `Row` und `MediaCard` des fokussierten Themes mit **echten Daten** des Benutzers in einem Container mit eigenem `data-theme`/`data-color-scheme`, mit `context: 'preview'`, `inert` und ohne eigenen Fokus.
-- „Übernehmen“ wendet das Theme global an (§7.5). Das Farbschema lässt sich in der Vorschau umschalten, wenn das Theme mehrere hat.
-- Umsetzung (`themes/ThemePreview.tsx`): Die Vorschau zeigt `Hero` und eine Reihe „Weiterschauen“ (ohne angefangene Titel die Hero-Titel). Sie hat einen eigenen `ThemeContext`, wird mit 1280 px Breite gelayoutet und per `ResizeObserver` auf den verfügbaren Platz skaliert. `Hero` und `Row` von Classic rechnen in `cqi`; außerhalb eines Containers entspricht das der Viewport-Breite. Ist das gezeigte Theme schon aktiv, steht statt des Buttons „Dieses Theme ist aktiv.“.
+- The tiles of the theme picker show preview pictures. They are created per theme phase with Playwright in demo mode, so they are real screenshots with placeholder pictures.
+- The **live preview** renders `Hero`, `Row` and `MediaCard` of the focused theme with the user's **real data** in a container with its own `data-theme`/`data-color-scheme`, with `context: 'preview'`, `inert` and without focus of its own.
+- "Apply" applies the theme globally (§7.5). The color scheme can be switched in the preview if the theme has several.
+- Implementation (`themes/ThemePreview.tsx`): the preview shows `Hero` and a "Continue watching" row (without titles in progress, the hero titles). It has its own `ThemeContext`, is laid out 1280 px wide and scaled to the available space through a `ResizeObserver`. Classic's `Hero` and `Row` calculate in `cqi`; outside a container that equals the viewport width. If the theme shown is already active, "This theme is active." replaces the button.
 
-### 7.7 Bewegung
+### 7.7 Motion
 
-- Animiert werden nur `transform`, `opacity` und `filter`. Eine Code-Review-Regel und ein E2E-Test prüfen, dass keine Animation Layout-Eigenschaften anfasst.
-- `MotionConfig reducedMotion` folgt `data-motion`. `useMotionPreference()` liefert Themes `'full' | 'reduced'`. Bei `reduced` entfallen Glitch, Ken Burns, Parallax, Neigung und automatische Karussells. Überblendungen bleiben kurz erhalten.
-- Stand Phase 4: `data-motion` ergibt sich aus der Einstellung „Bewegung“ (Wie das System / Reduziert / Alle Animationen) und `prefers-reduced-motion`. Classic kommt mit CSS-Übergängen aus, `motion` ist deshalb noch nicht installiert. Es folgt mit dem ersten Theme, das Feder-Animationen braucht.
-- Stand Phase 8: `motion` 13.5 ist installiert und wird nur im Glass-Chunk geladen (Basis-Bundle unverändert). Glass nutzt `LazyMotion` mit `domAnimation` (keine Layout-Animationen), Federn für Kartenneigung und -anhebung (`useLift`) und den Textwechsel im Hero. `MotionConfig reducedMotion` folgt `useReducedMotion()` (Komponente `GlassMotion`). Die neue Hauptversion 14 war beim Einbau eine Woche alt und wurde deshalb nicht genommen. Ein E2E-Test liest alle `transition`- und `@keyframes`-Regeln aus dem CSSOM und prüft, dass nur `transform`, `opacity` und `filter` (samt `translate`, `scale`, `rotate`) animiert werden.
-- Neon Grid: Glitch-Effekte flackern maximal 3× pro Sekunde (WCAG 2.3.1) und laufen nie über Fließtext.
+- Only `transform`, `opacity` and `filter` are animated. A code review rule and an E2E test check that no animation touches layout properties.
+- `MotionConfig reducedMotion` follows `data-motion`. `useMotionPreference()` gives themes `'full' | 'reduced'`. With `reduced`, glitch, Ken Burns, parallax, tilt and automatic carousels are dropped. Cross-fades stay, briefly.
+- As of phase 4: `data-motion` results from the "Motion" setting (Like the system / Reduced / All animations) and `prefers-reduced-motion`. Classic gets by with CSS transitions, which is why `motion` is not installed yet. It follows with the first theme that needs spring animations.
+- As of phase 8: `motion` 13.5 is installed and only loaded in the Glass chunk (base bundle unchanged). Glass uses `LazyMotion` with `domAnimation` (no layout animations), springs for card tilt and lift (`useLift`) and the text change in the hero. `MotionConfig reducedMotion` follows `useReducedMotion()` (component `GlassMotion`). The new major version 14 was one week old at the time and was therefore not taken. An E2E test reads all `transition` and `@keyframes` rules from the CSSOM and checks that only `transform`, `opacity` and `filter` (including `translate`, `scale`, `rotate`) are animated.
+- Neon Grid: glitch effects flicker at most 3× per second (WCAG 2.3.1) and never run over body text.
 
-### 7.8 Rechtliche Prüfliste je Theme
+### 7.8 Legal checklist per theme
 
-Vor dem Abschluss jeder Theme-Phase: keine Markennamen in Code, Dateinamen, Kommentaren oder Texten; Farben nur in ähnlicher Stimmung (Abstand zu bekannten Markenfarben dokumentiert); Schriften nur frei lizenziert über `@fontsource`; Icons selbst gezeichnet; keine „im Stil von“-Hinweise im UI.
+Before finishing every theme phase: no brand names in code, file names, comments or texts; colors only in a similar mood (distance to known brand colors documented); fonts only freely licensed through `@fontsource`; icons drawn ourselves; no "in the style of" notes in the UI.
 
-- Constellation: Grund `#0b1533` mit Verlauf `#13235a` → `#070d22` (tiefes Nachtblau, ΔE76 ≈ 14 bzw. 17 zu den Grundtönen des Vorbilds), Akzent `#2bb6c9` (Sternenlicht-Türkis statt Markenblau, ΔE76 ≈ 80). Kein Markenlogo in den Kacheln: Bibliotheken und Sammlungen zeigen ihr eigenes Bild und ihren Namen. Schrift Nunito Sans (OFL) statt der Hausschrift des Vorbilds.
-- Horizon: Grund `#13192a` (dunkles Blaugrau, ΔE76 ≈ 8 zum Grund des Vorbilds), Akzent `#2a63e6` (kräftiges Blau, ΔE76 ≥ 32 zum Blau des Vorbilds). Schrift Figtree (OFL) statt der Hausschrift des Vorbilds.
-- Glass: Akzent `#4256cf` (dunkel) bzw. `#2456c8` (hell), ΔE76 ≥ 16 bzw. ≥ 12 zu den bekannten Systemblautönen; die Hauptaktionen sind weiß bzw. fast schwarz statt blau. Keine Original-Schrift (Inter statt der Systemschrift des Vorbilds), Icons selbst gezeichnet.
-- Crimson: Akzent `#d31d34`, dunkler und blauer als das Rot des Vorbilds (ΔE76 ≈ 21). Kein roter Schriftzug als Marke: Logo und App-Titel wie in allen Themes, Titel weiß. Bewertungssterne `#f2c14e` statt eines bekannten Gelbs. Schrift Inter (OFL).
+- Constellation: background `#0b1533` with a gradient `#13235a` → `#070d22` (deep night blue, ΔE76 ≈ 14 and 17 to the base tones of the model), accent `#2bb6c9` (starlight turquoise instead of brand blue, ΔE76 ≈ 80). No brand logo in the tiles: libraries and collections show their own picture and name. Font Nunito Sans (OFL) instead of the model's house font.
+- Horizon: background `#13192a` (dark blue-gray, ΔE76 ≈ 8 to the model's background), accent `#2a63e6` (strong blue, ΔE76 ≥ 32 to the model's blue). Font Figtree (OFL) instead of the model's house font.
+- Glass: accent `#4256cf` (dark) or `#2456c8` (light), ΔE76 ≥ 16 and ≥ 12 to the known system blues; the main actions are white or almost black instead of blue. No original font (Inter instead of the model's system font), icons drawn ourselves.
+- Crimson: accent `#d31d34`, darker and bluer than the model's red (ΔE76 ≈ 21). No red lettering as a brand: logo and app title as in every theme, title in white. Rating stars `#f2c14e` instead of a known yellow. Font Inter (OFL).
+- App icon (2026-10-15): a play symbol cut into three facets in the project's own purple (`#2a1466` square, facets `#d9c9ff`, `#b597ff`, `#8f63ff`); no shape or color of a known brand.
 
-### 7.9 Details als Overlay (Phase 7) **[Entscheidung]**
+### 7.9 Details as an overlay (phase 7) **[Decision]**
 
-Crimson zeigt Details als Ebene über der Seite, von der sie kommen (`detailPresentation: 'modal'`). Umsetzung mit dem Muster „Hintergrund-Location“ von react-router statt eines eigenen Modal-Zustands:
+Crimson shows details as a layer above the page they come from (`detailPresentation: 'modal'`). Implemented with react-router's "background location" pattern instead of a modal state of our own:
 
-- **Routing:** Die Inhaltsseiten liegen nicht mehr als einzelne Data-Routen unter der Shell, sondern als Descendant-`<Routes>` in `app/routes/ShellRoutes.tsx` (die Shell ist `path: '*'`, der Player bleibt eine eigene Data-Route). Ein Overlay-Link (`<AppLink overlay>`) schreibt die aktuelle Location als `state.backgroundLocation` in den Verlauf. `ShellRoutes` rendert die Seiten dann mit `<Routes location={background}>`, die Seite bleibt also montiert, und darüber in einem zweiten `<Routes>` nur `/item/:itemId` mit `presentation="modal"`. Die Seite darunter ist `inert`.
-- **Grenzen:** Nur `/item/:itemId` kann ein Overlay sein (`navigation/overlay.ts`: `opensAsOverlay`, `backgroundOf`). Ein Hintergrund im State einer anderen Route wird ignoriert. Overlay-Links innerhalb eines Overlays ersetzen den Eintrag (`replace`) und behalten den ursprünglichen Hintergrund, Zurück und Schließen landen also immer auf der Seite. Der Staffelwechsel ersetzt die URL (`?season=`) und reicht den State weiter, sonst würde aus dem Overlay eine Seite.
-- **URL, Neuladen, Teilen:** Die URL ist immer die normale Detail-URL. Ohne Hintergrund (direkt aufgerufen, neu geladen, geteilt) zeigt dasselbe Theme die Details als Seite.
-- **Fokus und Seitenwechsel:** `useRouteKey()` liefert den Pfad der Hintergrund-Seite. Öffnen und Schließen eines Overlays sind deshalb kein Seitenwechsel: kein Scroll nach oben, kein Fokus auf `<main>`, keine Seitenübergänge. Den Fokus verwaltet das Overlay (Dialog-Muster, Rückgabe an die öffnende Karte). `useDocumentTitle` stellt beim Schließen den vorigen Titel wieder her.
-- **Laden:** Seiten-Chunks werden per `React.lazy` geladen. Das Overlay hat eine eigene Suspense-Grenze, damit die Seite darunter beim Nachladen nicht verschwindet.
-- **Prüfung:** `navigation/overlay.test.ts`, E2E `e2e/crimson.spec.ts` (Öffnen, Mausrad scrollt nur das Overlay, Zurück und Esc mit unveränderter Scrollposition und Fokus auf der Karte, Titel aus „Mehr wie dieses“ ersetzt das Overlay, direkt aufgerufen als Seite, Staffelwechsel bleibt im Overlay).
+- **Routing:** the content pages are no longer individual data routes below the shell, but descendant `<Routes>` in `app/routes/ShellRoutes.tsx` (the shell is `path: '*'`, the player stays a data route of its own). An overlay link (`<AppLink overlay>`) writes the current location into the history as `state.backgroundLocation`. `ShellRoutes` then renders the pages with `<Routes location={background}>`, so the page stays mounted, and above it, in a second `<Routes>`, only `/item/:itemId` with `presentation="modal"`. The page below is `inert`.
+- **Limits:** only `/item/:itemId` can be an overlay (`navigation/overlay.ts`: `opensAsOverlay`, `backgroundOf`). A background in the state of another route is ignored. Overlay links inside an overlay replace the entry (`replace`) and keep the original background, so Back and Close always land on the page. The season switch replaces the URL (`?season=`) and passes the state on; otherwise the overlay would turn into a page.
+- **URL, reload, sharing:** the URL is always the normal detail URL. Without a background (opened directly, reloaded, shared) the same theme shows the details as a page.
+- **Focus and page changes:** `useRouteKey()` returns the path of the background page. Opening and closing an overlay are therefore not a page change: no scroll to the top, no focus on `<main>`, no page transitions. The overlay manages the focus (dialog pattern, return to the opening card). `useDocumentTitle` restores the previous title on close.
+- **Loading:** page chunks are loaded with `React.lazy`. The overlay has its own suspense boundary so the page below does not vanish while loading.
+- **Verification:** `navigation/overlay.test.ts`, E2E `e2e/crimson.spec.ts` (opening, the mouse wheel scrolls only the overlay, Back and Esc with an unchanged scroll position and focus on the card, a title from "More like this" replaces the overlay, opened directly as a page, the season switch stays in the overlay).
 
 ---
 
-## 8. Navigation und Eingabe
+## 8. Navigation and input
 
-- **Spatial Navigation** (norigin v3) mit `shouldFocusDOMNode: true`: Der Fokus der Bibliothek ist echter DOM-Fokus. Dadurch greifen `:focus-visible`, Screenreader und Fokus = Hover einheitlich. **Geändert in Phase 4:** eigene Umsetzung statt norigin, siehe §8.1.
-- **Fokus = Hover:** Jede Theme-Regel für Hover wird als `:is(:hover, :focus-visible)` geschrieben (Konvention im Theme-Guide). Ein E2E-Test fokussiert per Tastatur, hovert per Maus und vergleicht die berechneten Stile ausgewählter Elemente.
-- **Eingabemodus:** `data-input` wechselt bei der jeweils letzten Eingabeart. Bei Maus-/Touch-Bedienung bleibt die Spatial Navigation aktiv, springt aber erst beim nächsten Pfeiltastendruck an.
-- **Virtualisiertes Raster:** Nicht gerenderte Karten kann die Bibliothek nicht fokussieren. `VirtualGrid` behandelt Pfeiltasten daher selbst (Index-Arithmetik), scrollt den Virtualizer und fokussiert danach. Hohes Risiko, wird in Phase 2 zuerst gebaut (R7).
-- **Zurück:** Zentraler Back-Stack. Esc, Backspace (außerhalb von Eingabefeldern), Browser-Zurück und die Zurück-Taste von TV-Fernbedienungen (z. B. `GoBack`/`BrowserBack`, webOS 461, Tizen 10009) schließen zuerst Overlay/Modal, danach `history.back()`.
-- **Eingabefelder:** ←/→ bewegen den Cursor. Erst am Textanfang bzw. -ende verlässt der Fokus das Feld.
-- **TV-Modus** (`data-device="tv"`): automatisch per User-Agent-Heuristik oder fest per Einstellung (Auto/Desktop/TV). Die Schriftgröße skaliert mit der Breite (1920 px → 24 px rem, 3840 px → 48 px), Overscan-Rand per Einstellung 0–5 % (Standard 3 %), kein Hover-Zwang, größere Fokusringe.
-- **Desktop 4K bei DPR 1:** fließende Rem-Größe ab 1440 px (16 px → 32 px bei 3840 px), damit 3840×2160 nicht winzig wirkt.
-- **Seitenwechsel:** Fokus springt auf die Überschrift (Tastatur/Screenreader) bzw. auf das erste sinnvolle Element (TV). Seitentitel und Live-Region kündigen den Wechsel an.
+- **Spatial navigation** (norigin v3) with `shouldFocusDOMNode: true`: the library's focus is real DOM focus. That way `:focus-visible`, screen readers and focus = hover work uniformly. **Changed in phase 4:** our own implementation instead of norigin, see §8.1.
+- **Focus = hover:** every theme rule for hover is written as `:is(:hover, :focus-visible)` (convention in the theme guide). An E2E test focuses by keyboard, hovers by mouse and compares the computed styles of selected elements.
+- **Input mode:** `data-input` changes with the most recent kind of input. With mouse/touch use, spatial navigation stays active but only kicks in with the next arrow key press.
+- **Virtualized grid:** the library cannot focus cards that are not rendered. `VirtualGrid` therefore handles the arrow keys itself (index arithmetic), scrolls the virtualizer and then focuses. High risk, built first in phase 2 (R7).
+- **Back:** a central back stack. Esc, Backspace (outside input fields), browser back and the back key of TV remotes (e.g. `GoBack`/`BrowserBack`, webOS 461, Tizen 10009) first close an overlay/modal, then `history.back()`.
+- **Input fields:** ←/→ move the cursor. Only at the start or end of the text does the focus leave the field.
+- **TV mode** (`data-device="tv"`): automatic through a user agent heuristic or fixed by setting (Auto/Desktop/TV). The font size scales with the width (1920 px → 24 px rem, 3840 px → 48 px), an overscan margin of 0–5 % by setting (default 3 %), no hover requirement, larger focus rings.
+- **Desktop 4K at DPR 1:** a fluid rem size from 1440 px (16 px → 32 px at 3840 px), so that 3840×2160 does not look tiny.
+- **Page changes:** the focus jumps to the heading (keyboard/screen reader) or to the first sensible element (TV). The page title and a live region announce the change.
 
-### 8.1 Umsetzung in Phase 4 **[Entscheidung]**
+### 8.1 Implementation in phase 4 **[Decision]**
 
-**Eigene, DOM-basierte Navigation statt norigin** (`navigation/spatial.ts`, knapp 300 Zeilen, keine Abhängigkeit). norigin verlangt, dass jede fokussierbare Komponente sich per `useFocusable()` registriert und ihre Fokus-Schlüssel und Eltern-Kontexte kennt. Damit müsste jedes der sechs Themes jede Karte, jeden Button und jedes Menü verdrahten, und ein vergessenes Element wäre mit der Fernbedienung unerreichbar. Die eigene Lösung arbeitet nur mit der Geometrie des echten DOM: Alles, was mit Tab erreichbar ist, ist auch mit den Pfeilen erreichbar. Themes brauchen keine Registrierung.
+**Our own DOM-based navigation instead of norigin** (`navigation/spatial.ts`, just under 300 lines, no dependency). norigin requires every focusable component to register through `useFocusable()` and to know its focus keys and parent contexts. Every one of the six themes would have to wire up every card, every button and every menu, and a forgotten element would be unreachable with the remote control. Our solution works only with the geometry of the real DOM: everything reachable with Tab is also reachable with the arrows. Themes need no registration.
 
-- **Wahl des Ziels:** Ein Pfeil sucht unter allen sichtbaren fokussierbaren Elementen das nächste in dieser Richtung. Kandidaten müssen jenseits der Mitte des aktuellen Elements beginnen (sonst zählt eine angehobene Karte in derselben Reihe als „darunter“). Versatz auf der Querachse wiegt dreimal so schwer wie der Abstand, so bleibt der Fokus in seiner Reihe oder Spalte. Bei Gleichstand gewinnt die nähere Mitte. `score()` und `nearest()` sind reine Funktionen mit Unit-Tests.
-- **Ebenen:** Feste und klebende Leisten (Kopfzeile, untere Navigation) liegen geometrisch immer über bzw. unter dem Inhalt. Sie bilden deshalb eine eigene Ebene, die die Pfeile erst erreichen, wenn der Inhalt in dieser Richtung nichts mehr hat. Von der Leiste aus geht es nur zu Elementen, die gerade auf dem Bildschirm sind.
-- **Bereiche:** In offenen Dialogen und Menüs (`role="dialog"`, `aria-modal`, `role="menu"`, `dialog[open]`) bleibt der Fokus innerhalb.
-- **Einstieg:** Ohne fokussiertes Element (oder mit Fokus auf `<main>` nach einem Seitenwechsel) springt der erste Pfeil auf ein Element mit `data-autofocus`, sonst auf das erste sichtbare Element im Hauptbereich.
-- **Konventionen für Themes:** `data-autofocus` markiert bei Bedarf den Einstieg einer Seite; Classic braucht es nicht, weil das erste sichtbare Element („Abspielen“ im Hero) passt. `data-nav-ignore` nimmt ein Element von den Pfeilen aus, es bleibt per Tab erreichbar (Skip-Link). Komponenten mit eigener Pfeillogik (Raster, Tabs, Radiogruppen, Menüs, Zeitleiste) rufen `preventDefault()` auf, dann bleibt die globale Navigation still.
-- **Felder:** Textfelder behalten ←/→ für den Cursor, bis er am Anfang bzw. Ende steht. `select` behält ↑/↓, Schieberegler behalten ←/→.
-- **Zurück:** Esc, Backspace außerhalb von Textfeldern, `GoBack`/`BrowserBack`/`XF86Back` sowie die Key-Codes 461 (webOS) und 10009 (Tizen) gehen eine Seite zurück, solange es in der App eine vorherige Seite gibt. Offene Overlays verarbeiten die Taste vorher selbst. In Textfeldern löschen Backspace und Esc wie gewohnt.
-- **Player:** `claimKeys()` schaltet die globale Behandlung ab, solange der Player eigene Tasten braucht.
-- Der Handler hängt in der Bubble-Phase an `window`, läuft also nach allen Komponenten-Handlern. Gescrollt wird mit `scrollIntoView({ block: 'nearest' })`, bei reduzierter Bewegung ohne Animation.
+- **Choosing the target:** an arrow searches all visible focusable elements for the nearest one in that direction. Candidates have to start beyond the middle of the current element (otherwise a lifted card in the same row would count as "below"). Offset on the cross axis weighs three times as much as the distance, so the focus stays in its row or column. On a tie, the closer center wins. `score()` and `nearest()` are pure functions with unit tests.
+- **Layers:** fixed and sticky bars (header, bottom navigation) always lie geometrically above or below the content. They therefore form a layer of their own, which the arrows only reach once the content has nothing left in that direction. From the bar, the arrows only go to elements currently on screen.
+- **Scopes:** in open dialogs and menus (`role="dialog"`, `aria-modal`, `role="menu"`, `dialog[open]`) the focus stays inside.
+- **Entry point:** without a focused element (or with the focus on `<main>` after a page change), the first arrow jumps to an element with `data-autofocus`, otherwise to the first visible element in the main area.
+- **Conventions for themes:** `data-autofocus` marks the entry point of a page when needed; Classic does not need it, because the first visible element ("Play" in the hero) fits. `data-nav-ignore` excludes an element from the arrows; it stays reachable with Tab (skip link). Components with their own arrow logic (grids, tabs, radio groups, menus, timeline) call `preventDefault()`, then the global navigation stays quiet.
+- **Fields:** text fields keep ←/→ for the cursor until it is at the start or end. `select` keeps ↑/↓, sliders keep ←/→.
+- **Back:** Esc, Backspace outside text fields, `GoBack`/`BrowserBack`/`XF86Back` and the key codes 461 (webOS) and 10009 (Tizen) go back one page as long as there is a previous page in the app. Open overlays handle the key themselves first. In text fields, Backspace and Esc delete as usual.
+- **Player:** `claimKeys()` switches the global handling off while the player needs its own keys.
+- The handler hangs on `window` in the bubble phase, so it runs after all component handlers. Scrolling uses `scrollIntoView({ block: 'nearest' })`, without animation with reduced motion.
 
-**TV-Modus** (`navigation/device.ts`, `app/Environment.tsx`): `data-device` ist `tv`, wenn die Einstellung „Bedienmodus“ auf Fernseher steht oder bei „Automatisch“ der User-Agent zu einem Smart-TV oder Streaming-Stick passt (webOS, Tizen, Fire TV, Android/Google TV …). Sonst `touch` bei grobem Zeiger ohne Hover, ansonsten `desktop`. Im TV-Modus gilt `font-size: clamp(16px, 100vw / 80, 48px)` (1920 px → 24 px, 3840 px → 48 px). Der Overscan-Rand (0–5 %, Standard 3 %) landet als `--overscan-x`/`--overscan-y` im Seitenrand `--page-gutter` und in den Abständen des Player-Overlays.
+**TV mode** (`navigation/device.ts`, `app/Environment.tsx`): `data-device` is `tv` when the "Input mode" setting is set to TV, or, with "Automatic", when the user agent matches a smart TV or streaming stick (webOS, Tizen, Fire TV, Android/Google TV …). Otherwise `touch` for a coarse pointer without hover, else `desktop`. In TV mode, `font-size: clamp(16px, 100vw / 80, 48px)` applies (1920 px → 24 px, 3840 px → 48 px). The overscan margin (0–5 %, default 3 %) ends up as `--overscan-x`/`--overscan-y` in the page margin `--page-gutter` and in the spacing of the player overlay.
 
-**Prüfung:** `navigation/navigation.test.ts` (Geometrie, Felder, gesperrte Tasten, Zurück-Taste, Geräteerkennung). E2E in `e2e/settings.spec.ts`: nur mit Pfeiltasten vom Hero über „Weiterschauen“ zu einem Titel und zurück, TV-Modus bei 1920 px, Fokus = Hover für Navigationslinks, Buttons, Karten, Radiogruppe und Schalter per Vergleich der berechneten Stile. Die Ebenen brauchen echtes Layout und sind deshalb nur per E2E abgedeckt.
+**Verification:** `navigation/navigation.test.ts` (geometry, fields, claimed keys, back key, device detection). E2E in `e2e/settings.spec.ts`: with arrow keys only from the hero through "Continue watching" to a title and back, TV mode at 1920 px, focus = hover for navigation links, buttons, cards, radio group and switch by comparing the computed styles. The layers need a real layout and are therefore only covered by E2E.
 
 ---
 
 ## 9. Player
 
-### 9.1 Überblick
+### 9.1 Overview
 
-Der Player besteht aus einer headless Engine (`player/`) und dem vom Theme gestalteten `PlayerOverlay`. Das Overlay bekommt ein `PlayerModel` (Zustand + Befehle) und sieht nie hls.js, URLs oder PlaybackInfo. Route: `/play/:itemId` als Vollbildebene über der vorherigen Seite. Der Player-Chunk inklusive hls.js wird erst geladen, wenn er gebraucht wird. Beim Fokus auf „Abspielen“ wird er vorgeladen.
+The player consists of a headless engine (`player/`) and the `PlayerOverlay` designed by the theme. The overlay receives a `PlayerModel` (state + commands) and never sees hls.js, URLs or PlaybackInfo. Route: `/play/:itemId` as a full-screen layer above the previous page. The player chunk including hls.js is only loaded when it is needed. It is preloaded on focus of "Play".
 
-### 9.2 Datenfluss
+### 9.2 Data flow
 
 ```mermaid
 sequenceDiagram
-  participant O as PlayerOverlay (Theme)
+  participant O as PlayerOverlay (theme)
   participant C as PlaybackController
   participant P as DeviceProfile
   participant S as Jellyfin
   participant E as Engine (native | hls.js)
 
   O->>C: play(itemId, { startTicks?, audioIndex?, subtitleIndex? })
-  C->>P: getDeviceProfile() (einmal pro Sitzung erkannt, gecacht)
+  C->>P: getDeviceProfile() (detected once per session, cached)
   C->>S: POST /Items/{id}/PlaybackInfo (DeviceProfile, MaxStreamingBitrate, StartTimeTicks, Audio/SubtitleStreamIndex)
   S-->>C: MediaSources[], PlaySessionId
-  C->>C: Quelle wählen → DirectPlay | TranscodingUrl
-  C->>S: GET /MediaSegments/{id} (parallel; nur falls vorhanden)
+  C->>C: choose source → DirectPlay | TranscodingUrl
+  C->>S: GET /MediaSegments/{id} (in parallel; only if available)
   C->>E: load(url, startSeconds)
   E-->>C: playing
-  C->>S: POST /Sessions/Playing (Start)
-  loop alle 10 s und bei Pause, Fortsetzen, Sprung, Spurwechsel
+  C->>S: POST /Sessions/Playing (start)
+  loop every 10 s and on pause, resume, seek, track change
     C->>S: POST /Sessions/Playing/Progress
   end
-  C->>S: POST /Sessions/Playing/Stopped (Ende, Schließen, pagehide mit keepalive)
+  C->>S: POST /Sessions/Playing/Stopped (end, close, pagehide with keepalive)
 ```
 
 ### 9.3 DeviceProfile
 
-`capabilities.ts` erkennt die Fähigkeiten einmal pro Sitzung. `device-profile.ts` baut daraus das Profil als reine Funktion, mit Unit-Tests über Fähigkeits-Fixtures für Chrome, Firefox, Safari und TV.
+`capabilities.ts` detects the capabilities once per session. `device-profile.ts` builds the profile from them as a pure function, with unit tests over capability fixtures for Chrome, Firefox, Safari and TV.
 
-- **Video:** H.264 (Profile/Level per `canPlayType('video/mp4; codecs="avc1.640033"')` usw.), HEVC (`hvc1…`, Main/Main10), AV1 (`av01…`), VP9 (`vp09…`). Wo verfügbar, ergänzt `MediaCapabilities.decodingInfo()` die Angaben für Auflösung/Framerate (`smooth`) und HDR (`hdrMetadataType`, `transferFunction: 'pq' | 'hlg'`, `colorGamut: 'rec2020'`, zusätzlich `matchMedia('(dynamic-range: high)')`). Ohne HDR-Fähigkeit dürfen HDR-Quellen nicht direkt laufen (CodecProfile-Bedingung auf `VideoRangeType`), dann übernimmt der Server Tone-Mapping, sofern konfiguriert.
-- **Audio:** AAC, MP3, Opus, FLAC, Vorbis, ALAC; AC3/E-AC3 nur, wenn `canPlayType` sie meldet (Safari, Edge). DTS/TrueHD werden nie direkt abgespielt, nur die Audiospur wird transkodiert, Video per Stream-Copy. `MaxAudioChannels` aus `AudioContext.destination.maxChannelCount` (2 oder 6).
-- **Container (Direct Play):** mp4/m4v, webm, mov (Safari); mkv nur in Chromium-Browsern. `canPlayType` meldet dort leer, obwohl die Wiedergabe funktioniert. Das ist bewusst User-Agent-basiert; Fehler fängt die Fallback-Kette ab (§9.11).
-- **TranscodingProfile:** `Protocol: 'hls'`, `Context: 'Streaming'`, Container `mp4` (fMP4), wenn HEVC unterstützt wird, sonst `ts`; `VideoCodec: 'hevc,h264'` bzw. `'h264'`; `AudioCodec: 'aac,mp3'` (+ac3/eac3 wenn möglich); `BreakOnNonKeyFrames: true`; `MinSegments: 1`.
-- **Untertitel:** `vtt` → External. Bildbasierte Formate (`pgssub`, `dvdsub`, `dvbsub`) → Encode (Burn-in). ASS/SSA → siehe [Frage 9].
-- **Bitrate:** `MaxStreamingBitrate` aus der Einstellung. „Automatisch“ misst einmal pro Sitzung mit `getBitrateTestBytes` (z. B. 1 MB) und nimmt 80 % davon, höchstens den Serverwert.
+- **Video:** H.264 (profile/level through `canPlayType('video/mp4; codecs="avc1.640033"')` etc.), HEVC (`hvc1…`, Main/Main10), AV1 (`av01…`), VP9 (`vp09…`). Where available, `MediaCapabilities.decodingInfo()` adds details for resolution/frame rate (`smooth`) and HDR (`hdrMetadataType`, `transferFunction: 'pq' | 'hlg'`, `colorGamut: 'rec2020'`, plus `matchMedia('(dynamic-range: high)')`). Without HDR capability, HDR sources must not play directly (codec profile condition on `VideoRangeType`); the server then does tone mapping, if configured.
+- **Audio:** AAC, MP3, Opus, FLAC, Vorbis, ALAC; AC3/E-AC3 only when `canPlayType` reports them (Safari, Edge). DTS/TrueHD are never played directly; only the audio track is transcoded, video by stream copy. `MaxAudioChannels` from `AudioContext.destination.maxChannelCount` (2 or 6).
+- **Containers (direct play):** mp4/m4v, webm, mov (Safari); mkv only in Chromium browsers. `canPlayType` reports empty there although playback works. This is deliberately based on the user agent; the fallback chain catches errors (§9.11).
+- **TranscodingProfile:** `Protocol: 'hls'`, `Context: 'Streaming'`, container `mp4` (fMP4) when HEVC is supported, otherwise `ts`; `VideoCodec: 'hevc,h264'` or `'h264'`; `AudioCodec: 'aac,mp3'` (+ac3/eac3 when possible); `BreakOnNonKeyFrames: true`; `MinSegments: 1`.
+- **Subtitles:** `vtt` → External. Picture-based formats (`pgssub`, `dvdsub`, `dvbsub`) → Encode (burn-in). ASS/SSA → see [Question 9].
+- **Bitrate:** `MaxStreamingBitrate` from the setting. "Automatic" measures once per session with `getBitrateTestBytes` (e.g. 1 MB) and takes 80 % of it, at most the server value.
 
-### 9.4 Quelle wählen
+### 9.4 Choosing the source
 
-1. `SupportsDirectPlay` und keine Untertitel mit Burn-in → Direct Play über statische Stream-URL, `PlayMethod: DirectPlay`.
-2. Sonst `TranscodingUrl` (Remux/Transcode, vom Server entschieden) → `PlayMethod: Transcode`. **Geprüft gegen jellyfin-web (Phase 3):** `SupportsDirectStream` ohne `SupportsDirectPlay` nutzt ebenfalls die statische Datei, gemeldet als `DirectStream`. Ab Fallback-Stufe 1 nimmt der Player immer die `TranscodingUrl`.
-3. `PlaybackInfo.ErrorCode` (`NotAllowed`, `NoCompatibleStream`, `RateLimitExceeded`) → verständliche Meldung.
+1. `SupportsDirectPlay` and no subtitles with burn-in → direct play through the static stream URL, `PlayMethod: DirectPlay`.
+2. Otherwise `TranscodingUrl` (remux/transcode, decided by the server) → `PlayMethod: Transcode`. **Checked against jellyfin-web (phase 3):** `SupportsDirectStream` without `SupportsDirectPlay` also uses the static file, reported as `DirectStream`. From fallback level 1 on, the player always takes the `TranscodingUrl`.
+3. `PlaybackInfo.ErrorCode` (`NotAllowed`, `NoCompatibleStream`, `RateLimitExceeded`) → an understandable message.
 
 ### 9.5 Engines
 
-- **Native** (`<video src>`): Direct Play sowie HLS in Safari (`canPlayType('application/vnd.apple.mpegurl')`). Startposition wird nach `loadedmetadata` gesetzt.
-- **hls.js** (dynamischer Import, Worker aktiv): HLS in allen anderen Browsern, `startPosition` in Sekunden. Fatale Fehler erst per `recoverMediaError()`, dann an den Controller.
-- Beide implementieren dasselbe Interface (`load`, `play`, `pause`, `seek`, `setRate`, `destroy`, Ereignisse). Der Controller kennt nur das Interface.
+- **Native** (`<video src>`): direct play and HLS in Safari (`canPlayType('application/vnd.apple.mpegurl')`). The start position is set after `loadedmetadata`.
+- **hls.js** (dynamic import, worker active): HLS in all other browsers, `startPosition` in seconds. Fatal errors first through `recoverMediaError()`, then to the controller.
+- Both implement the same interface (`load`, `play`, `pause`, `seek`, `setRate`, `destroy`, events). The controller only knows the interface.
 
-### 9.6 Untertitel
+### 9.6 Subtitles
 
-- Textuntertitel (`DeliveryMethod: External`) werden über `getSubtitleApi` als WebVTT geladen und als Blob-URL in `<track>` eingehängt. Das vermeidet `crossorigin` am `<video>`. Das ist wichtig, weil Direct-Play-Streams von einem anderen Ursprung sonst CORS-Header bräuchten. Darstellung über `::cue` je Theme (Kontrast, Größe; im TV-Modus größer).
-- Bilduntertitel lösen einen neuen PlaybackInfo-Aufruf mit `SubtitleStreamIndex` aus. Der Server liefert eine `TranscodingUrl` mit Burn-in.
-- Ausgangsauswahl: Benutzerkonfiguration `SubtitleLanguagePreference`/`SubtitleMode` bzw. Server-Default (`DefaultSubtitleStreamIndex`).
+- Text subtitles (`DeliveryMethod: External`) are loaded through `getSubtitleApi` as WebVTT and attached to `<track>` as a blob URL. That avoids `crossorigin` on the `<video>`. This matters because direct play streams from another origin would otherwise need CORS headers. Presentation through `::cue` per theme (contrast, size; larger in TV mode).
+- Picture subtitles trigger a new PlaybackInfo call with `SubtitleStreamIndex`. The server delivers a `TranscodingUrl` with burn-in.
+- Initial selection: user configuration `SubtitleLanguagePreference`/`SubtitleMode` or the server default (`DefaultSubtitleStreamIndex`).
 
-### 9.7 Spur-, Qualitäts- und Geschwindigkeitswechsel
+### 9.7 Switching track, quality and speed
 
-- **Audio:** Browser können Audiospuren in MKV/MP4 praktisch nicht umschalten (`audioTracks` gibt es nur in Safari). Deshalb gilt immer: neuer PlaybackInfo-Aufruf mit `AudioStreamIndex` und `StartTimeTicks` = aktuelle Position, neuer Stream. Der Server remuxt dann in der Regel nur.
-- **Untertitel:** Text → nur `<track>` tauschen, kein neuer Stream. Bild → neuer Stream mit Burn-in.
-- **Qualität:** neuer PlaybackInfo-Aufruf mit `MaxStreamingBitrate`.
-- **Alten Transcode beenden:** `DELETE /Videos/ActiveEncodings?deviceId=…&playSessionId=…` über `api.axiosInstance`. Der Endpunkt fehlt im SDK-1.0-Client, weil der `HlsSegmentController` per `IgnoreApi` aus der OpenAPI ausgeblendet ist. Er existiert in 10.10 bis 12.x (in Phase 3 im Jellyfin-Quelltext geprüft). Fallback: Der Server beendet verwaiste Transcodes von selbst.
-- **Geschwindigkeit** (0,5–2×): rein clientseitig über `playbackRate`.
-- Während des Wechsels bleibt das letzte Bild stehen und ein Ladeindikator erscheint. Die Position springt nicht zurück.
+- **Audio:** browsers can practically not switch audio tracks in MKV/MP4 (`audioTracks` only exists in Safari). So it is always: a new PlaybackInfo call with `AudioStreamIndex` and `StartTimeTicks` = current position, a new stream. The server then usually only remuxes.
+- **Subtitles:** text → only swap the `<track>`, no new stream. Picture → a new stream with burn-in.
+- **Quality:** a new PlaybackInfo call with `MaxStreamingBitrate`.
+- **Ending the old transcode:** `DELETE /Videos/ActiveEncodings?deviceId=…&playSessionId=…` through `api.axiosInstance`. The endpoint is missing from the SDK 1.0 client because the `HlsSegmentController` is hidden from the OpenAPI through `IgnoreApi`. It exists in 10.10 through 12.x (checked in the Jellyfin source in phase 3). Fallback: the server ends orphaned transcodes by itself.
+- **Speed** (0.5–2×): purely client-side through `playbackRate`.
+- During the switch the last frame stays on screen and a loading indicator appears. The position does not jump back.
 
-### 9.8 Fortschrittsmeldung
+### 9.8 Progress reporting
 
-- `reportPlaybackStart` beim ersten `playing`. `reportPlaybackProgress` alle 10 s und bei Ereignissen (`EventName`: `pause`, `unpause`, `timeupdate`, `volumechange`, `audiotrackchange`, `subtitletrackchange`), jeweils mit `PositionTicks` (s × 10⁷), `IsPaused`, `IsMuted`, `VolumeLevel`, `PlayMethod`, `MediaSourceId`, `PlaySessionId`, `AudioStreamIndex`, `SubtitleStreamIndex`, `CanSeek`.
-- `reportPlaybackStopped` bei Ende, Schließen, Routenwechsel und `pagehide`. Beim Schließen des Tabs läuft der Aufruf über die SDK-Methode mit Axios-`fetchOptions: { keepalive: true }`.
-- Bei pausiertem Transcode `pingPlaybackSession` alle 30 s, damit der Server die Sitzung nicht beendet.
-- Nach dem Stop werden „Weiterschauen“, „Nächste Folgen“ und das Item invalidiert.
+- `reportPlaybackStart` on the first `playing`. `reportPlaybackProgress` every 10 s and on events (`EventName`: `pause`, `unpause`, `timeupdate`, `volumechange`, `audiotrackchange`, `subtitletrackchange`), each with `PositionTicks` (s × 10⁷), `IsPaused`, `IsMuted`, `VolumeLevel`, `PlayMethod`, `MediaSourceId`, `PlaySessionId`, `AudioStreamIndex`, `SubtitleStreamIndex`, `CanSeek`.
+- `reportPlaybackStopped` on end, close, route change and `pagehide`. When the tab closes, the call goes through the SDK method with Axios `fetchOptions: { keepalive: true }`.
+- With a paused transcode, `pingPlaybackSession` every 30 s so the server does not end the session.
+- After the stop, "Continue watching", "Next up" and the item are invalidated.
 
-### 9.9 Segmente, Trickplay, Kapitel
+### 9.9 Segments, trickplay, chapters
 
-- **Segmente:** `getItemSegments({ itemId, includeSegmentTypes: [Intro, Recap, Outro, Preview] })`. Liefert der Server keine Segmente (kein Provider-Plugin), erscheint kein Button. Intro/Recap → „Intro überspringen“. Outro → bei vorhandener nächster Folge das Nächste-Folge-Overlay, sonst „Abspann überspringen“. Der Button ist fokussiert, solange das Segment läuft (Enter = überspringen).
-- **Trickplay:** `item.Trickplay[mediaSourceId][width]` mit `TileWidth`, `TileHeight`, `ThumbnailCount`, `Interval`. Gewählt wird die Breite, die 320 px × DPR am nächsten kommt. Kachelindex = `floor(thumb / (TileWidth × TileHeight))`, Offset per CSS `object-position`. Kacheln werden beim ersten Hover/Fokus der Zeitleiste vorgeladen.
-- **Kapitel:** `item.Chapters` → Marker auf der Zeitleiste, Kapitelliste im Overlay.
+- **Segments:** `getItemSegments({ itemId, includeSegmentTypes: [Intro, Recap, Outro, Preview] })`. If the server returns no segments (no provider plugin), no button appears. Intro/recap → "Skip intro". Outro → the next episode overlay when there is a next episode, otherwise "Skip credits". The button is focused while the segment runs (Enter = skip).
+- **Trickplay:** `item.Trickplay[mediaSourceId][width]` with `TileWidth`, `TileHeight`, `ThumbnailCount`, `Interval`. The width closest to 320 px × DPR is chosen. Tile index = `floor(thumb / (TileWidth × TileHeight))`, offset through CSS `object-position`. Tiles are preloaded on the first hover/focus of the timeline.
+- **Chapters:** `item.Chapters` → markers on the timeline, chapter list in the overlay.
 
-### 9.10 Fortsetzen und nächste Folge
+### 9.10 Resume and next episode
 
-- **Fortsetzen-Abfrage:** Startet „Abspielen“ ohne explizite Wahl und es gibt `PlaybackPositionTicks > 0`, erscheint `ResumePrompt` (Fortsetzen ab mm:ss / Von vorne). Die Detailseite bietet beide Buttons direkt an.
-- **Nächste Folge:** `getEpisodes({ seriesId, startItemId: current, limit: 2 })` → zweiter Eintrag. Das Overlay erscheint bei Outro-Beginn, sonst 30 s vor Ende, mit 10-s-Countdown. Abbrechen ist jederzeit möglich. Ob automatisch weitergespielt wird, steuert die Einstellung „nächste Folge automatisch“.
+- **Resume question:** if "Play" starts without an explicit choice and there is `PlaybackPositionTicks > 0`, `ResumePrompt` appears (Resume from mm:ss / From the start). The detail page offers both buttons directly.
+- **Next episode:** `getEpisodes({ seriesId, startItemId: current, limit: 2 })` → the second entry. The overlay appears when the outro starts, otherwise 30 s before the end, with a 10 s countdown. Cancelling is possible at any time. Whether playback continues automatically is controlled by the setting "Play next episode automatically".
 
-### 9.11 Fehler und Fallback-Kette
+### 9.11 Errors and the fallback chain
 
 ```
-DirectPlay ──Fehler──▶ PlaybackInfo(EnableDirectPlay=false)            (Remux/DirectStream)
-           ──Fehler──▶ PlaybackInfo(EnableDirectStream=false,
-                                    AllowVideoStreamCopy=false,
-                                    AllowAudioStreamCopy=false)       (volles Transcoding)
-           ──Fehler──▶ ErrorState mit verständlicher Meldung + „Erneut versuchen“
+DirectPlay ──error──▶ PlaybackInfo(EnableDirectPlay=false)            (remux/DirectStream)
+           ──error──▶ PlaybackInfo(EnableDirectStream=false,
+                                   AllowVideoStreamCopy=false,
+                                   AllowAudioStreamCopy=false)       (full transcoding)
+           ──error──▶ ErrorState with an understandable message + "Try again"
 ```
 
-Auslöser sind `MediaError` (Code 3/4), fatale hls.js-Fehler und ein Stillstand über 15 s ohne Fortschritt trotz Puffer. Der Wechsel geschieht an derselben Position. Der Benutzer sieht einen kurzen Hinweis („Wiedergabe wird angepasst …“), keinen Fehler. Meldungen sind nach Ursache unterschieden: Netzwerk, Format nicht unterstützt, Server verweigert, Rechte.
+Triggers are `MediaError` (code 3/4), fatal hls.js errors and a stall of more than 15 s without progress despite a buffer. The switch happens at the same position. The user sees a short notice ("Adjusting playback …"), not an error. Messages are distinguished by cause: network, format not supported, server refuses, permissions.
 
-### 9.12 Steuerung und Plattform-APIs
+### 9.12 Controls and platform APIs
 
-- **Tastatur:** Leertaste/K Play-Pause, F Vollbild, M Stumm, ←/→ ±10 s, ↑/↓ Lautstärke, Esc schließt das Overlay bzw. den Player. Bei sichtbarem Overlay mit Fokus auf einem Bedienelement navigieren Pfeiltasten zwischen den Elementen. Auf der Zeitleiste spulen ←/→. Bei ausgeblendetem Overlay spulen bzw. regeln die Pfeiltasten direkt (übliches TV-Muster).
-- **Medientasten / OS:** `keydown` für `MediaPlayPause`, `MediaPlay`, `MediaPause`, `MediaStop`, `MediaFastForward`, `MediaRewind`, `MediaTrackNext` sowie die Media Session API (Metadaten, Artwork, Aktionen) für Systemsteuerung, Bluetooth-Kopfhörer und Sperrbildschirm.
-- **Vollbild** am Player-Container (Overlay bleibt sichtbar). Auf iOS-Safari nur nativ am `<video>`, dann mit Systemsteuerung.
-- **Bild-in-Bild:** `requestPictureInPicture`, Button nur bei `document.pictureInPictureEnabled`.
-- **Screen Wake Lock** während der Wiedergabe, falls verfügbar.
+- **Keyboard:** Space/K play-pause, F full screen, M mute, ←/→ ±10 s, ↑/↓ volume, Esc closes the overlay or the player. With the overlay visible and the focus on a control, the arrow keys move between the controls. On the timeline, ←/→ seek. With the overlay hidden, the arrow keys seek or change the volume directly (the usual TV pattern).
+- **Media keys / OS:** `keydown` for `MediaPlayPause`, `MediaPlay`, `MediaPause`, `MediaStop`, `MediaFastForward`, `MediaRewind`, `MediaTrackNext`, plus the Media Session API (metadata, artwork, actions) for system controls, Bluetooth headphones and the lock screen.
+- **Full screen** on the player container (the overlay stays visible). On iOS Safari only natively on the `<video>`, then with the system controls.
+- **Picture-in-picture:** `requestPictureInPicture`, button only with `document.pictureInPictureEnabled`.
+- **Screen Wake Lock** during playback, if available.
 
-### 9.13 Trailer-Vorschau im Hero
+### 9.13 Trailer preview in the hero
 
-Nutzt dieselbe Engine stumm, mit niedriger Bitrate und ohne Reporting. Sie startet nur nach 3 s Ruhe auf dem Hero, wenn die Einstellung „Trailer-Autoplay“ an ist, die Bewegung nicht reduziert ist, `saveData` nicht gesetzt ist und das Gerät kein Smartphone ist. Sie stoppt bei Scrollen, Fokuswechsel oder verborgenem Tab.
+Uses the same engine, muted, at a low bitrate and without reporting. It only starts after 3 s of calm on the hero, when the "Trailer autoplay" setting is on, motion is not reduced, `saveData` is not set and the device is not a phone. It stops on scrolling, a focus change or a hidden tab.
 
-Umsetzung (Phase 4): `useTrailerPreview(itemId)` in `player/useTrailerPreview.ts` liefert dem Theme `videoRef`, `playing` und `cancel()`. Der Trailer-Code (`player/trailer.ts`) wird erst beim Start nachgeladen. Er fragt PlaybackInfo mit höchstens 3 Mbit/s an, nutzt die normalen Engines und meldet nichts an den Server. Gestoppt wird nach mehr als 120 px Scrollen, bei verborgenem Tab, beim Wechsel des Hero-Titels und über `cancel()` (Classic: wenn der Fokus den Hero verlässt). „Touch“ ist das Kriterium für Smartphones und Tablets (`data-device`). Während der Trailer läuft, pausiert der automatische Wechsel des Hero-Karussells. Fehler (Autoplay verboten, kein Trailer) bleiben still, dann bleibt das Backdrop stehen.
+Implementation (phase 4): `useTrailerPreview(itemId)` in `player/useTrailerPreview.ts` gives the theme `videoRef`, `playing` and `cancel()`. The trailer code (`player/trailer.ts`) is only loaded on start. It requests PlaybackInfo with at most 3 Mbit/s, uses the normal engines and reports nothing to the server. It stops after scrolling more than 120 px, with a hidden tab, when the hero title changes and through `cancel()` (Classic: when the focus leaves the hero). "Touch" is the criterion for phones and tablets (`data-device`). While the trailer runs, the automatic change of the hero carousel pauses. Errors (autoplay forbidden, no trailer) stay silent; the backdrop then stays.
 
-### 9.14 Erkenntnisse aus Phase 3
+### 9.14 Findings from phase 3
 
-- **Route statt Ebene:** `/play/:itemId?start=<s>` ist eine eigene Vollbild-Route außerhalb der App-Shell (`app/routes/PlayerRoute.tsx`). Ohne `start` fragt sie nach dem Fortsetzen und löst Serien auf die nächste Folge auf. `usePlayer` (`player/usePlayer.ts`) erzeugt je Item einen `PlaybackController`; die Bühne mit `<video>` bleibt beim Folgenwechsel montiert.
-- **Engine-Wahl:** Safari → natives HLS; sonst hls.js (Light-Build), sobald MSE da ist. Chrome meldet seit Version 142 auch natives HLS; hls.js bleibt dort trotzdem die erste Wahl.
-- **Dauer:** `MediaSource.RunTimeTicks` gilt. `video.duration` dient nur als Ersatz, wenn der Server keine Laufzeit liefert.
-- **Wettläufe:** Jeder Stream-Wechsel bekommt ein Token; ältere Ladevorgänge verfallen nach jedem `await`. Wird während eines Wechsels die Untertitelspur geändert, startet ein neuer Wechsel mit der aktuellen Auswahl. Ob danach weiter abgespielt wird, merkt sich der Controller, weil das Element während des Wechsels pausiert ist.
-- **Demo-Server:** Range-Anfragen von `<video>` verlieren im MSW-Worker den Range-Header (no-cors-Request, neue Headers). Der Handler beantwortet sie deshalb selbst mit 206. hls.js-Anfragen sind nicht betroffen.
-- **Tests:** `player/controller.test.ts` prüft den Controller mit einer Test-Engine gegen den Mock-Server (Direct Play, Spurwechsel, Fallback-Kette, Fehler, Untertitel, Stop-Meldung, nächste Folge, Intro). `e2e/player.spec.ts` spielt den echten Clip in Chromium ab (Direct Play, hls.js, Fallback, Fehlerpanel, Fortsetzen, Barrierefreiheit).
-
----
-
-## 10. Einstellungen und Persistenz
-
-| Einstellung                               | Speicherort am Server                                                                     | geräteübergreifend                                  |
-| ----------------------------------------- | ----------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| Theme, Farbschema                         | DisplayPreferences                                                                        | ja                                                  |
-| Sprache                                   | DisplayPreferences                                                                        | ja                                                  |
-| Reduzierte Bewegung (System/An/Aus)       | DisplayPreferences                                                                        | ja                                                  |
-| Trailer-Autoplay, UI-Sounds               | DisplayPreferences                                                                        | ja                                                  |
-| Nächste Folge automatisch                 | `UserConfiguration.EnableNextEpisodeAutoPlay`                                             | ja, auch mit anderen Jellyfin-Clients **[Frage 6]** |
-| Audio-/Untertitelsprache, Untertitelmodus | `UserConfiguration.AudioLanguagePreference`, `SubtitleLanguagePreference`, `SubtitleMode` | ja, auch mit anderen Jellyfin-Clients **[Frage 6]** |
-| Max. Streaming-Qualität                   | – (nur lokal)                                                                             | nein: hängt von Gerät und Netz ab **[Frage 7]**     |
-| Bedienmodus (Auto/Desktop/TV), Overscan   | – (nur lokal)                                                                             | nein                                                |
-| Anordnung (Phase 14, §10.1)               | DisplayPreferences (`jellymorph.layout`); Vorgabe für alle in `jellymorph-defaults`       | ja                                                  |
-
-- **Lokal:** zustand mit `persist` in `localStorage`, Schlüssel je `serverId:userId`. Schreibt sofort.
-- **Server:** `DisplayPreferences` mit `displayPreferencesId: 'settings'`, `client: 'jellymorph'`. Eigene Werte als flache Schlüssel in `CustomPrefs` mit Schema-Version. Lesen–Ändern–Schreiben, gebündelt (1 s Debounce). Fehler beim Speichern führen zu einem Toast mit erneutem Versuch.
-- **Beim Login gewinnt der Server-Wert:** Nach dem Login werden die Server-Werte geladen, überschreiben die lokalen und werden angewendet (Theme-Wechsel mit Überblendung, falls abweichend).
-- **Vor dem Login:** zuletzt auf diesem Gerät benutztes Theme, sonst `DEFAULT_THEME`.
-- Ungültige Werte (z. B. unbekannte Theme-ID von einer neueren Version) werden ignoriert, nicht übernommen.
-
-**Umsetzung in Phase 4:**
-
-- **Geräte-Einstellungen** (`settings/store.ts`, Schlüssel `jellymorph.settings`): Sprache und Darstellung vor der Anmeldung, Bedienmodus, Overscan, Player (Qualität, Lautstärke, Stumm, Einbrennen).
-- **Benutzer-Einstellungen** (`settings/user-settings.ts`, Schlüssel `jellymorph.user.<serverId>:<userId>`): Theme, Farbschema, Sprache, Bewegung, Trailer-Autoplay. Gespeichert werden die Werte und ein Merker `pending`. Die zuletzt benutzten Werte werden zusätzlich als Geräte-Darstellung übernommen, damit Anmeldeseite und Profilauswahl im selben Theme erscheinen.
-- **Am Server** (`api/preferences.ts`, `hooks/useSettingsSync.ts`): DisplayPreferences `settings` / Client `jellymorph`, flache Schlüssel `jellymorph.version` (Schema 1), `jellymorph.theme`, `jellymorph.colorScheme`, `jellymorph.language`, `jellymorph.motion`, `jellymorph.trailerAutoplay`. Fremde Schlüssel im DTO bleiben erhalten, weil immer das zuletzt gelesene DTO als Grundlage dient. Ein Speichern braucht deshalb kein erneutes GET.
-- **Wer gewinnt:** Nach der Anmeldung (und bei jedem Start) wird gelesen. Die Server-Werte gewinnen, außer es gibt eine lokale Änderung, die den Server noch nicht erreicht hat (`pending`: offline, Fehler, Seite während der Wartezeit geschlossen), oder der Benutzer hat während des Ladens etwas geändert. Dann wird stattdessen gespeichert.
-- **Speichern:** 1 s nach der letzten Änderung. Beim Schließen der Seite (`pagehide`) wird ein offener Stand sofort mit `keepalive` gesendet. Ein Fehler zeigt einen Toast mit „Erneut versuchen“, der Status steht auch oben auf der Einstellungsseite.
-- **Wiedergabe-Einstellungen** (`hooks/usePlaybackPreferences.ts`): `UserConfiguration` wird als Ganzes gelesen und geschrieben (`POST /Users/Configuration`), mit sofortiger Anzeige und Rücknahme bei Fehlern. Die Sprachliste kommt von `/Localization/Cultures`, die Namen übersetzt `Intl.DisplayNames` in die UI-Sprache.
+- **Route instead of layer:** `/play/:itemId?start=<s>` is a full-screen route of its own outside the app shell (`app/routes/PlayerRoute.tsx`). Without `start` it asks about resuming and resolves series to the next episode. `usePlayer` (`player/usePlayer.ts`) creates one `PlaybackController` per item; the stage with the `<video>` stays mounted when the episode changes.
+- **Engine choice:** Safari → native HLS; otherwise hls.js (light build) as soon as MSE is available. Chrome has also reported native HLS since version 142; hls.js still stays the first choice there.
+- **Duration:** `MediaSource.RunTimeTicks` applies. `video.duration` only serves as a substitute when the server returns no runtime.
+- **Races:** every stream switch gets a token; older loads expire after every `await`. If the subtitle track is changed during a switch, a new switch starts with the current selection. Whether playback continues afterwards is remembered by the controller, because the element is paused during the switch.
+- **Demo server:** range requests from `<video>` lose the range header in the MSW worker (no-cors request, new headers). The handler therefore answers them itself with 206. hls.js requests are not affected.
+- **Tests:** `player/controller.test.ts` checks the controller with a test engine against the mock server (direct play, track change, fallback chain, errors, subtitles, stop report, next episode, intro). `e2e/player.spec.ts` plays the real clip in Chromium (direct play, hls.js, fallback, error panel, resume, accessibility).
 
 ---
 
-### 10.1 Anordnung (Phase 14)
+## 10. Settings and persistence
 
-Vier Listen lassen sich ordnen und ausdünnen: Bereiche der Startseite, Einträge der Navigation, Knöpfe und Angaben der Detailseiten (`src/domain/layout.ts`). Je Liste gilt die erste vorhandene Stufe: die eigene Anordnung des Benutzers, die Vorgabe des Administrators, die Anordnung des Themes (`ThemeOptions.layout`). Gespeichert wird je Liste die Reihenfolge (oder `null` für „wie vorgegeben“) und die ausgeblendeten Einträge. Einträge, die eine gespeicherte Reihenfolge nicht kennt (eine neue Bibliothek), stehen hinter dem Eintrag, dem sie in der Vorgabe folgen. Das große Titelbild bleibt oben, „Abspielen“ bleibt sichtbar.
+| Setting                                | Storage on the server                                                                     | Across devices                                         |
+| -------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| Theme, color scheme                    | DisplayPreferences                                                                        | yes                                                    |
+| Language                               | DisplayPreferences                                                                        | yes                                                    |
+| Reduced motion (system/on/off)         | DisplayPreferences                                                                        | yes                                                    |
+| Trailer autoplay, UI sounds            | DisplayPreferences                                                                        | yes                                                    |
+| Next episode automatically             | `UserConfiguration.EnableNextEpisodeAutoPlay`                                             | yes, also with other Jellyfin clients **[Question 6]** |
+| Audio/subtitle language, subtitle mode | `UserConfiguration.AudioLanguagePreference`, `SubtitleLanguagePreference`, `SubtitleMode` | yes, also with other Jellyfin clients **[Question 6]** |
+| Max. streaming quality                 | – (local only)                                                                            | no: depends on device and network **[Question 7]**     |
+| Input mode (auto/desktop/TV), overscan | – (local only)                                                                            | no                                                     |
+| Arrangement (phase 14, §10.1)          | DisplayPreferences (`jellymorph.layout`); default for everybody in `jellymorph-defaults`  | yes                                                    |
 
-- **Eigene Anordnung:** Teil der Benutzer-Einstellungen, als JSON im Schlüssel `jellymorph.layout`; Synchronisierung wie §10 (Schema-Version bleibt 1, alte Stände haben den Schlüssel nicht).
-- **Vorgabe für alle:** Jellyfin hat keinen Speicher, den alle lesen und nur Administratoren schreiben. Die App kopiert die Vorgabe deshalb in ein eigenes DisplayPreferences-Dokument `jellymorph-defaults` jedes Benutzers (Administratoren dürfen fremde Einstellungen schreiben, `RequestHelpers.GetUserId`); jeder liest nur seine Kopie. `jellymorph.layoutVersion` (ISO-Zeit) sagt, welche Kopie neuer ist. Öffnet ein Administrator Jellymorph, ergänzt die App fehlende oder ältere Kopien im Hintergrund (einmal pro Browser-Sitzung und Server), so bekommen später angelegte Benutzer die Vorgabe.
-- **Themes** bekommen das Ergebnis als Props: `HomePageProps.sections` in Reihenfolge, mit Einträgen für Titelbild und Bibliotheks-Kacheln; `ItemDetailPageProps.layout` bzw. `SeriesPageProps.layout` mit Knöpfen und Angaben; `NavModel.items`. Wo ein Theme Angaben an zwei Stellen zeigt (Glass, Horizon, Constellation), gilt die Anordnung an beiden.
+- **Local:** zustand with `persist` in `localStorage`, one key per `serverId:userId`. Writes immediately.
+- **Server:** `DisplayPreferences` with `displayPreferencesId: 'settings'`, `client: 'jellymorph'`. Our own values as flat keys in `CustomPrefs` with a schema version. Read–modify–write, batched (1 s debounce). Errors while saving lead to a toast with a retry.
+- **On sign-in the server value wins:** after sign-in the server values are loaded, overwrite the local ones and are applied (theme switch with a cross-fade if different).
+- **Before sign-in:** the theme last used on this device, otherwise `DEFAULT_THEME`.
+- Invalid values (e.g. an unknown theme ID from a newer version) are ignored, not applied.
 
-## 11. Internationalisierung
+**Implementation in phase 4:**
 
-- i18next mit Namespaces (`common`, `auth`, `home`, `library`, `item`, `search`, `player`, `settings`, `errors`) plus einem Namespace je Theme (`theme-neon-grid` …), der mit dem Theme-Chunk geladen wird. Umgesetzt in Phase 6: Das Theme bringt `i18n/de.json` und `i18n/en.json` mit (beide Sprachen im Chunk, wenige hundert Byte), `themes/loader.ts` registriert sie per `addResourceBundle` vor dem ersten Rendern des Themes.
-- Nur die aktive Sprache wird geladen (dynamischer Import). Deutsch ist Standard, Englisch ist wählbar.
-- Typisierte Schlüssel über `CustomTypeOptions` mit den deutschen Dateien als Quelle. Ein Test prüft, dass `en` genau dieselben Schlüssel wie `de` hat.
-- Datum, Laufzeit und Zahlen über `Intl`. Mehrzahl über i18next-Plural (`_one`/`_other`).
-- Metadaten (Titel, Beschreibungen) kommen in der Server-Sprache. Der `Accept-Language`-Header folgt der UI-Sprache.
-- Anrede im Deutschen: „du“ (wie bei Crystal). **[Frage 11]**
+- **Device settings** (`settings/store.ts`, key `jellymorph.settings`): language and appearance before sign-in, input mode, overscan, player (quality, volume, mute, burn-in).
+- **User settings** (`settings/user-settings.ts`, key `jellymorph.user.<serverId>:<userId>`): theme, color scheme, language, motion, trailer autoplay. The values and a `pending` flag are stored. The values used last are also taken over as the device appearance, so the sign-in page and profile picker appear in the same theme.
+- **On the server** (`api/preferences.ts`, `hooks/useSettingsSync.ts`): DisplayPreferences `settings` / client `jellymorph`, flat keys `jellymorph.version` (schema 1), `jellymorph.theme`, `jellymorph.colorScheme`, `jellymorph.language`, `jellymorph.motion`, `jellymorph.trailerAutoplay`. Foreign keys in the DTO are kept, because the DTO read last always serves as the basis. Saving therefore needs no new GET.
+- **Who wins:** after sign-in (and on every start) the values are read. The server values win, unless there is a local change that has not reached the server yet (`pending`: offline, error, page closed during the wait), or the user changed something while loading. Then the values are saved instead.
+- **Saving:** 1 s after the last change. When the page closes (`pagehide`), an unsaved state is sent immediately with `keepalive`. An error shows a toast with "Try again"; the status is also shown at the top of the settings page.
+- **Playback settings** (`hooks/usePlaybackPreferences.ts`): `UserConfiguration` is read and written as a whole (`POST /Users/Configuration`), shown immediately and rolled back on errors. The language list comes from `/Localization/Cultures`; `Intl.DisplayNames` translates the names into the UI language.
+
+### 10.1 Arrangement (phase 14)
+
+Four lists can be ordered and thinned out: home page areas, navigation entries, buttons and details of the detail pages (`src/domain/layout.ts`). Per list, the first available level applies: the user's own arrangement, the administrator's default, the theme's arrangement (`ThemeOptions.layout`). Per list, the order (or `null` for "as given") and the hidden entries are stored. Entries a stored order does not know (a new library) are placed behind the entry they follow in the default. The large title picture stays at the top, "Play" stays visible.
+
+- **Own arrangement:** part of the user settings, as JSON in the key `jellymorph.layout`; synchronized as in §10 (the schema version stays 1, old states simply do not have the key).
+- **Default for everybody:** Jellyfin has no storage that everybody reads and only administrators write. The app therefore copies the default into a DisplayPreferences document of its own, `jellymorph-defaults`, of every user (administrators may write other users' settings, `RequestHelpers.GetUserId`); everybody reads only their own copy. `jellymorph.layoutVersion` (ISO time) says which copy is newer. When an administrator opens Jellymorph, the app adds missing or older copies in the background (once per browser session and server), so users created later receive the default.
+- **Themes** receive the result as props: `HomePageProps.sections` in order, with entries for the title picture and the library tiles; `ItemDetailPageProps.layout` or `SeriesPageProps.layout` with buttons and details; `NavModel.items`. Where a theme shows details in two places (Glass, Horizon, Constellation), the arrangement applies to both.
 
 ---
 
-## 12. Barrierefreiheit
+## 11. Internationalization
 
-- Semantik: `header`/`nav`/`main`, Überschriften-Hierarchie, Listen für Reihen, `button` statt klickbarer `div`. Skip-Link zum Inhalt.
-- Fokusführung bei Seitenwechsel, Modals mit `inert`-Hintergrund und Fokusfalle, Rückkehr des Fokus beim Schließen.
-- Live-Region für Routenwechsel, Toasts und Player-Zustände (z. B. „Untertitel: Deutsch“).
-- Kontrast: Token-Test (§7.4) und axe in E2E für jede Seite × Theme.
-- Bedienelemente des Players mit Beschriftung. Zeitleiste als `role="slider"` mit `aria-valuetext` („12:34 von 1:45:00“).
-- Reduzierte Bewegung wie §7.7. Keine Inhalte, die nur per Hover erreichbar sind: Vorschaukarten öffnen sich auch per Fokus, alle Aktionen gibt es zusätzlich auf der Detailseite.
+- i18next with namespaces (`common`, `auth`, `home`, `library`, `item`, `search`, `player`, `settings`, `errors`) plus one namespace per theme (`theme-neon-grid` …), loaded with the theme chunk. Implemented in phase 6: the theme brings `i18n/de.json` and `i18n/en.json` (both languages in the chunk, a few hundred bytes); `themes/loader.ts` registers them with `addResourceBundle` before the theme's first render.
+- Only the active language is loaded (dynamic import). German is the default, English can be chosen.
+- Typed keys through `CustomTypeOptions` with the German files as the source. A test checks that `en` has exactly the same keys as `de`.
+- Date, runtime and numbers through `Intl`. Plurals through i18next plurals (`_one`/`_other`).
+- Metadata (titles, overviews) comes in the server's language. The `Accept-Language` header follows the UI language.
+- Form of address in German: the informal "du" (as in Crystal). **[Question 11]**
 
 ---
 
-## 13. Performance und Budgets
+## 12. Accessibility
 
-### 13.1 Basis-Bundle < 250 KB gzip
+- Semantics: `header`/`nav`/`main`, a heading hierarchy, lists for rows, `button` instead of clickable `div`s. A skip link to the content.
+- Focus management on page changes, modals with an `inert` background and a focus trap, focus returns on close.
+- A live region for route changes, toasts and player states (e.g. "Subtitles: German").
+- Contrast: token test (§7.4) and axe in E2E for every page × theme.
+- Player controls with labels. The timeline as `role="slider"` with `aria-valuetext` ("12:34 of 1:45:00").
+- Reduced motion as in §7.7. No content reachable only by hover: preview cards also open on focus, every action is also available on the detail page.
 
-Definition: alles, was `index.html` statisch lädt (Entry-Chunk + statische Importe + CSS), **ohne** Theme-Chunks, Schriften und Bilder.
+---
 
-| Posten                                            | Schätzung gzip |
-| ------------------------------------------------- | -------------- |
-| react + react-dom                                 | ~60 KB         |
-| react-router                                      | ~25 KB         |
-| axios + genutzte SDK-Teile                        | ~25 KB         |
-| i18next + react-i18next                           | ~18 KB         |
-| TanStack Query                                    | ~13 KB         |
-| Spatial Navigation (eigene, §8.1)                 | ~2 KB          |
-| motion (`LazyMotion` + `m`, Features asynchron)   | ~6 KB          |
-| zustand, blurhash                                 | ~2 KB          |
-| App-Code (Config, API, Hooks, Navigation, Router) | ~40 KB         |
-| **Summe**                                         | **~200 KB**    |
+## 13. Performance and budgets
 
-Lazy: jedes Theme, Player inkl. hls.js (~140 KB gzip), Bibliothek (TanStack Virtual), Einstellungen, MSW, Sprachdateien, Motion-Features. Ein CI-Skript (`scripts/check-bundle.ts`, ohne zusätzliche Abhängigkeit) liest das Vite-Manifest, summiert den Basis-Graphen per zlib-gzip und bricht über 250 KB ab. Theme-Chunks bekommen ein weiches Budget von 80 KB JS gzip (Warnung).
+### 13.1 Base bundle < 250 KB gzip
 
-**Gemessen (Phase 4):** Basis-Bundle 179,7 KB gzip, Classic 36,2 KB JS + 13,8 KB CSS gzip.
+Definition: everything `index.html` loads statically (entry chunk + static imports + CSS), **without** theme chunks, fonts and images.
 
-### 13.2 LCP < 2,5 s (Desktop)
+| Item                                              | Estimate gzip |
+| ------------------------------------------------- | ------------- |
+| react + react-dom                                 | ~60 KB        |
+| react-router                                      | ~25 KB        |
+| axios + the SDK parts used                        | ~25 KB        |
+| i18next + react-i18next                           | ~18 KB        |
+| TanStack Query                                    | ~13 KB        |
+| Spatial navigation (our own, §8.1)                | ~2 KB         |
+| motion (`LazyMotion` + `m`, features async)       | ~6 KB         |
+| zustand, blurhash                                 | ~2 KB         |
+| App code (config, API, hooks, navigation, router) | ~40 KB        |
+| **Total**                                         | **~200 KB**   |
 
-Theme- und Default-Chunk werden parallel zur Session-Wiederherstellung geladen. Das Hero-Backdrop bekommt `fetchpriority="high"` und eine passende `srcset`-Größe; alle anderen Bilder `loading="lazy"` + `decoding="async"`. Featured-Items werden pro Sitzung gecacht. Gemessen per Playwright im Demo-Modus (PerformanceObserver) und in Phase 11 zusätzlich per Lighthouse (`npx`, nicht im `package.json`).
+Lazy: every theme, the player including hls.js (~140 KB gzip), the library (TanStack Virtual), settings, MSW, language files, Motion features. A CI script (`scripts/check-bundle.ts`, without an additional dependency) reads the Vite manifest, sums up the base graph with zlib gzip and fails above 250 KB. Theme chunks get a soft budget of 80 KB JS gzip (warning).
 
-**Gemessen (Phase 11, 2026-10-14):** Produktions-Build im Demo-Modus, angemeldet, Startseite, 1920×1080 bzw. Lighthouse 12 mit Desktop-Profil. Lighthouse startet in dieser Umgebung kein eigenes Chromium; es hängt sich per `--port` an ein von Playwright gestartetes Chromium mit angemeldetem Profil (`--disable-storage-reset`).
+**Measured (phase 4):** base bundle 179.7 KB gzip, Classic 36.2 KB JS + 13.8 KB CSS gzip.
 
-| Theme         | LCP (Playwright) | CLS   | Lighthouse Leistung / Barrierefreiheit / Best Practices |
+### 13.2 LCP < 2.5 s (desktop)
+
+The theme and default chunks are loaded in parallel with restoring the session. The hero backdrop gets `fetchpriority="high"` and a fitting `srcset` size; all other images `loading="lazy"` + `decoding="async"`. Featured items are cached per session. Measured with Playwright in demo mode (PerformanceObserver) and, in phase 11, also with Lighthouse (`npx`, not in `package.json`).
+
+**Measured (phase 11, 2026-10-14):** production build in demo mode, signed in, home page, 1920×1080, or Lighthouse 12 with the desktop profile. Lighthouse does not start its own Chromium in this environment; it attaches through `--port` to a Chromium started by Playwright with a signed-in profile (`--disable-storage-reset`).
+
+| Theme         | LCP (Playwright) | CLS   | Lighthouse performance / accessibility / best practices |
 | ------------- | ---------------- | ----- | ------------------------------------------------------- |
-| Classic       | 1,2 s            | 0,002 | 100 / 100 / 100                                         |
-| Neon Grid     | 1,0 s            | 0,003 | 99 / 100 / 100                                          |
-| Crimson       | 0,8 s            | 0,001 | 100 / 100 / 100                                         |
-| Glass         | 0,8 s            | 0,008 | 100 / 100 / 100                                         |
-| Horizon       | 1,3 s            | 0,001 | 99 / 100 / 100                                          |
-| Constellation | 1,3 s            | 0,000 | 99 / 100 / 100                                          |
+| Classic       | 1.2 s            | 0.002 | 100 / 100 / 100                                         |
+| Neon Grid     | 1.0 s            | 0.003 | 99 / 100 / 100                                          |
+| Crimson       | 0.8 s            | 0.001 | 100 / 100 / 100                                         |
+| Glass         | 0.8 s            | 0.008 | 100 / 100 / 100                                         |
+| Horizon       | 1.3 s            | 0.001 | 99 / 100 / 100                                          |
+| Constellation | 1.3 s            | 0.000 | 99 / 100 / 100                                          |
 
-Total Blocking Time überall 0 ms, keine Long Tasks. Gefunden und behoben: Die Hero-Platzhalter von Horizon und Constellation waren um die Zeile mit den Punkten zu niedrig (CLS 0,05), die zentrierte Leiste von Constellation verschob sich beim Nachladen der Bibliotheken. Offene Lighthouse-Hinweise betreffen nur Cache-Header (setzt im Container nginx, nicht `vite preview`) und dass das LCP-Bild einer SPA nicht im ersten HTML steht.
+Total blocking time 0 ms everywhere, no long tasks. Found and fixed: the hero placeholders of Horizon and Constellation were too short by the line with the dots (CLS 0.05), and Constellation's centered bar moved while the libraries loaded. The remaining Lighthouse notes only concern cache headers (set by nginx in the container, not by `vite preview`) and that the LCP image of an SPA is not in the first HTML.
 
-### 13.3 60 fps und keine Layout-Sprünge
+### 13.3 60 fps and no layout shifts
 
-- Kartencontainer haben feste `aspect-ratio`. Der BlurHash wird auf einem 32×32-Canvas dekodiert, mit Cache je Hash, und darunter skaliert. Das Bild blendet per `opacity` ein.
-- Nur `transform`/`opacity`/`filter` animieren. `will-change` nur kurzzeitig. `content-visibility: auto` für Reihen außerhalb des Viewports.
-- `backdrop-filter` (Glass) und SVG-/Filter-Effekte (Neon Grid) haben im TV-Modus und bei schwacher Hardware reduzierte Varianten (R9).
+- Card containers have a fixed `aspect-ratio`. The BlurHash is decoded on a 32×32 canvas, cached per hash, and scaled up underneath. The image fades in through `opacity`.
+- Only `transform`/`opacity`/`filter` are animated. `will-change` only briefly. `content-visibility: auto` for rows outside the viewport.
+- `backdrop-filter` (Glass) and SVG/filter effects (Neon Grid) have reduced variants in TV mode and on weak hardware (R9).
 
 ---
 
-## 14. Sicherheit
+## 14. Security
 
-- **Token:** `localStorage` (nötig für Persistenz). Das Risiko XSS wird durch eine strikte CSP ohne `unsafe-inline`/`unsafe-eval` und durch Rendering ohne `dangerouslySetInnerHTML` begrenzt. Server-Texte (Beschreibungen) werden immer als Text gerendert.
-- **CSP** (vom Entrypoint gerendert, Phase 5):
+- **Token:** `localStorage` (needed for persistence). The XSS risk is limited by a strict CSP without `unsafe-inline`/`unsafe-eval` and by rendering without `dangerouslySetInnerHTML`. Server texts (overviews) are always rendered as text.
+- **CSP** (rendered by the entrypoint, phase 5):
   ```
   default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self';
   img-src 'self' data: blob: https: <JF>; media-src 'self' blob: <JF>;
   connect-src 'self' <JF> <JF-WS>; worker-src 'self' blob:; manifest-src 'self';
   object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
   ```
-  `<JF>`: bei `LOCK_SERVER`+`JELLYFIN_URL` genau diese Origin; im Proxy-Modus nichts zusätzlich; sonst `https: http:` bzw. `wss: ws:`, weil der Benutzer beliebige Server hinzufügen darf. `img-src https:` gilt in jedem Modus (seit Phase 13): Die Bildvorschläge der Metadaten-Anbieter in den Admin-Dialogen lädt der Browser direkt von deren Seiten, Jellyfin liefert nur die Adressen und hat dafür keinen Bild-Proxy. `worker-src blob:` braucht der hls.js-Worker. Inline-Styles über Reacts `style`-Prop setzen CSSOM-Eigenschaften und sind ohne `unsafe-inline` erlaubt.
-- Keine Secrets im Repo. `.env.local` steht in `.gitignore`. Demo-Daten enthalten keine echten Personen oder Marken.
-- `rel="noopener noreferrer"` für externe Links. `Referrer-Policy: strict-origin-when-cross-origin`. `Permissions-Policy` erlaubt nur `fullscreen`, `picture-in-picture`, `autoplay` und `screen-wake-lock` für `self`.
-- **Umsetzung (Phase 5):** Die CSP entsteht wie oben im Entrypoint. Demo-Modus und Proxy-Modus erlauben nur die eigene Origin, `LOCK_SERVER` genau die Origin aus `JELLYFIN_URL` (dazu `ws`/`wss` derselben Adresse), sonst `https: http:` bzw. `wss: ws:`. Dazu kommen `X-Content-Type-Options: nosniff`, `Cross-Origin-Opener-Policy: same-origin` und eine `Permissions-Policy`, die Kamera, Mikrofon, Standort, Zahlungen und USB ausdrücklich sperrt. **Geprüft** wird die CSP, indem die CI die komplette E2E-Suite gegen den laufenden Container im Demo-Modus ausführt. Ein Fixture (`e2e/fixtures.ts`) lässt jeden Test scheitern, der eine CSP-Verletzung auslöst.
+  `<JF>`: with `LOCK_SERVER`+`JELLYFIN_URL` exactly that origin; in proxy mode nothing additional; otherwise `https: http:` or `wss: ws:`, because the user may add any server. `img-src https:` applies in every mode (since phase 13): the browser loads the picture suggestions of the metadata providers in the admin dialogs directly from their sites; Jellyfin only delivers the addresses and has no image proxy for them. The hls.js worker needs `worker-src blob:`. Inline styles through React's `style` prop set CSSOM properties and are allowed without `unsafe-inline`.
+- No secrets in the repo. `.env.local` is in `.gitignore`. Demo data contains no real people or brands.
+- `rel="noopener noreferrer"` for external links. `Referrer-Policy: strict-origin-when-cross-origin`. `Permissions-Policy` only allows `fullscreen`, `picture-in-picture`, `autoplay` and `screen-wake-lock` for `self`.
+- **Implementation (phase 5):** the CSP is created in the entrypoint as above. Demo mode and proxy mode only allow the own origin, `LOCK_SERVER` exactly the origin from `JELLYFIN_URL` (plus `ws`/`wss` of the same address), otherwise `https: http:` or `wss: ws:`. Added are `X-Content-Type-Options: nosniff`, `Cross-Origin-Opener-Policy: same-origin` and a `Permissions-Policy` that explicitly blocks camera, microphone, location, payments and USB. The CSP is **verified** by the CI running the complete E2E suite against the running container in demo mode. A fixture (`e2e/fixtures.ts`) fails every test that triggers a CSP violation.
 
 ---
 
-## 15. Docker und Betrieb
+## 15. Docker and operation
 
-Plan aus Phase 0, umgesetzt in Phase 5 (Abweichungen und Details in §15.1):
+Plan from phase 0, implemented in phase 5 (deviations and details in §15.1):
 
-- **Build-Stage** `node:24-alpine` (über `mirror.gcr.io/library/node`, siehe unten) auf `$BUILDPLATFORM`: Das statische Ergebnis ist architekturunabhängig, nur die nginx-Stage wird pro Architektur gebaut. Das spart QEMU-Zeit für arm64.
-- **Laufzeit** `nginx-unprivileged:1.31-alpine` vom Hersteller NGINX, bezogen über `ghcr.io/nginx/nginx-unprivileged` (dasselbe Image wie `nginxinc/nginx-unprivileged` auf Docker Hub), Port 8080, Nicht-Root (UID 101).
-- **Ohne Docker Hub (seit 2026-10-13):** GitHub-Runner teilen sich IP-Adressen, anonyme Docker-Hub-Abrufe laufen deshalb ins Pull-Limit, und am 2026-10-09 fiel zusätzlich die Anmeldung von Docker Hub aus (504, Timeouts). Beides ließ den Docker-Job scheitern, obwohl der Code grün war. Seitdem kommen alle Images aus Registries ohne dieses Limit: Node, das Dockerfile-Frontend (`# syntax=`), BuildKit und QEMU (`tonistiigi/binfmt`) über Googles Docker-Hub-Spiegel `mirror.gcr.io`, nginx-unprivileged vom Hersteller auf `ghcr.io`. Beide Registries liefern Tag-Listen, Dependabot schlägt also weiter Updates vor (die Ignore-Regel für Node-Hauptversionen gilt per Muster `*node`).
-- **Entrypoint:** validiert die Variablen (Theme-ID gegen Liste, Booleans, URL-Format), schreibt `config.js` mit JSON-Escaping, rendert die nginx-Site (CSP, optionaler `/jellyfin/`-Proxy mit WebSocket-Upgrade) und `manifest.webmanifest` (Name aus `APP_TITLE`) nach `/tmp/jellymorph`.
-- **Read-only Root-FS:** einziger Schreibpfad `/tmp` (tmpfs), dokumentiert in README und Compose.
-- `/healthz` → 200 aus nginx. Docker-`HEALTHCHECK` mit `wget`.
-- **PWA:** Manifest und Icons 192/512/maskable/Apple (per `scripts/render-icons.ts` aus dem SVG-Logo über Playwright erzeugt, keine neue Abhängigkeit). Kein Service Worker (§15.1).
-- **Lokal:** Docker ist auf diesem Rechner nicht installiert. Den Container prüft die CI (§15.1).
+- **Build stage** `node:24-alpine` (through `mirror.gcr.io/library/node`, see below) on `$BUILDPLATFORM`: the static result is independent of the architecture; only the nginx stage is built per architecture. That saves QEMU time for arm64.
+- **Runtime** `nginx-unprivileged:1.31-alpine` from the vendor NGINX, pulled from `ghcr.io/nginx/nginx-unprivileged` (the same image as `nginxinc/nginx-unprivileged` on Docker Hub), port 8080, non-root (UID 101).
+- **Without Docker Hub (since 2026-10-13):** GitHub runners share IP addresses, so anonymous Docker Hub pulls run into the pull limit, and on 2026-10-09 Docker Hub's authentication failed as well (504, timeouts). Both made the Docker job fail although the code was green. Since then all images come from registries without this limit: Node, the Dockerfile frontend (`# syntax=`), BuildKit and QEMU (`tonistiigi/binfmt`) through Google's Docker Hub mirror `mirror.gcr.io`, nginx-unprivileged from the vendor on `ghcr.io`. Both registries provide tag lists, so Dependabot keeps proposing updates (the ignore rule for Node major versions applies through the pattern `*node`).
+- **Entrypoint:** validates the variables (theme ID against the list, booleans, URL format), writes `config.js` with JSON escaping, renders the nginx site (CSP, optional `/jellyfin/` proxy with WebSocket upgrade) and `manifest.webmanifest` (name from `APP_TITLE`) to `/tmp/jellymorph`.
+- **Read-only root FS:** the only write path is `/tmp` (tmpfs), documented in the README and Compose.
+- `/healthz` → 200 from nginx. Docker `HEALTHCHECK` with `wget`.
+- **PWA:** manifest and icons 192/512/maskable/Apple (created by `scripts/render-icons.ts` from the SVG logo through Playwright, no new dependency). No service worker (§15.1).
+- **Local:** Docker is not installed on this machine. The CI checks the container (§15.1).
 
-### 15.1 Umsetzung (Phase 5)
+### 15.1 Implementation (phase 5)
 
-**Dateien:** `Dockerfile`, `.dockerignore`, `docker/nginx.conf` (Hauptkonfiguration: PID, Temp-Pfade und Logs nach `/tmp` bzw. stdout/stderr, gzip), `docker/nginx.conf.template` (Site), `docker/proxy.conf.template` (Proxy), `docker/entrypoint.sh`, `docker-compose.yml`, `public/manifest.webmanifest`, `public/icons/`.
+**Files:** `Dockerfile`, `.dockerignore`, `docker/nginx.conf` (main configuration: PID, temp paths and logs to `/tmp` or stdout/stderr, gzip), `docker/nginx.conf.template` (site), `docker/proxy.conf.template` (proxy), `docker/entrypoint.sh`, `docker-compose.yml`, `public/manifest.webmanifest`, `public/icons/`.
 
-**Entrypoint** (POSIX-`sh`, BusyBox-tauglich): ersetzt den Entrypoint des Basis-Images, damit dessen Skripte nicht in `/etc/nginx` schreiben. Er liest und prüft alle Variablen und **bricht bei ungültigen Werten ab**, mit einer Meldung, die die Variable und die erlaubten Werte nennt. Die App selbst würde ungültige Werte zwar ignorieren (§4.1); ein Container, der mit einem Tippfehler still mit Standardwerten läuft, fällt aber erst viel später auf. Danach schreibt er nach `/tmp/jellymorph`: `config.js`, `manifest.webmanifest` (aus `public/manifest.webmanifest`, Name und Kurzname aus `APP_TITLE`), `headers.conf` (Sicherheits-Header, §14), `site.conf` (per `envsubst` mit fester Variablenliste, damit nginx-Variablen unberührt bleiben) und `proxy.conf` (leer ohne Proxy). Steuerzeichen in `APP_TITLE` werden entfernt, Backslash und Anführungszeichen für JSON maskiert. URLs dürfen nur Zeichen enthalten, die in JSON, CSP und nginx-Konfiguration ohne Maskierung sicher sind. Die Theme-Liste des Entrypoints gleicht ein Unit-Test mit `config/theme-ids.ts` ab.
+**Entrypoint** (POSIX `sh`, BusyBox-compatible): replaces the base image's entrypoint so its scripts do not write to `/etc/nginx`. It reads and checks all variables and **stops on invalid values**, with a message naming the variable and the allowed values. The app itself would ignore invalid values (§4.1); but a container that silently runs with defaults because of a typo is only noticed much later. Then it writes to `/tmp/jellymorph`: `config.js`, `manifest.webmanifest` (from `public/manifest.webmanifest`, name and short name from `APP_TITLE`), `headers.conf` (security headers, §14), `site.conf` (through `envsubst` with a fixed list of variables, so nginx variables stay untouched) and `proxy.conf` (empty without the proxy). Control characters in `APP_TITLE` are removed, backslash and quotes are escaped for JSON. URLs may only contain characters that are safe without escaping in JSON, the CSP and the nginx configuration. A unit test compares the entrypoint's theme list with `config/theme-ids.ts`.
 
-**Cache-Header:** `/assets/*` (Hash im Namen) `public, max-age=31536000, immutable`, fehlende Assets 404 (nie die App-Hülle, sonst bekäme ein veralteter Tab HTML statt JavaScript). `index.html`, `config.js`, `manifest.webmanifest` und `mockServiceWorker.js` `no-cache`. Übrige öffentliche Dateien (Icons) einen Tag. Alle anderen Pfade liefern `index.html` (SPA-Fallback). Versteckte Dateien sind 404, das Build-Manifest (`.vite/`) wird im Image ohnehin gelöscht.
+**Cache headers:** `/assets/*` (hash in the name) `public, max-age=31536000, immutable`, missing assets 404 (never the app shell, otherwise an outdated tab would get HTML instead of JavaScript). `index.html`, `config.js`, `manifest.webmanifest` and `mockServiceWorker.js` `no-cache`. Other public files (icons) one day. All other paths serve `index.html` (SPA fallback). Hidden files are 404; the build manifest (`.vite/`) is deleted in the image anyway.
 
-**Proxy:** `proxy_pass` mit Variable und `resolver` aus `/etc/resolv.conf`. Dadurch startet der Container auch, wenn Jellyfin noch nicht erreichbar ist (bis dahin 502), und er folgt einem Jellyfin-Container, der eine neue Adresse bekommt. Pfad und Query werden aus `$request_uri` unverändert weitergereicht, kodierte Zeichen wie `%2F` bleiben erhalten. WebSocket-Upgrade, `X-Forwarded-*`-Header (ein vorgelagerter TLS-Proxy behält sein `X-Forwarded-Proto`), keine Pufferung, Leerlauf-Timeouts von einer Stunde. Einschränkung: nginx nutzt keine Suchdomänen, in Kubernetes ist deshalb der volle DNS-Name nötig.
+**Proxy:** `proxy_pass` with a variable and `resolver` from `/etc/resolv.conf`. That way the container also starts when Jellyfin is not reachable yet (502 until then), and it follows a Jellyfin container that gets a new address. Path and query are passed on unchanged from `$request_uri`; encoded characters such as `%2F` are kept. WebSocket upgrade, `X-Forwarded-*` headers (an upstream TLS proxy keeps its `X-Forwarded-Proto`), no buffering, idle timeouts of one hour. Limitation: nginx does not use search domains, so Kubernetes needs the full DNS name.
 
-**Kein Service Worker** (Abweichung vom Plan oben). Chrome bietet „App installieren“ seit Version 108 (Android) bzw. 112 (Desktop) auch ohne Service Worker an, leere Fetch-Handler ignoriert er ohnehin. Ein echter Fetch-Handler läge vor jeder API- und Medienanfrage (Range-Requests beim Spulen), ohne Offline-Funktionen, die die Spezifikation ausdrücklich nicht verlangt. Außerdem bräuchte der Demo-Modus denselben Scope für MSW. Der automatische Installationshinweis von Chrome entfällt damit; installiert wird über das Browser-Menü (Safari: „Zum Home-Bildschirm“).
+**No service worker** (deviation from the plan above). Chrome offers "Install app" since version 108 (Android) and 112 (desktop) also without a service worker, and it ignores empty fetch handlers anyway. A real fetch handler would sit in front of every API and media request (range requests when seeking), without offline features, which the spec explicitly does not ask for. The demo mode would also need the same scope for MSW. Chrome's automatic install prompt is therefore dropped; installing goes through the browser menu (Safari: "Add to Home Screen").
 
-**Prüfung in der CI** (`scripts/test-container.ts`, Docker-Job in `ci.yml`): Build für amd64 und arm64, dann mit dem amd64-Image, jeweils `--read-only --tmpfs /tmp --cap-drop ALL`: Gesundheitsprüfung und `HEALTHCHECK`-Befehl, UID 101, `config.js` mit Standard- und Sonderwerten (Anführungszeichen, Backslash, Umlaut im Titel), CSP je Modus, Cache-Header, gzip, SPA-Fallback, 404 für fehlende Assets und versteckte Dateien, Manifest und Icons, beliebige UID (z. B. Kubernetes `runAsUser`), Abbruch bei sechs ungültigen Einstellungen, Proxy gegen einen kleinen Node-Server als Jellyfin-Ersatz (Start vor Jellyfin, danach Weiterleitung mit Pfad, Query und Headern, `/jellyfin` → `/jellyfin/`, WebSocket) und schließlich die komplette E2E-Suite im Demo-Modus unter der echten CSP.
+**Checks in the CI** (`scripts/test-container.ts`, Docker job in `ci.yml`): build for amd64 and arm64, then with the amd64 image, each time `--read-only --tmpfs /tmp --cap-drop ALL`: health check and the `HEALTHCHECK` command, UID 101, `config.js` with default and special values (quotes, backslash, umlaut in the title), CSP per mode, cache headers, gzip, SPA fallback, 404 for missing assets and hidden files, manifest and icons, any UID (e.g. Kubernetes `runAsUser`), stopping on six invalid settings, the proxy against a small Node server standing in for Jellyfin (start before Jellyfin, then forwarding with path, query and headers, `/jellyfin` → `/jellyfin/`, WebSocket) and finally the complete E2E suite in demo mode under the real CSP.
 
-**Veröffentlichung** (`release.yml`): Bei Push auf `main` und bei Tags `v*` läuft zuerst die komplette CI (`ci.yml` per `workflow_call`; `ci.yml` selbst reagiert auf Pushes in andere Zweige und auf Pull Requests, damit `main` nicht doppelt geprüft wird). Danach baut `docker/build-push-action` das Multi-Arch-Image und schiebt es nach `ghcr.io/lua-x/jellymorph`, Tags über `docker/metadata-action`: `main` → `edge`; `v1.2.3` → `1.2.3`, `1.2`, `1` (nicht bei 0.x) und `latest` (nicht bei Vorabversionen wie `v1.0.0-rc.1`). Labels und Annotationen (auch am Image-Index) verknüpfen das Paket mit dem Repository. Bei Tags folgt ein GitHub-Release; die Notizen erzeugt `scripts/changelog.ts` aus den Conventional Commits seit dem letzten Tag (inkompatible Änderungen, Neu, Behoben, Schneller). **Dependabot** prüft wöchentlich npm (Tooling gebündelt), Docker-Basis-Images (ohne Node-Hauptversionen) und Actions.
+**Publishing** (`release.yml`): on a push to `main` and on tags `v*`, the complete CI runs first (`ci.yml` through `workflow_call`; `ci.yml` itself reacts to pushes to other branches and to pull requests, so `main` is not checked twice). Then `docker/build-push-action` builds the multi-arch image and pushes it to `ghcr.io/lua-x/jellymorph`, tags through `docker/metadata-action`: `main` → `edge`; `v1.2.3` → `1.2.3`, `1.2`, `1` (not for 0.x) and `latest` (not for pre-releases such as `v1.0.0-rc.1`). Labels and annotations (also on the image index) link the package to the repository. For tags a GitHub release follows; `scripts/changelog.ts` generates the notes from the Conventional Commits since the last tag (breaking changes, new, fixed, faster). **Dependabot** checks npm (tooling grouped), Docker base images (without Node major versions) and Actions weekly.
 
----
+### 15.2 Own styling (phase 14)
 
-### 15.2 Eigene Gestaltung (Phase 14)
-
-Ein gemappter Ordner `/custom` (darf schreibgeschützt sein) nimmt eigene Stylesheets, Schriften und Bilder auf. Der Entrypoint sucht beim Start `custom.css` (für alle Themes) und `<theme-id>.css` und schreibt das Ergebnis als `customCss` in `config.js`; die App hängt die Dateien als `<link>` ans Ende von `<head>`, die Theme-Datei nur, solange das Theme aktiv ist (`themes/custom-styles.ts`). nginx liefert aus `/custom/` nur CSS, Schriften (woff2, woff, ttf, otf) und Bilder aus, ohne Cache, mit den üblichen Sicherheits-Headern; alles andere ist 404. Weil es Dateien der eigenen Origin sind, braucht die CSP keine Ausnahme (kein eingefügtes CSS, `style-src 'self'` bleibt). Öffentliche Schnittstelle für eigenes CSS sind die Tokens (§7, docs/themes.md §4) und die Attribute `data-theme`, `data-color-scheme`, `data-device` und `data-motion` an `<html>`; die Klassen der Komponenten tragen generierte Namen und ändern sich mit jeder Version. Im Entwicklungs- und Testserver übernimmt `CUSTOM_DIR` die Rolle des Ordners (Playwright: `e2e/fixtures/custom`, auch im Container-Test gemappt).
-
-## 16. Tests und CI
-
-| Ebene       | Werkzeug                                                    | Inhalt                                                                                                                                                                                                                                                                       |
-| ----------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Unit        | Vitest                                                      | Mapper, DeviceProfile aus Fähigkeits-Fixtures, Quellenwahl, Fallback-Kette, Trickplay-Mathematik, Segmente, Reporting-Takt (Fake-Timer), Settings-Merge, Config-Validierung, Token-Kontraste, i18n-Schlüsselgleichheit, Vertragstest für jedes Theme                         |
-| Integration | Vitest + RTL + MSW (Node)                                   | Hooks gegen Mock-Jellyfin, Default-Seiten mit Lade-/Leer-/Fehlerzustand                                                                                                                                                                                                      |
-| E2E         | Playwright + MSW (Browser, Demo-Modus) gegen `vite preview` | Login (Passwort, Quick Connect, Profile), Home, Bibliothek (Sortierung, Filter, Sprungleiste), Details, Serie, Suche, Favoriten, Einstellungen/Theme-Wechsel, Player (Direct Play, Transcoding-Fallback, Spuren, Segmente, nächste Folge), **reine Tastaturdurchläufe**, axe |
-| Screenshots | Playwright-Skript                                           | 1920×1080, 3840×2160, 1280×800, 390×844 × Seiten × aktive Themes → `artifacts/screenshots/` (nicht im Repo). Ich sehe sie mir in jeder UI-Phase an.                                                                                                                          |
-
-**Mock-Jellyfin:** MSW-Handler für alle genutzten Endpunkte mit zustandsbehafteten Fixtures (Favorit, gesehen und Fortschritt ändern sich wirklich). Die Fixtures erzeugt ein Skript: rund 60 Filme, 12 Serien mit Staffeln und Episoden, eine Anime-Bibliothek, Sammlungen, Genres, 3 öffentliche Profile, Segmente, Trickplay, Kapitel. **Bilder** sind generierte SVG-Verläufe mit erfundenem Titel. Die BlurHashes werden aus denselben Verlaufsdaten berechnet. **Demo-Video:** selbst erzeugtes Testbild mit Ton. Ohne ffmpeg auf diesem Rechner (§19, [Frage 13]).
-
-**CI (`ci.yml`, Phase 1):** `npm ci` → lint → typecheck → test → build → Bundle-Budget → Playwright (Chromium; WebKit und Firefox als Smoke-Test für Codec-Unterschiede) → Artefakte (Report, Screenshots). Ab Phase 5 zusätzlich ein Docker-Job (§15.1). Stand Phase 5: Playwright läuft mit Chromium (Desktop und Pixel 7); WebKit und Firefox sind noch nicht eingebunden.
+A mounted folder `/custom` (may be read-only) takes own stylesheets, fonts and pictures. On start, the entrypoint looks for `custom.css` (for every theme) and `<theme-id>.css` and writes the result as `customCss` into `config.js`; the app appends the files as `<link>` at the end of `<head>`, the theme file only while the theme is active (`themes/custom-styles.ts`). nginx serves only CSS, fonts (woff2, woff, ttf, otf) and pictures from `/custom/`, without caching, with the usual security headers; everything else is 404. Because they are files of the own origin, the CSP needs no exception (no injected CSS, `style-src 'self'` stays). The public interface for own CSS is the tokens (§7, docs/themes.md §4) and the attributes `data-theme`, `data-color-scheme`, `data-device` and `data-motion` on `<html>`; the components' classes carry generated names and change with every version. In the development and test server, `CUSTOM_DIR` plays the role of the folder (Playwright: `e2e/fixtures/custom`, also mounted in the container test).
 
 ---
 
-## 17. Phasenplan im Detail
+## 16. Tests and CI
 
-| Phase              | Ergebnis                                                                                                                                                                                                                                                                                                                                                                               |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1 Fundament        | Vite/TS/ESLint/Prettier/Vitest/Playwright, `ci.yml`, Importregeln, Config + Dev-Plugin, API-Schicht (Client, Gerät, Server, Session, Fehler), Login (Passwort, Quick Connect, Profilauswahl, mehrere Server), MSW-Mock mit Fixture-Generator + Demo-Modus, i18n (de/en), Bundle-Budget-Skript, Minimal-Shell des Default-Themes für die Auth-Seiten. Prüfung der Device-ID-Frage (R6). |
-| 2 Default-Theme    | Domänentypen + Mapper, alle Hooks aus §6.2, Theme-Slot-Mechanik (zunächst nur Default), Home, Bibliothek (VirtualGrid inkl. Tastaturnavigation zuerst), Details, Serie, Suche, Favoriten, Toasts, alle Lade-/Leer-/Fehlerzustände, WebSocket-Invalidierung.                                                                                                                            |
-| 3 Player           | Fähigkeiten, DeviceProfile, PlaybackInfo, Engines, Untertitel, Spur-/Qualitätswechsel, Reporting, Segmente, Trickplay, Kapitel, Fortsetzen, nächste Folge, Fallback-Kette, Media Session, Trailer-Vorschau-Engine.                                                                                                                                                                     |
-| 4 Theme-System     | Registry mit Lazy Loading, Fallback + Error Boundary, Token-/Scope-Tests, Wechsel mit Überblendung, Einstellungen (alle aus §10) mit Live-Vorschau, Persistenz lokal + Server, Spatial Navigation über alle Seiten, TV-Modus.                                                                                                                                                          |
-| 5 Docker & Release | Dockerfile, nginx-Template, Entrypoint, Compose, PWA, `release.yml`, Dependabot, Docker-Job im CI.                                                                                                                                                                                                                                                                                     |
-| 6–10 Themes        | je Theme: Tokens, Schriften, alle abweichenden Komponenten, Bewegung, reduzierte Variante, TV-Variante, Vorschaubild, rechtliche Prüfliste, Screenshot-Prüfung.                                                                                                                                                                                                                        |
-| 11 Feinschliff     | README (de) mit Screenshots, `docs/themes.md`, Performance- und a11y-Audit, Changelog, Release v1.0.0.                                                                                                                                                                                                                                                                                 |
+| Level       | Tool                                                         | Content                                                                                                                                                                                                                                                             |
+| ----------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Unit        | Vitest                                                       | Mappers, DeviceProfile from capability fixtures, source choice, fallback chain, trickplay math, segments, reporting cadence (fake timers), settings merge, config validation, token contrasts, i18n key parity, contract test for every theme                       |
+| Integration | Vitest + RTL + MSW (Node)                                    | Hooks against the mock Jellyfin, default pages with loading/empty/error state                                                                                                                                                                                       |
+| E2E         | Playwright + MSW (browser, demo mode) against `vite preview` | Sign-in (password, Quick Connect, profiles), home, library (sorting, filters, jump bar), details, series, search, favorites, settings/theme switch, player (direct play, transcoding fallback, tracks, segments, next episode), **keyboard-only walkthroughs**, axe |
+| Screenshots | Playwright script                                            | 1920×1080, 3840×2160, 1280×800, 390×844 × pages × active themes → `artifacts/screenshots/` (not in the repo). I look at them in every UI phase.                                                                                                                     |
 
----
+**Mock Jellyfin:** MSW handlers for every endpoint used, with stateful fixtures (favorite, played and progress really change). A script generates the fixtures: about 60 movies, 12 series with seasons and episodes, an anime library, collections, genres, 3 public profiles, segments, trickplay, chapters. **Images** are generated SVG gradients with a made-up title. The BlurHashes are calculated from the same gradient data. **Demo video:** a self-made test pattern with sound. Without ffmpeg on this machine (§19, [Question 13]).
 
-## 18. Risiken
-
-| #   | Risiko                                                                                             | Auswirkung                                                          | Gegenmaßnahme                                                                                                                                |
-| --- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| R1  | SDK 1.0.0 ist gegen 12.0 generiert; das Verhalten (nicht die Pfade) kann auf 10.10/10.11 abweichen | falsche Ergebnisse, z. B. Filter                                    | Pfade verifiziert (§1.2). Mapper tolerant gegenüber fehlenden Feldern. Manuelle Smoke-Tests gegen echte 10.10/10.11/12.0-Server ([Frage 2]). |
-| R2  | `ActiveEncodings` fehlt im SDK                                                                     | verwaiste Transcodes beim Spurwechsel                               | Handgeschriebener Aufruf über SDK-Axios (§9.7); in Phase 3 bestätigt: Endpunkt existiert in 12.x                                             |
-| R3  | Codec-Erkennung im Browser ungenau (HEVC unter Windows nur mit Erweiterung, mkv-Sonderfall, HDR)   | Direct Play schlägt fehl                                            | Fallback-Kette (§9.11), Fähigkeits-Fixtures pro Browser                                                                                      |
-| R4  | Audiospurwechsel bei Direct Play unmöglich                                                         | Spurwechsel braucht neuen Stream                                    | Bewusst immer neuer Stream an derselben Position (§9.7)                                                                                      |
-| R5  | CORS/Mixed Content ohne Proxy (HTTPS-Client + HTTP-Server, Server ohne CORS-Freigabe)              | Login schlägt fehl                                                  | Klare Fehlermeldung mit Hinweis auf `JELLYFIN_PROXY_TARGET`; Proxy-Modus in Compose als Standard empfohlen                                   |
-| R6  | Device-ID: mehrere Benutzer auf demselben Gerät verdrängen sich gegenseitig                        | Profilwechsel meldet andere ab                                      | In Phase 1 am Server prüfen, ggf. Device-ID je Benutzer                                                                                      |
-| R7  | Spatial Navigation × Virtualisierung                                                               | Fokus geht im Raster verloren                                       | Eigene Pfeiltasten-Logik in `VirtualGrid`, früh in Phase 2 mit E2E abgesichert                                                               |
-| R8  | Basis-Budget 250 KB ist knapp (~200 KB geschätzt)                                                  | Budget gerissen                                                     | Budget-Check in CI ab Phase 1, aggressives Lazy Loading                                                                                      |
-| R9  | `backdrop-filter`, Glow, Glitch, Filter auf TV-Hardware                                            | Ruckeln unter 60 fps                                                | TV-/Low-Power-Varianten, Effekte auf kleine Flächen, `@supports`-Fallbacks                                                                   |
-| R10 | Neon-Effekte vs. Lesbarkeit/Anfälle                                                                | a11y-Verstoß                                                        | ≤ 3 Blitze/s, nie über Fließtext, reduzierte Bewegung schaltet ab, Kontrast-Tests                                                            |
-| R11 | Unsichere Kontexte (HTTP im LAN)                                                                   | kein Service Worker/PWA, kein Wake Lock, MSW-Demo nur auf localhost | Funktionen per Feature-Detection ausblenden, Hinweis in README                                                                               |
-| R12 | Autoplay-Richtlinien der Browser                                                                   | Trailer starten nicht                                               | Nur stumm, Fehler still ignorieren und Ken Burns zeigen                                                                                      |
-| R13 | Themes wirken zu nah an Markenoberflächen                                                          | rechtliches Risiko                                                  | Prüfliste §7.8, eigene Namen, eigene Icons, keine exakten Farben                                                                             |
-| R14 | Docker nicht lokal verfügbar                                                                       | Container-Fehler erst im CI sichtbar                                | Docker-Job im CI mit Laufzeittests ([Frage 12]); umgesetzt in Phase 5 (§15.1)                                                                |
-| R15 | Kein ffmpeg lokal                                                                                  | kein HLS-Testmaterial für den Demo-Modus                            | [Frage 13]                                                                                                                                   |
+**CI (`ci.yml`, phase 1):** `npm ci` → lint → typecheck → test → build → bundle budget → Playwright (Chromium; WebKit and Firefox as a smoke test for codec differences) → artifacts (report, screenshots). From phase 5 also a Docker job (§15.1). As of phase 5: Playwright runs with Chromium (desktop and Pixel 7); WebKit and Firefox are not included yet.
 
 ---
 
-## 19. Offene Fragen
+## 17. Phase plan in detail
 
-**Stand 2026-10-07:** Alle Empfehlungen sind angenommen. Frage 2 (eigener Server) ist noch offen. Details stehen in CLAUDE.md §12.
+| Phase              | Result                                                                                                                                                                                                                                                                                                                                                                                             |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 Foundation       | Vite/TS/ESLint/Prettier/Vitest/Playwright, `ci.yml`, import rules, config + dev plugin, API layer (client, device, server, session, errors), sign-in (password, Quick Connect, profile picker, several servers), MSW mock with a fixture generator + demo mode, i18n (de/en), bundle budget script, a minimal shell of the default theme for the auth pages. Checking the device ID question (R6). |
+| 2 Default theme    | Domain types + mappers, all hooks from §6.2, theme slot mechanics (default only at first), home, library (VirtualGrid including keyboard navigation first), details, series, search, favorites, toasts, all loading/empty/error states, WebSocket invalidation.                                                                                                                                    |
+| 3 Player           | Capabilities, DeviceProfile, PlaybackInfo, engines, subtitles, track/quality switching, reporting, segments, trickplay, chapters, resume, next episode, fallback chain, Media Session, trailer preview engine.                                                                                                                                                                                     |
+| 4 Theme system     | Registry with lazy loading, fallback + error boundary, token/scope tests, switching with a cross-fade, settings (everything from §10) with a live preview, persistence local + server, spatial navigation across all pages, TV mode.                                                                                                                                                               |
+| 5 Docker & release | Dockerfile, nginx template, entrypoint, Compose, PWA, `release.yml`, Dependabot, Docker job in the CI.                                                                                                                                                                                                                                                                                             |
+| 6–10 Themes        | Per theme: tokens, fonts, all deviating components, motion, reduced variant, TV variant, preview picture, legal checklist, screenshot review.                                                                                                                                                                                                                                                      |
+| 11 Polish          | README with screenshots (German at the time, English since 2026-10-15), `docs/themes.md`, performance and a11y audit, changelog, release v1.0.0.                                                                                                                                                                                                                                                   |
 
-Jede Frage hat eine Empfehlung. Ohne Gegenrede würde ich der Empfehlung folgen.
+---
 
-1. ~~**Projektname, Repo, Image.**~~ **Beantwortet 2026-10-07:** _Jellymorph_, Repo `Lua-x/jellymorph`, Image `ghcr.io/lua-x/jellymorph`. Das Default-Theme heißt deshalb „Classic“ (siehe CLAUDE.md §12).
-2. **Test-Server.** Welche Jellyfin-Version läuft bei dir, und gibt es eine Adresse für `JELLYFIN_DEV_URL` (bleibt in `.env.local`, wird nie committet)? Ideal wäre zusätzlich je ein 10.10- und 12.0-Testserver. Empfehlung: mindestens dein Server + ein 12.0-Testcontainer im CI für Smoke-Tests.
-3. **Browser-/TV-Ziele.** Passt §1.4? Welche Fernseher bzw. Streaming-Sticks willst du konkret nutzen? Davon hängt ab, wie konservativ ich bei CSS und Effekten sein muss.
-4. **Zusätzliche Abhängigkeiten aus §2.2** (`blurhash`, `@axe-core/playwright`, Test- und ESLint-Zubehör). Empfehlung: freigeben.
-5. **`DEMO_MODE` als zusätzliche Container-Variable** (Standard `false`). Damit ließe sich z. B. eine öffentliche Demo betreiben. Das MSW-Chunk ist ohnehin im Build, weil E2E gegen den Produktions-Build läuft, wird aber nur im Demo-Modus geladen. Empfehlung: ja.
-6. **Sprach-, Untertitel- und Autoplay-Einstellungen in der Jellyfin-Benutzerkonfiguration statt in eigenen DisplayPreferences speichern?** Vorteil: gilt auch in jellyfin-web und den offiziellen Apps; der Server nutzt die Werte ohnehin für Standardspuren. Nachteil: Änderungen wirken auch dort. Empfehlung: ja, Benutzerkonfiguration.
-7. **Max. Streaming-Qualität und Bedienmodus nur lokal pro Gerät** (nicht synchronisiert), weil sie von Gerät und Netz abhängen. Empfehlung: ja.
-8. **Mehrere gemerkte Profile pro Gerät** (ein Token je Benutzer) für „Wer schaut?“ ohne erneutes Passwort? Jedes Profil ist einzeln abmeldbar. Auf geteilten Geräten bedeutet das: Wer das Gerät hat, kann jedes gemerkte Profil öffnen. Empfehlung: ja, mit Schalter „Profil auf diesem Gerät merken“ beim Login.
-9. **ASS/SSA-Untertitel** (häufig bei Anime): standardmäßig vom Server in WebVTT umwandeln lassen (keine Transcodierung, aber ohne Styling) plus Einstellung „Gestaltete Untertitel einbrennen“ (Styling bleibt, kostet Server-Transcoding). Echtes ASS-Rendering im Browser (JASSUB) wäre eine große WASM-Abhängigkeit. Empfehlung: VTT + Einbrennen-Option, JASSUB nicht.
-10. **Nicht unterstützte Bibliothekstypen** (Musik, Bücher, Fotos, Live-TV, Playlists): in v1 ausblenden? Empfehlung: ausblenden, dazu ein dezenter Hinweis in den Einstellungen.
-11. **Anrede in deutschen UI-Texten:** „du“ wie bei Crystal? Empfehlung: ja.
-12. **Docker nur im CI prüfen** (wie bei Crystal, kein lokales Docker)? Empfehlung: ja.
-13. **Demo-Video ohne ffmpeg:** Testbild + Ton über Chromiums MediaRecorder per Playwright aufnehmen (WebM/MP4 für den Direct-Play-Pfad; keine neue Abhängigkeit). Den HLS-Pfad testen Unit-Tests mit hls.js-Doubles plus dein echter Server. Alternative: ffmpeg einmalig per `winget` installieren, dann gäbe es auch eine HLS-Variante im Demo-Modus. Empfehlung: MediaRecorder; ffmpeg nur, wenn du es ohnehin installieren möchtest.
-14. **Lizenz** für das öffentliche Repo: Crystal ist AGPL-3.0. Für einen reinen Client wäre auch MIT oder GPL-3.0 üblich. Code aus jellyfin-web (GPL-2.0) übernehme ich nicht. Empfehlung: AGPL-3.0 wie Crystal, falls du keine andere Präferenz hast.
+## 18. Risks
+
+| #   | Risk                                                                                                        | Impact                                                          | Countermeasure                                                                                                                      |
+| --- | ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| R1  | SDK 1.0.0 is generated against 12.0; the behavior (not the paths) may differ on 10.10/10.11                 | wrong results, e.g. filters                                     | Paths verified (§1.2). Mappers tolerant of missing fields. Manual smoke tests against real 10.10/10.11/12.0 servers ([Question 2]). |
+| R2  | `ActiveEncodings` is missing from the SDK                                                                   | orphaned transcodes when switching tracks                       | Hand-written call through the SDK's Axios (§9.7); confirmed in phase 3: the endpoint exists in 12.x                                 |
+| R3  | Codec detection in the browser is imprecise (HEVC on Windows only with an extension, mkv special case, HDR) | direct play fails                                               | Fallback chain (§9.11), capability fixtures per browser                                                                             |
+| R4  | Switching audio tracks with direct play is impossible                                                       | a track switch needs a new stream                               | Deliberately always a new stream at the same position (§9.7)                                                                        |
+| R5  | CORS/mixed content without the proxy (HTTPS client + HTTP server, server without CORS permission)           | sign-in fails                                                   | A clear error message pointing to `JELLYFIN_PROXY_TARGET`; proxy mode recommended as the default in Compose                         |
+| R6  | Device ID: several users on the same device push each other out                                             | switching profiles signs out others                             | Check on the server in phase 1, if needed a device ID per user                                                                      |
+| R7  | Spatial navigation × virtualization                                                                         | the focus gets lost in the grid                                 | Own arrow key logic in `VirtualGrid`, secured early in phase 2 with E2E                                                             |
+| R8  | The base budget of 250 KB is tight (~200 KB estimated)                                                      | budget exceeded                                                 | Budget check in the CI from phase 1, aggressive lazy loading                                                                        |
+| R9  | `backdrop-filter`, glow, glitch, filters on TV hardware                                                     | stutter below 60 fps                                            | TV/low-power variants, effects on small areas, `@supports` fallbacks                                                                |
+| R10 | Neon effects vs. readability/seizures                                                                       | a11y violation                                                  | ≤ 3 flashes/s, never over body text, reduced motion switches them off, contrast tests                                               |
+| R11 | Insecure contexts (HTTP on the LAN)                                                                         | no service worker/PWA, no wake lock, MSW demo only on localhost | Hide features through feature detection, a note in the README                                                                       |
+| R12 | Autoplay policies of the browsers                                                                           | trailers do not start                                           | Muted only, ignore errors silently and show Ken Burns                                                                               |
+| R13 | Themes look too close to brand interfaces                                                                   | legal risk                                                      | Checklist §7.8, own names, own icons, no exact colors                                                                               |
+| R14 | Docker not available locally                                                                                | container errors only visible in the CI                         | Docker job in the CI with runtime tests ([Question 12]); implemented in phase 5 (§15.1)                                             |
+| R15 | No ffmpeg locally                                                                                           | no HLS test material for the demo mode                          | [Question 13]                                                                                                                       |
+
+---
+
+## 19. Open questions
+
+**As of 2026-10-07:** all recommendations were accepted. Question 2 (own server) is still open. Details are in CLAUDE.md §12.
+
+Every question has a recommendation. Without objection I would follow the recommendation.
+
+1. ~~**Project name, repo, image.**~~ **Answered 2026-10-07:** _Jellymorph_, repo `Lua-x/jellymorph`, image `ghcr.io/lua-x/jellymorph`. The default theme is therefore called "Classic" (see CLAUDE.md §12).
+2. **Test server.** Which Jellyfin version do you run, and is there an address for `JELLYFIN_DEV_URL` (stays in `.env.local`, never committed)? Ideally also one 10.10 and one 12.0 test server each. Recommendation: at least your server + a 12.0 test container in the CI for smoke tests.
+3. **Browser/TV targets.** Does §1.4 fit? Which TVs or streaming sticks do you actually want to use? That decides how conservative I have to be with CSS and effects.
+4. **Additional dependencies from §2.2** (`blurhash`, `@axe-core/playwright`, test and ESLint companions). Recommendation: approve.
+5. **`DEMO_MODE` as an additional container variable** (default `false`). It would allow running a public demo, for example. The MSW chunk is in the build anyway, because E2E runs against the production build, but it is only loaded in demo mode. Recommendation: yes.
+6. **Store language, subtitle and autoplay settings in the Jellyfin user configuration instead of our own DisplayPreferences?** Advantage: they also apply in jellyfin-web and the official apps; the server uses the values for default tracks anyway. Disadvantage: changes take effect there too. Recommendation: yes, user configuration.
+7. **Max. streaming quality and input mode only locally per device** (not synchronized), because they depend on device and network. Recommendation: yes.
+8. **Several remembered profiles per device** (one token per user) for "Who's watching?" without entering the password again? Each profile can be signed out on its own. On shared devices this means: whoever has the device can open every remembered profile. Recommendation: yes, with a switch "Remember profile on this device" at sign-in.
+9. **ASS/SSA subtitles** (common with anime): by default let the server convert them to WebVTT (no transcoding, but without styling) plus a setting "Burn in styled subtitles" (styling stays, costs server transcoding). Real ASS rendering in the browser (JASSUB) would be a large WASM dependency. Recommendation: VTT + the burn-in option, no JASSUB.
+10. **Unsupported library types** (music, books, photos, live TV, playlists): hide them in v1? Recommendation: hide, plus a discreet note in the settings.
+11. **Form of address in German UI texts:** "du" as in Crystal? Recommendation: yes.
+12. **Check Docker only in the CI** (as in Crystal, no local Docker)? Recommendation: yes.
+13. **Demo video without ffmpeg:** record a test pattern + sound through Chromium's MediaRecorder with Playwright (WebM/MP4 for the direct play path; no new dependency). Unit tests with hls.js doubles plus your real server test the HLS path. Alternative: install ffmpeg once through `winget`; then there would also be an HLS variant in demo mode. Recommendation: MediaRecorder; ffmpeg only if you want to install it anyway.
+14. **License** for the public repo: Crystal is AGPL-3.0. For a pure client, MIT or GPL-3.0 would also be common. I do not take over code from jellyfin-web (GPL-2.0). Recommendation: AGPL-3.0 like Crystal, unless you have another preference.

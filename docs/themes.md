@@ -1,38 +1,38 @@
-# Themes schreiben
+# Writing themes
 
-Ein Theme in Jellymorph ist ein komplettes Bedienkonzept: Layout, Navigation, Karten, Detailseiten, Player-Oberfläche und Bewegung. Daten, Server-Zugriffe, Wiedergabe-Logik und Einstellungen gehören der App. Ein Theme bekommt fertige Daten über Props und gemeinsame Hooks und zeichnet sie.
+A theme in Jellymorph is a complete way of using the app: layout, navigation, cards, detail pages, player interface and motion. Data, server access, playback logic and settings belong to the app. A theme receives ready-made data through props and shared hooks and draws it.
 
-Dieser Leitfaden beschreibt den Stand des Theme-Vertrags Version 1 (`src/themes/contract.ts`). Die Begründungen stehen in [architecture.md](architecture.md) §7 und §8.
+This guide describes version 1 of the theme contract (`src/themes/contract.ts`). The reasoning is in [architecture.md](architecture.md) §7 and §8.
 
-## Inhalt
+## Contents
 
-1. [Aufbau eines Themes](#1-aufbau-eines-themes)
-2. [Neues Theme anlegen](#2-neues-theme-anlegen)
-3. [Slots und Fallback](#3-slots-und-fallback)
-4. [Tokens und Scoping](#4-tokens-und-scoping)
-5. [Daten, Hooks und Bausteine](#5-daten-hooks-und-bausteine)
-6. [Fokus, Fernbedienung und TV](#6-fokus-fernbedienung-und-tv)
-7. [Bewegung](#7-bewegung)
-8. [Live-Vorschau](#8-live-vorschau)
-9. [Texte](#9-texte)
-10. [Prüfliste vor dem Abschluss](#10-prüfliste-vor-dem-abschluss)
-11. [Die mitgelieferten Themes](#11-die-mitgelieferten-themes)
+1. [Structure of a theme](#1-structure-of-a-theme)
+2. [Creating a new theme](#2-creating-a-new-theme)
+3. [Slots and fallback](#3-slots-and-fallback)
+4. [Tokens and scoping](#4-tokens-and-scoping)
+5. [Data, hooks and building blocks](#5-data-hooks-and-building-blocks)
+6. [Focus, remote control and TV](#6-focus-remote-control-and-tv)
+7. [Motion](#7-motion)
+8. [Live preview](#8-live-preview)
+9. [Texts](#9-texts)
+10. [Checklist before finishing](#10-checklist-before-finishing)
+11. [The bundled themes](#11-the-bundled-themes)
 
-## 1. Aufbau eines Themes
+## 1. Structure of a theme
 
 ```
 src/themes/<id>/
-  manifest.ts          # ThemeManifest: id, Text-Schlüssel, Vorschaubilder, Farbschemata, load()
-  index.ts             # ThemeModule: importiert Schriften, tokens.css, global.css, Komponenten
-  tokens.css           # Design-Tokens unter [data-theme='<id>']
-  global.css           # globale Regeln, jede beginnt mit dem Theme-Scope
-  i18n/de.json, en.json # eigene Texte (Namespace theme-<id>), optional
-  preview-dark.jpg     # Vorschaubilder für die Theme-Auswahl (npm run previews)
-  preview-light.jpg    # nur, wenn das Theme ein helles Schema hat
-  components/          # React-Komponenten + CSS Modules
+  manifest.ts          # ThemeManifest: id, text keys, preview pictures, color schemes, load()
+  index.ts             # ThemeModule: imports fonts, tokens.css, global.css, components
+  tokens.css           # design tokens under [data-theme='<id>']
+  global.css           # global rules, each one starts with the theme scope
+  i18n/de.json, en.json # own texts (namespace theme-<id>), optional
+  preview-dark.jpg     # preview pictures for the theme picker (npm run previews)
+  preview-light.jpg    # only if the theme has a light scheme
+  components/          # React components + CSS Modules
 ```
 
-Das Manifest ist klein und Teil des Basis-Bundles. Alles andere liegt in einem eigenen Chunk, den `load()` erst nachlädt, wenn das Theme aktiv ist oder in der Vorschau gezeigt wird.
+The manifest is small and part of the base bundle. Everything else lives in its own chunk, which `load()` only fetches once the theme is active or shown in the preview.
 
 ```ts
 // src/themes/<id>/manifest.ts
@@ -44,15 +44,15 @@ export const neonGridManifest: ThemeManifest = {
   nameKey: 'neon-grid.name',
   descriptionKey: 'neon-grid.description',
   preview: { dark: previewDark },
-  colorSchemes: ['dark'], // das erste Schema ist der Standard
-  features: { uiSounds: true }, // optional, siehe §5
+  colorSchemes: ['dark'], // the first scheme is the default
+  features: { uiSounds: true }, // optional, see §5
   load: () => import('./index').then((module) => module.theme),
 };
 ```
 
 ```ts
 // src/themes/<id>/index.ts
-import '@fontsource/…'; // Schriften nur über @fontsource, selbst gehostet
+import '@fontsource/…'; // fonts only through @fontsource, self-hosted
 import './tokens.css';
 import './global.css';
 import { THEME_CONTRACT_VERSION, type ThemeModule } from '../contract';
@@ -63,49 +63,50 @@ import en from './i18n/en.json';
 
 export const theme: ThemeModule = {
   contractVersion: THEME_CONTRACT_VERSION,
-  components: { Hero, MediaCard }, // alles Weitere kommt von Classic
+  components: { Hero, MediaCard }, // everything else comes from Classic
   options: { heroItemCount: 8 },
-  texts: { de, en }, // optional, siehe §9
+  texts: { de, en }, // optional, see §9
 };
 ```
 
-`options` steuert, was die App für das Theme anders vorbereiten muss:
+`options` controls what the app has to prepare differently for the theme:
 
-| Option               | Bedeutung                                                           | Classic   |
-| -------------------- | ------------------------------------------------------------------- | --------- |
-| `detailPresentation` | `'page'` oder `'modal'` (Details als Ebene über der vorigen Seite)  | `'page'`  |
-| `heroItemCount`      | Anzahl der Titel, die der Hero bekommt                              | `6`       |
-| `cardShape`          | `'mixed'` (Poster und Querformat je nach Inhalt) oder `'landscape'` | `'mixed'` |
+| Option               | Meaning                                                                       | Classic         |
+| -------------------- | ----------------------------------------------------------------------------- | --------------- |
+| `detailPresentation` | `'page'` or `'modal'` (details as a layer above the previous page)            | `'page'`        |
+| `heroItemCount`      | Number of titles the hero receives                                            | `6`             |
+| `cardShape`          | `'mixed'` (poster and landscape depending on the content) or `'landscape'`    | `'mixed'`       |
+| `layout`             | The theme's own arrangement of home page, detail buttons and details (see §5) | `classicLayout` |
 
-`cardShape` gilt für die Seiten, die ein Theme von Classic übernimmt (Bibliothek, Favoriten): Mit `'landscape'` zeigen sie überall Querformat-Karten, passend zu einem Theme, das nur solche Karten kennt.
+`cardShape` applies to the pages a theme takes over from Classic (library, favorites): with `'landscape'` they show landscape cards everywhere, matching a theme that only knows such cards.
 
-## 2. Neues Theme anlegen
+## 2. Creating a new theme
 
-1. Die ID muss in `src/config/theme-ids.ts` stehen. Dort sind alle geplanten Themes schon eingetragen, weil `DEFAULT_THEME` und gespeicherte Einstellungen gegen diese Liste geprüft werden.
-2. Ordner `src/themes/<id>/` mit `manifest.ts`, `index.ts`, `tokens.css` und `global.css` anlegen.
-3. Das Manifest in `src/themes/registry.ts` in `THEMES` eintragen. Die Reihenfolge dort ist die Reihenfolge in den Einstellungen.
-4. Name und Beschreibung in `src/i18n/locales/de/themes.json` und `en/themes.json` (Schlüssel `<id>.name`, `<id>.description`). Für Classic und die geplanten Themes sind sie schon da.
-5. Das Theme mit ID, Anzeigename und Farbschemata in `e2e/previews.spec.ts` eintragen und `npm run previews` ausführen. Die Aufnahme wählt das Theme in den Einstellungen und schreibt `preview-<schema>.jpg` in den Theme-Ordner.
-6. `npm test` prüft automatisch: Manifest registriert, Modul lädt mit der richtigen Vertragsversion, Vorschaubild je Farbschema, alle Pflicht-Tokens je Farbschema, WCAG-Kontraste, Scoping von `global.css`.
-7. Screenshots mit `npm run shots` in allen vier Auflösungen erzeugen und ansehen.
+1. The ID has to be in `src/config/theme-ids.ts`. All planned themes are already listed there, because `DEFAULT_THEME` and stored settings are checked against this list.
+2. Create the folder `src/themes/<id>/` with `manifest.ts`, `index.ts`, `tokens.css` and `global.css`.
+3. Add the manifest to `THEMES` in `src/themes/registry.ts`. The order there is the order in the settings.
+4. Name and description go into `src/i18n/locales/de/themes.json` and `en/themes.json` (keys `<id>.name`, `<id>.description`). They already exist for Classic and the planned themes.
+5. Add the theme with its ID, display name and color schemes to `e2e/previews.spec.ts` and run `npm run previews`. The recording selects the theme in the settings and writes `preview-<scheme>.jpg` into the theme folder.
+6. `npm test` checks automatically: manifest registered, module loads with the right contract version, a preview picture per color scheme, all required tokens per color scheme, WCAG contrasts, scoping of `global.css`.
+7. Create screenshots in all four resolutions with `npm run shots` and look at them.
 
-## 3. Slots und Fallback
+## 3. Slots and fallback
 
-Ein Theme muss keinen Slot liefern. Was fehlt, kommt von Classic. Classic implementiert jeden Slot und benutzt nur die gemeinsamen Tokens, deshalb passen seine Komponenten automatisch zu Farben, Schriften und Radien des aktiven Themes.
+A theme does not have to provide any slot. Whatever is missing comes from Classic. Classic implements every slot and uses only the shared tokens, which is why its components automatically match the colors, fonts and radii of the active theme.
 
-| Slot                                                | Aufgabe                                                          |
+| Slot                                                | Task                                                             |
 | --------------------------------------------------- | ---------------------------------------------------------------- |
-| `AppShell`                                          | Rahmen: Kopfzeile, Navigation, Benutzermenü, Inhalt (`children`) |
-| `LoginPage`, `ProfileSelect`                        | Anmeldung (Server, Passwort, Quick Connect) und Profilauswahl    |
-| `HomePage`, `Hero`, `Row`, `MediaCard`              | Startseite und ihre Bausteine                                    |
-| `LibraryPage`                                       | Bibliothek, Genre, Sammlung, Person (virtualisiertes Raster)     |
-| `ItemDetailPage`, `SeriesPage`                      | Detailseiten für Filme, Folgen und Serien                        |
-| `SearchPage`, `FavoritesPage`                       | Suche und Favoriten                                              |
-| `SettingsPage`                                      | Einstellungen mit Theme-Auswahl und Live-Vorschau                |
-| `PlayerOverlay`, `ResumePrompt`                     | Alles über dem Video und die Frage „Fortsetzen oder von vorne?“  |
-| `Toast`, `LoadingState`, `EmptyState`, `ErrorState` | Rückmeldungen und Zustände                                       |
+| `AppShell`                                          | Frame: header, navigation, user menu, content (`children`)       |
+| `LoginPage`, `ProfileSelect`                        | Sign-in (server, password, Quick Connect) and profile picker     |
+| `HomePage`, `Hero`, `Row`, `MediaCard`              | Home page and its building blocks                                |
+| `LibraryPage`                                       | Library, genre, collection, person (virtualized grid)            |
+| `ItemDetailPage`, `SeriesPage`                      | Detail pages for movies, episodes and series                     |
+| `SearchPage`, `FavoritesPage`                       | Search and favorites                                             |
+| `SettingsPage`                                      | Settings with theme picker and live preview                      |
+| `PlayerOverlay`, `ResumePrompt`                     | Everything above the video and the question "Resume or restart?" |
+| `Toast`, `LoadingState`, `EmptyState`, `ErrorState` | Feedback and states                                              |
 
-**Slots zusammensetzen:** Ein Theme rendert andere Slots über `<ThemeSlot>`, nicht über direkte Importe. So greift der Fallback auch innerhalb des Themes, und jeder Slot hat eine eigene Fehlergrenze. Wirft eine Komponente, zeigt der Slot die von Classic und schreibt den Fehler in die Konsole.
+**Composing slots:** a theme renders other slots through `<ThemeSlot>`, not through direct imports. That way the fallback also works inside the theme, and every slot has its own error boundary. If a component throws, the slot shows Classic's and writes the error to the console.
 
 ```tsx
 import { ThemeSlot } from '../../ThemeSlot';
@@ -113,18 +114,18 @@ import { ThemeSlot } from '../../ThemeSlot';
 <ThemeSlot name="Row" props={{ title, items, variant: 'landscape', seeAll, context: 'page' }} />;
 ```
 
-Eigene Teile von Classic (Buttons, Icons) darf ein Theme importieren. Andere Themes nicht; das verbietet ESLint.
+A theme may import Classic's own parts (buttons, icons). Other themes it may not; ESLint forbids that.
 
-## 4. Tokens und Scoping
+## 4. Tokens and scoping
 
-Alle Werte stehen als CSS Custom Properties unter dem Theme-Scope. Theme-CSS bleibt nach einem Wechsel im Dokument, deshalb darf keine Regel ohne Scope gelten.
+All values are CSS custom properties under the theme scope. Theme CSS stays in the document after a switch, so no rule may apply without the scope.
 
 ```css
 /* tokens.css */
 [data-theme='glass'] {
   color-scheme: dark;
   --color-bg: #0b0d12;
-  /* … alle Pflicht-Tokens … */
+  /* … all required tokens … */
 }
 
 [data-theme='glass'][data-color-scheme='light'] {
@@ -135,7 +136,7 @@ Alle Werte stehen als CSS Custom Properties unter dem Theme-Scope. Theme-CSS ble
 ```
 
 ```css
-/* global.css – :where() hält die Spezifität niedrig, Komponentenstile gewinnen immer */
+/* global.css – :where() keeps specificity low, component styles always win */
 [data-theme='glass'] body {
   background: var(--color-bg);
 }
@@ -145,139 +146,139 @@ Alle Werte stehen als CSS Custom Properties unter dem Theme-Scope. Theme-CSS ble
 }
 ```
 
-**Pflicht-Tokens** (`REQUIRED_TOKENS`) für jedes Farbschema: Farben (`--color-bg`, `-surface`, `-surface-raised`, `-surface-hover`, `-border`, `-text`, `-text-muted`, `-accent`, `-on-accent`, `-accent-text`, `-focus`, `-danger`, `-success`, `-progress`, `-overlay`), Schriften (`--font-body`, `-display`, `-mono`), Radien (`--radius-card`, `-control`), Schatten (`--shadow-card`, `-overlay`), Zeiten und Kurven (`--duration-fast`, `-base`, `-slow`, `--ease-standard`, `-emphasized`) und `--focus-ring`.
+**Required tokens** (`REQUIRED_TOKENS`) for every color scheme: colors (`--color-bg`, `-surface`, `-surface-raised`, `-surface-hover`, `-border`, `-text`, `-text-muted`, `-accent`, `-on-accent`, `-accent-text`, `-focus`, `-danger`, `-success`, `-progress`, `-overlay`), fonts (`--font-body`, `-display`, `-mono`), radii (`--radius-card`, `-control`), shadows (`--shadow-card`, `-overlay`), durations and curves (`--duration-fast`, `-base`, `-slow`, `--ease-standard`, `-emphasized`) and `--focus-ring`.
 
-**Tokens sind öffentlich:** Betreiber können sie mit eigenem CSS aus dem gemappten Ordner überschreiben (README, „Eigene Gestaltung“). Neue Tokens daher sprechend benennen und nicht ohne Not umbenennen.
+**Tokens are public:** operators can override them with their own CSS from the mounted folder (README, "Own styling"). So give new tokens telling names and do not rename them without need. The logo takes `--logo-shape` and `--logo-dot`; its three facets are mixed from those two, or set exactly with `--logo-facet-mid` and `--logo-facet-deep`.
 
-**Kontraste** (`CONTRAST_PAIRS`) rechnet `src/themes/tokens.test.ts` nach: Text auf Hintergrund und Flächen mindestens 4,5:1, Fokusfarbe auf Hintergrund mindestens 3:1. Effekte wie Glow oder Scanlines dürfen nie über Fließtext liegen.
+**Contrasts** (`CONTRAST_PAIRS`) are recalculated by `src/themes/tokens.test.ts`: text on background and surfaces at least 4.5:1, focus color on background at least 3:1. Effects such as glow or scanlines must never lie over body text.
 
-**Theme-neutrale Größen** liegen in `src/app/base.css` und gelten für alle Themes: `--page-gutter` (Seitenrand inklusive TV-Overscan), `--overscan-x`/`--overscan-y`, z-Index-Stufen, Safe-Area.
+**Theme-neutral sizes** live in `src/app/base.css` and apply to every theme: `--page-gutter` (page margin including TV overscan), `--overscan-x`/`--overscan-y`, z-index levels, safe area.
 
-**Gemeinsame CSS-Bausteine:** Wer Klassen eines gemeinsamen Moduls per `composes` übernimmt (z. B. Rahmen mit Eckmarkierungen), sollte deren Grundwerte als `var(--name, Standard)` lesen und Positionierung mit `:where()` setzen. Sonst entscheidet die Ladereihenfolge der CSS-Dateien, ob die Komponente ihre eigenen Werte durchsetzt.
+**Shared CSS building blocks:** whoever takes over classes of a shared module through `composes` (e.g. frames with corner marks) should read their base values as `var(--name, default)` and set positioning with `:where()`. Otherwise the load order of the CSS files decides whether the component gets its own values through.
 
-**Seiten-Grids** brauchen `grid-template-columns: minmax(0, 1fr)`. Sonst wächst eine Spalte mit einer langen Kartenreihe mit und die Seite scrollt seitlich. Ein E2E-Test prüft das.
+**Page grids** need `grid-template-columns: minmax(0, 1fr)`. Otherwise a column grows with a long row of cards and the page scrolls sideways. An E2E test checks this.
 
-## 5. Daten, Hooks und Bausteine
+## 5. Data, hooks and building blocks
 
-Themes rufen nie selbst den Server. ESLint verbietet in `src/themes/**` Importe aus `@/api`, dem Jellyfin-SDK, axios, TanStack Query, `@/mocks` und den Player-Engines sowie `fetch`, `localStorage` und `sessionStorage`.
+Themes never call the server themselves. ESLint forbids imports from `@/api`, the Jellyfin SDK, axios, TanStack Query, `@/mocks` and the player engines in `src/themes/**`, as well as `fetch`, `localStorage` and `sessionStorage`.
 
-**Daten kommen als Props.** Listen und Details sind `QueryResult<T>`: `{ status: 'pending' }`, `{ status: 'error', error, retry }` oder `{ status: 'success', data }`. Jedes Theme zeigt alle drei Zustände, am einfachsten über die Slots `LoadingState`, `ErrorState` und `EmptyState`. Die Typen (`MediaItem`, `ItemDetail`, `Season` …) kommen aus `@/domain/types`, nie aus dem SDK.
+**Data arrives as props.** Lists and details are a `QueryResult<T>`: `{ status: 'pending' }`, `{ status: 'error', error, retry }` or `{ status: 'success', data }`. Every theme shows all three states, most easily through the slots `LoadingState`, `ErrorState` and `EmptyState`. The types (`MediaItem`, `ItemDetail`, `Season` …) come from `@/domain/types`, never from the SDK.
 
-**Gemeinsame Hooks und Bausteine:**
+**Shared hooks and building blocks:**
 
-| Baustein                                       | Wofür                                                                             |
+| Building block                                 | Purpose                                                                           |
 | ---------------------------------------------- | --------------------------------------------------------------------------------- |
-| `useMediaActions()` (`@/hooks`)                | Abspielen, Favorit, gesehen – optimistisch, mit Toast bei Fehlern                 |
-| `useMotionPreference()` / `useReducedMotion()` | `'full' \| 'reduced'` aus Einstellung und System                                  |
-| `useTrailerPreview(itemId)` (`@/player`)       | Stummer Trailer im Hero: `videoRef`, `playing`, `cancel()` (siehe §8 unten)       |
-| `useScrubber()` (`@/ui`)                       | Zeitleiste des Players mit Zeiger, Touch und Tastatur                             |
-| `<JellyImage>` (`@/ui`)                        | Bilder vom Server in passender Größe, mit BlurHash, lazy außerhalb des Viewports  |
-| `<VirtualGrid>` (`@/ui`)                       | Virtualisiertes Raster mit eigener Pfeiltasten-Logik                              |
-| `<AppLink>` (`@/ui`)                           | Interne Links ohne direkte Router-API; `overlay` öffnet Details als Ebene         |
-| `<ThemePreview>` (`@/themes/ThemePreview`)     | Live-Vorschau eines Themes in der Einstellungsseite                               |
-| `formatClock()` (`@/ui/time`)                  | Zeitangaben im Player                                                             |
-| `paths` (`@/navigation/paths`)                 | URLs für Seiten und Player                                                        |
-| `useRouteKey()` (`@/navigation`)               | Wechselt mit jeder Seite, z. B. als `key` für Seitenübergänge                     |
-| `useSessionFlag(key)` (`@/ui`)                 | Merker für die Browser-Sitzung, z. B. „Startsequenz schon gezeigt“                |
-| `useUiSounds()` (`@/hooks`)                    | Ob der Benutzer Oberflächenklänge eingeschaltet hat (nur mit `features.uiSounds`) |
-| `<ItemAdmin>` (`default/components/admin`)     | Menü „Bearbeiten“ samt Dialogen für Administratoren (siehe unten)                 |
-| `useIsAdmin()` (`@/hooks/useAdminAccess`)      | Ob der Benutzer den Server verwaltet                                              |
+| `useMediaActions()` (`@/hooks`)                | Play, favorite, played – optimistic, with a toast on errors                       |
+| `useMotionPreference()` / `useReducedMotion()` | `'full' \| 'reduced'` from the setting and the system                             |
+| `useTrailerPreview(itemId)` (`@/player`)       | Muted trailer in the hero: `videoRef`, `playing`, `cancel()` (see §8 below)       |
+| `useScrubber()` (`@/ui`)                       | The player's timeline with pointer, touch and keyboard                            |
+| `<JellyImage>` (`@/ui`)                        | Pictures from the server in a fitting size, with BlurHash, lazy off-screen        |
+| `<VirtualGrid>` (`@/ui`)                       | Virtualized grid with its own arrow key logic                                     |
+| `<AppLink>` (`@/ui`)                           | Internal links without the router API; `overlay` opens details as a layer         |
+| `<ThemePreview>` (`@/themes/ThemePreview`)     | Live preview of a theme on the settings page                                      |
+| `formatClock()` (`@/ui/time`)                  | Times in the player                                                               |
+| `paths` (`@/navigation/paths`)                 | URLs for pages and the player                                                     |
+| `useRouteKey()` (`@/navigation`)               | Changes with every page, e.g. as the `key` for page transitions                   |
+| `useSessionFlag(key)` (`@/ui`)                 | A flag for the browser session, e.g. "boot sequence already shown"                |
+| `useUiSounds()` (`@/hooks`)                    | Whether the user has switched on interface sounds (only with `features.uiSounds`) |
+| `<ItemAdmin>` (`default/components/admin`)     | "Edit" menu with dialogs for administrators (see below)                           |
+| `useIsAdmin()` (`@/hooks/useAdminAccess`)      | Whether the user administers the server                                           |
 
-Der Player gehört der App. `PlayerOverlay` bekommt ein `PlayerModel` mit Zustand und Befehlen (`togglePlay`, `seek`, `selectAudio`, `skipSegment` …) und sieht nie hls.js, URLs oder PlaybackInfo. Das `<video>`-Element liegt unter dem Overlay.
+The player belongs to the app. `PlayerOverlay` receives a `PlayerModel` with state and commands (`togglePlay`, `seek`, `selectAudio`, `skipSegment` …) and never sees hls.js, URLs or PlaybackInfo. The `<video>` element lies below the overlay.
 
-**Bausteine von Classic wiederverwenden:** Themes dürfen aus `src/themes/default/components` importieren (Icons, `meta.ts`, `text.ts`, `Avatar`). Zeitleiste und Spur-/Kapitelmenüs des Players haben eine geprüfte Bedienlogik (Ziehen, Tastatur, Dialog-Fokus). `PlayerTimeline` und `PlayerMenu` nehmen deshalb ein `classes`-Objekt: ein CSS-Modul mit denselben Klassennamen wie `default/components/PlayerOverlay.module.css`. Neon Grid und Crimson nutzen das für ihre Player.
+**Reusing Classic's building blocks:** themes may import from `src/themes/default/components` (icons, `meta.ts`, `text.ts`, `Avatar`). The player's timeline and track/chapter menus have tested interaction logic (dragging, keyboard, dialog focus). That is why `PlayerTimeline` and `PlayerMenu` take a `classes` object: a CSS module with the same class names as `default/components/PlayerOverlay.module.css`. Neon Grid and Crimson use this for their players.
 
-**Details als Overlay** (`detailPresentation: 'modal'`, Beispiel Crimson): Links mit `<AppLink overlay>` öffnen Details eines Titels über der aktuellen Seite. Die URL ist die normale Detail-URL, die Seite darunter bleibt montiert, unverändert und `inert`. Zurück schließt die Ebene, Scrollpositionen und Zustand der Seite bleiben erhalten. `ItemDetailPage` und `SeriesPage` bekommen dann `presentation: 'modal'` und `onClose`; ohne Seite darunter (direkt aufgerufene URL, neu geladen) kommt `presentation: 'page'`, und das Theme zeigt dieselben Inhalte als Seite. Das Overlay muss selbst:
+**Details as an overlay** (`detailPresentation: 'modal'`, example Crimson): links with `<AppLink overlay>` open a title's details above the current page. The URL is the normal detail URL, the page below stays mounted, unchanged and `inert`. Back closes the layer; scroll positions and the state of the page are kept. `ItemDetailPage` and `SeriesPage` then receive `presentation: 'modal'` and `onClose`; without a page below (URL opened directly, reloaded) they receive `presentation: 'page'`, and the theme shows the same content as a page. The overlay itself has to:
 
-- `role="dialog"`, `aria-modal="true"` und `aria-labelledby` (auf die Überschrift, auch im Lade- und Fehlerzustand) setzen,
-- ein Element mit `data-overlay-open` tragen (das Theme sperrt damit z. B. das Scrollen der Seite),
-- Esc selbst behandeln (`preventDefault()`, dann `onClose()`), einen Schließen-Button haben und Tab im Dialog halten,
-- den Fokus beim Öffnen hineinholen und beim Schließen an das Element zurückgeben, das es geöffnet hat.
+- set `role="dialog"`, `aria-modal="true"` and `aria-labelledby` (pointing to the heading, also in the loading and error state),
+- carry an element with `data-overlay-open` (the theme uses it e.g. to lock the page's scrolling),
+- handle Esc itself (`preventDefault()`, then `onClose()`), have a close button and keep Tab inside the dialog,
+- pull the focus in when opening and return it to the element that opened it when closing.
 
-Nur Details (`/item/:id`) öffnen als Overlay; `overlay` an anderen Zielen (Person, Sammlung) ist ein normaler Link. Ein Overlay-Link innerhalb eines Overlays ersetzt den Verlaufseintrag, Schließen führt also immer zur Seite zurück. Crimsons `DetailSheet` ist die Vorlage.
+Only details (`/item/:id`) open as an overlay; `overlay` on other targets (person, collection) is a normal link. An overlay link inside an overlay replaces the history entry, so closing always leads back to the page. Crimson's `DetailSheet` is the template.
 
-**Verwaltung:** Jede Detailseite bindet `<ItemAdmin item={item} renderTrigger={…} />` neben Favorit und „gesehen“ ein. Für alle anderen rendert es nichts. Das Theme liefert nur den Knopf: `renderTrigger` bekommt `label` und `buttonProps` (Ref, `aria-expanded`, `aria-controls`, `onClick`), die auf den eigenen Knopf gehören; ein runder Knopf ohne Text nimmt `label` als `aria-label`. Menü und Dialoge sind gemeinsam und nehmen die Tokens des Themes an (`--color-surface`, `--color-border`, `--radius-card`, `--shadow-overlay` …). Das Menü erscheint in der obersten Ebene des Browsers, `overflow: hidden` im Kopf schneidet es also nicht ab. `NavModel.dashboard` ist für Administratoren der Link zur Server-Verwaltung von Jellyfin (sonst `null`); jedes Profilmenü zeigt ihn als Link mit `target="_blank"`.
+**Administration:** every detail page includes `<ItemAdmin item={item} renderTrigger={…} />` next to favorite and "played". For everybody else it renders nothing. The theme only provides the button: `renderTrigger` receives `label` and `buttonProps` (ref, `aria-expanded`, `aria-controls`, `onClick`), which belong on the theme's own button; a round button without text takes `label` as its `aria-label`. Menu and dialogs are shared and take on the theme's tokens (`--color-surface`, `--color-border`, `--radius-card`, `--shadow-overlay` …). The menu appears in the browser's top layer, so `overflow: hidden` in the header does not clip it. For administrators, `NavModel.dashboard` is the link to Jellyfin's server administration (otherwise `null`); every profile menu shows it as a link with `target="_blank"`.
 
-**Anordnung (Phase 14):** Startseite, Detailseiten und Navigation kommen fertig angeordnet an, nach dem Theme, der Vorgabe des Administrators oder der Anordnung des Benutzers. Jedes Theme legt seine eigene Anordnung in `options.layout` fest (`home`, `detailActions`, `facts`; Vorlage: `default/layout.ts`) und zeichnet dann nur noch in der Reihenfolge, in der es die Daten bekommt:
+**Arrangement (phase 14):** home page, detail pages and navigation arrive already arranged, according to the theme, the administrator's default or the user's arrangement. Every theme defines its own arrangement in `options.layout` (`home`, `detailActions`, `facts`; template: `default/layout.ts`) and then only draws in the order in which it receives the data:
 
-- `HomePageProps.sections` enthält außer den Reihen und Genres auch `{ kind: 'hero' }` und `{ kind: 'libraries' }` an ihrem Platz; ausgeblendete Bereiche fehlen. `splitHero()`, `homeIsEmpty()` und `rowVariant()` aus `default/components/home.ts` helfen beim Zeichnen.
-- `ItemDetailPageProps.layout` und `SeriesPageProps.layout` haben `actions` (Knöpfe in Reihenfolge) und `facts` (Angaben in Reihenfolge, nur die sichtbaren). Am einfachsten baut das Theme eine Zuordnung von ID zu Element und zeichnet `layout.actions.map(…)`; Angaben an mehreren Stellen folgen derselben Liste.
-- `NavModel.items` ist schon angeordnet; Themes ordnen die Einträge nicht selbst um (die Suche als Symbol an anderer Stelle ist erlaubt).
+- Besides the rows and genres, `HomePageProps.sections` also contains `{ kind: 'hero' }` and `{ kind: 'libraries' }` in their place; hidden areas are missing. `splitHero()`, `homeIsEmpty()` and `rowVariant()` from `default/components/home.ts` help with drawing.
+- `ItemDetailPageProps.layout` and `SeriesPageProps.layout` have `actions` (buttons in order) and `facts` (details in order, only the visible ones). The easiest way is for the theme to build a map from ID to element and draw `layout.actions.map(…)`; details shown in several places follow the same list.
+- `NavModel.items` is already arranged; themes do not reorder the entries themselves (search as an icon in another place is allowed).
 
-**Oberflächenklänge:** Ein Theme mit `features: { uiSounds: true }` bekommt in den Einstellungen den Schalter „Klänge der Oberfläche“ (standardmäßig aus, pro Benutzer am Server gespeichert). Das Theme erzeugt die Klänge selbst und spielt sie nur, solange `useUiSounds()` `true` liefert.
+**Interface sounds:** a theme with `features: { uiSounds: true }` gets the switch "Interface sounds" in the settings (off by default, stored per user on the server). The theme creates the sounds itself and only plays them while `useUiSounds()` returns `true`.
 
-## 6. Fokus, Fernbedienung und TV
+## 6. Focus, remote control and TV
 
-Die Pfeiltasten-Navigation (`src/navigation/spatial.ts`) arbeitet mit dem echten DOM: Alles, was mit Tab erreichbar ist, erreicht man auch mit den Pfeilen. Ein Theme muss nichts registrieren. Es gelten diese Regeln:
+The arrow key navigation (`src/navigation/spatial.ts`) works with the real DOM: everything reachable with Tab is also reachable with the arrows. A theme does not have to register anything. These rules apply:
 
-- **Echte Bedienelemente:** `button`, `a[href]`, Formularelemente. Keine klickbaren `div`s.
-- **Fokus = Hover:** Jede Hover-Regel wird als `:is(:hover, :focus-visible)` geschrieben. Der Fokus muss mindestens so deutlich sein wie der Hover-Zustand. Ein E2E-Test vergleicht die berechneten Stile.
-- **Eigene Pfeillogik** (Karussell, Tabs, Radiogruppe, Menü): Die Komponente behandelt die Taste und ruft `event.preventDefault()` auf. Dann bleibt die globale Navigation still.
-- **Einstieg:** Ohne Fokus springt der erste Pfeil auf `[data-autofocus]`, sonst auf das erste sichtbare Element im `<main>`. Ein Theme setzt `data-autofocus`, wenn ein anderes Element der bessere Einstieg ist.
-- **`data-nav-ignore`:** Element ist per Tab, aber nicht per Pfeil erreichbar (z. B. der Skip-Link).
-- **Feste Leisten** (`position: fixed` oder `sticky`) sind eine eigene Ebene: Die Pfeile erreichen sie erst, wenn der Inhalt in dieser Richtung nichts mehr hat.
-- **Dialoge und Menüs** brauchen `role="dialog"`/`aria-modal` bzw. `role="menu"`, dann bleibt der Fokus darin.
-- **Zurück:** Esc, Backspace und die Zurück-Taste der Fernbedienung gehen eine Seite zurück. Offene Overlays fangen die Taste vorher selbst ab (`preventDefault()`).
-- **Angehobene Karten:** Fokussierte Karten dürfen per `transform` größer werden. Die Navigation rechnet damit.
+- **Real controls:** `button`, `a[href]`, form elements. No clickable `div`s.
+- **Focus = hover:** every hover rule is written as `:is(:hover, :focus-visible)`. The focus has to be at least as clear as the hover state. An E2E test compares the computed styles.
+- **Own arrow logic** (carousel, tabs, radio group, menu): the component handles the key and calls `event.preventDefault()`. Then the global navigation stays quiet.
+- **Entry point:** without focus, the first arrow jumps to `[data-autofocus]`, otherwise to the first visible element in `<main>`. A theme sets `data-autofocus` when another element is the better entry point.
+- **`data-nav-ignore`:** the element is reachable with Tab but not with the arrows (e.g. the skip link).
+- **Fixed bars** (`position: fixed` or `sticky`) are a layer of their own: the arrows only reach them once the content has nothing left in that direction.
+- **Dialogs and menus** need `role="dialog"`/`aria-modal` or `role="menu"`, then the focus stays inside.
+- **Back:** Esc, Backspace and the back key of the remote control go back one page. Open overlays catch the key themselves first (`preventDefault()`).
+- **Lifted cards:** focused cards may grow through `transform`. The navigation accounts for that.
 
-**TV-Modus:** Auf `<html>` steht `data-device="tv"` (bzw. `desktop`, `touch`). Im TV-Modus skaliert `rem` mit der Bildschirmbreite (1920 px → 24 px, 3840 px → 48 px). Themes rechnen deshalb in `rem` und berücksichtigen `--overscan-x`/`--overscan-y` an festen Rändern (Kopfzeile, Player-Steuerung). Hover-Effekte, die nur mit Maus erreichbar wären, gibt es nicht.
+**TV mode:** `<html>` carries `data-device="tv"` (or `desktop`, `touch`). In TV mode `rem` scales with the screen width (1920 px → 24 px, 3840 px → 48 px). Themes therefore calculate in `rem` and respect `--overscan-x`/`--overscan-y` at fixed edges (header, player controls). There are no hover effects that would only be reachable with a mouse.
 
-## 7. Bewegung
+## 7. Motion
 
-- Animiert werden nur `transform` (auch `translate`, `scale`, `rotate`), `opacity` und `filter`. Ein E2E-Test liest alle Übergänge und Keyframes aus dem CSSOM und schlägt bei anderen Eigenschaften fehl.
-- `data-motion="reduced"` auf `<html>` bzw. `useMotionPreference() === 'reduced'`: keine Parallaxe, kein Ken Burns, keine Neigung, kein Glitch, keine automatischen Karussells, keine Trailer. Kurze Überblendungen bleiben erlaubt.
-- Flackernde Effekte höchstens dreimal pro Sekunde (WCAG 2.3.1).
-- **Motion (Feder-Animationen):** erlaubt, aber nur im Theme-Chunk. Mit `LazyMotion features={domAnimation} strict` und `m.*`-Elementen bleibt der Anteil klein (ohne Layout-Animationen), `MotionConfig reducedMotion` folgt `useReducedMotion()`. Glass kapselt das in `GlassMotion`; Bausteine, die außerhalb der Shell gerendert werden (Live-Vorschau, Player), brauchen die Hülle selbst. Auch Motion animiert nur `transform` und `opacity`. Diese Animationen laufen per JavaScript und stehen nicht im CSSOM, der E2E-Test sieht sie also nicht: Hier gilt die Regel per Code-Review.
-- **Beispiel Fokuseffekt:** `glass/components/useLift.ts` hebt eine Karte bei Fokus und Hover an, neigt sie unter der Maus zur Zeigerposition und lässt einen Lichtreflex folgen (Federn über Motion-Werte, ohne Neu-Rendern). Tastatur und Fernbedienung heben die Karte nur gerade an, reduzierte Bewegung schaltet Neigung und Animation ab. Der stärkere Schatten einer angehobenen Karte liegt auf einer eigenen Ebene und blendet nur über `opacity` ein.
-- **Automatische Karussells** brauchen einen Pause-Knopf (WCAG 2.2.2) und halten bei Hover, Fokus und laufendem Trailer an. Titel außerhalb des Bilds bekommen `inert`, damit Tastatur und Fernbedienung nicht in sie hineinspringen (Horizon).
-- **Seitenleisten, die bei Fokus aufklappen** (Constellation): Jeder Eintrag behält die schmale Breite, die Beschriftung steht daneben. So misst die Pfeilnavigation die Icon-Spalte, und Inhalte rechts davon bleiben erreichbar. Aufgeklappt wird bei Hover, `:has(:focus-visible)` (nicht `:focus-within`, sonst bliebe die Leiste nach einem Mausklick offen) und offenem Menü; animiert werden nur Deckkraft und Verschiebung der Beschriftungen und ein Schatten.
-- **Bedienelemente nur für Zeiger und Tab** bekommen `data-nav-ignore`, wenn sie die Pfeilnavigation in die Irre führen würden. Beispiel: Die Hero-Pfeile von Constellation liegen am linken Rand neben der Leiste; ohne die Markierung würde ← von der ersten Karte einer Reihe zum unsichtbaren Pfeil springen statt in die Leiste.
-- **Globale Keyframes** sind in `global.css` nicht erlaubt (der Token-Test lässt nur Selektoren mit Theme-Scope zu, und Keyframe-Namen gelten global). Animationen gehören in ein CSS-Modul; Constellation legt deshalb die funkelnden Sterne in die AppShell, das ruhige Sternenfeld bleibt in `global.css`.
-- **Karten mit mehr Inhalt bei Fokus** (Crimson: vergrößerte Vorschau, Horizon: nach unten aufklappend) liegen als Portal in Dokumentkoordinaten über der Seite: Reihen scrollen seitlich und würden sie sonst abschneiden. Weil sie die Karte verdecken, tragen sie selbst den Fokusrahmen, solange die Karte den Fokus hat (WCAG 2.4.11).
-- Der Theme-Wechsel selbst blendet über (View Transition). Das Theme muss dafür nichts tun.
+- Only `transform` (also `translate`, `scale`, `rotate`), `opacity` and `filter` are animated. An E2E test reads all transitions and keyframes from the CSSOM and fails on other properties.
+- `data-motion="reduced"` on `<html>` or `useMotionPreference() === 'reduced'`: no parallax, no Ken Burns, no tilt, no glitch, no automatic carousels, no trailers. Short cross-fades stay allowed.
+- Flickering effects at most three times per second (WCAG 2.3.1).
+- **Motion (spring animations):** allowed, but only in the theme chunk. With `LazyMotion features={domAnimation} strict` and `m.*` elements its share stays small (without layout animations); `MotionConfig reducedMotion` follows `useReducedMotion()`. Glass wraps this in `GlassMotion`; building blocks rendered outside the shell (live preview, player) need the wrapper themselves. Motion, too, animates only `transform` and `opacity`. These animations run in JavaScript and are not in the CSSOM, so the E2E test does not see them: here the rule is enforced in code review.
+- **Example focus effect:** `glass/components/useLift.ts` lifts a card on focus and hover, tilts it towards the pointer under the mouse and lets a light reflection follow (springs through Motion values, without re-rendering). Keyboard and remote control only lift the card straight up; reduced motion switches tilt and animation off. The stronger shadow of a lifted card lies on its own layer and only fades in through `opacity`.
+- **Automatic carousels** need a pause button (WCAG 2.2.2) and stop on hover, focus and a running trailer. Titles outside the picture get `inert`, so keyboard and remote control do not jump into them (Horizon).
+- **Side bars that expand on focus** (Constellation): every entry keeps the narrow width, the label sits next to it. That way the arrow navigation measures the icon column, and content to the right of it stays reachable. The bar expands on hover, `:has(:focus-visible)` (not `:focus-within`, otherwise the bar would stay open after a mouse click) and an open menu; only the opacity and offset of the labels and a shadow are animated.
+- **Controls for pointer and Tab only** get `data-nav-ignore` when they would lead the arrow navigation astray. Example: Constellation's hero arrows sit at the left edge next to the bar; without the marker, ← from the first card of a row would jump to the invisible arrow instead of into the bar.
+- **Global keyframes** are not allowed in `global.css` (the token test only accepts selectors with the theme scope, and keyframe names are global). Animations belong in a CSS module; that is why Constellation puts the twinkling stars into the AppShell, while the calm star field stays in `global.css`.
+- **Cards with more content on focus** (Crimson: enlarged preview, Horizon: unfolding downwards) lie as a portal in document coordinates above the page: rows scroll sideways and would clip them otherwise. Because they cover the card, they carry the focus outline themselves while the card has the focus (WCAG 2.4.11).
+- The theme switch itself cross-fades (View Transition). The theme does not have to do anything for it.
 
-## 8. Live-Vorschau
+## 8. Live preview
 
-Die Einstellungsseite zeigt das ausgewählte Theme live mit den echten Daten des Benutzers: `Hero` und eine `Row`, gerendert mit `context: 'preview'` in einem Container mit eigenem `data-theme`/`data-color-scheme`. Der Container ist 1280 px breit gelayoutet, wird verkleinert und ist `inert`.
+The settings page shows the selected theme live with the user's real data: `Hero` and one `Row`, rendered with `context: 'preview'` in a container with its own `data-theme`/`data-color-scheme`. The container is laid out 1280 px wide, scaled down and `inert`.
 
-Daraus folgt für `Hero`, `Row` und `MediaCard`:
+For `Hero`, `Row` and `MediaCard` this means:
 
-- Breiten in `cqi` statt `vw` rechnen. Außerhalb eines Containers entspricht `cqi` der Viewport-Breite, die Seite sieht also gleich aus.
-- Kein `position: fixed`, keine Abhängigkeit von der Scrollposition des Fensters.
-- Bei `context === 'preview'` keine Trailer, keine automatischen Wechsel und keine Effekte, die Fokus brauchen.
+- Calculate widths in `cqi` instead of `vw`. Outside a container `cqi` equals the viewport width, so the page looks the same.
+- No `position: fixed`, no dependency on the window's scroll position.
+- With `context === 'preview'`: no trailers, no automatic changes and no effects that need focus.
 
-## 9. Texte
+## 9. Texts
 
-- Jeder sichtbare Text kommt aus i18next. Wo es passt, nutzt ein Theme die gemeinsamen Namespaces (`common`, `content`, `player`, `settings`, `errors`).
-- Eigene Formulierungen (z. B. „Sektoren“, „Systemzeit“) stehen in `i18n/de.json` und `i18n/en.json` im Theme-Ordner und kommen über `texts: { de, en }` ins `ThemeModule`. Sie reisen mit dem Theme-Chunk und werden beim Laden als Namespace `theme-<id>` registriert: `useTranslation('theme-neon-grid')`. Für die Typprüfung den Namespace in `src/i18n/i18next.d.ts` eintragen.
-- Barrierefreie Namen bleiben die gemeinsamen Begriffe, wo Tests und Screenreader-Nutzer sie erwarten: Neon Grid zeigt „Sektoren“, die Region heißt für Screenreader weiter „Bibliotheken“.
-- Deutsch in Du-Form, Englisch gleichwertig. Ein Test prüft, dass beide Sprachen dieselben Schlüssel haben.
-- Zahlen, Daten und Laufzeiten über `Intl` bzw. `formatClock()`.
+- Every visible text comes from i18next. Where it fits, a theme uses the shared namespaces (`common`, `content`, `player`, `settings`, `errors`).
+- Own wording (e.g. "Sectors", "System time") lives in `i18n/de.json` and `i18n/en.json` in the theme folder and reaches the `ThemeModule` through `texts: { de, en }`. It travels with the theme chunk and is registered as the namespace `theme-<id>` on load: `useTranslation('theme-neon-grid')`. For type checking, add the namespace to `src/i18n/i18next.d.ts`.
+- Accessible names stay the shared terms where tests and screen reader users expect them: Neon Grid shows "Sectors", the region is still called "Libraries" for screen readers.
+- German in the informal "du" form, English on equal terms. A test checks that both languages have the same keys.
+- Numbers, dates and runtimes through `Intl` or `formatClock()`.
 
-## 10. Prüfliste vor dem Abschluss
+## 10. Checklist before finishing
 
-- [ ] `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `npm run check:bundle` fehlerfrei; Theme-Chunk unter 80 KB JS gzip
-- [ ] Lade-, Leer- und Fehlerzustände auf jeder Seite
-- [ ] `npm run test:e2e` grün, inklusive axe-Prüfung in jedem Farbschema; das neue Theme in `e2e/accessibility.spec.ts` eintragen (prüft jede Seite, auch die von Classic übernommenen)
-- [ ] `npm run shots`: 1920×1080, 3840×2160, 1280×800, 390×844 angesehen; TV-Modus 1080p und 4K
-- [ ] Alle Seiten nur mit Pfeiltasten, Enter und Zurück bedienbar; Fokus = Hover
-- [ ] Reduzierte Bewegung geprüft; Effekte nur über Bildern und Überschriften, nie über Fließtext
-- [ ] `npm run previews` ausgeführt, Vorschaubilder eingecheckt; README-Bilder per `npm run readme-shots` (Eintrag in `e2e/readme.spec.ts`)
-- [ ] Lange Inhalte: Beschreibungen über `ExpandableText`, Spuren über `TrackList`, eine Navigation mit Bibliotheken über `OverflowNav` (alle in `default/components/`), damit echte Bibliotheken mit langen Texten und vielen Einträgen lesbar bleiben
-- [ ] Ladezustände ohne Sprünge: Platzhalter haben die Höhe des geladenen Inhalts, auch für Zeilen unter dem Hero (Punkte, Pause-Knopf)
-- [ ] **Rechtliches:** keine Logos, Markennamen, Original-Schriften oder Icons von Streaming-Anbietern – weder im Code noch in Dateinamen, Kommentaren oder Texten. Farben nur in ähnlicher Stimmung, keine exakten Markenfarben. Schriften frei lizenziert über `@fontsource`. Icons selbst gezeichnet. Kein „im Stil von …“ im UI.
+- [ ] `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `npm run check:bundle` without errors; theme chunk below 80 KB JS gzip
+- [ ] Loading, empty and error states on every page
+- [ ] `npm run test:e2e` green, including the axe check in every color scheme; add the new theme to `e2e/accessibility.spec.ts` (checks every page, including the ones taken over from Classic)
+- [ ] `npm run shots`: 1920×1080, 3840×2160, 1280×800, 390×844 looked at; TV mode 1080p and 4K
+- [ ] Every page usable with arrow keys, Enter and Back only; focus = hover
+- [ ] Reduced motion checked; effects only over pictures and headings, never over body text
+- [ ] `npm run previews` run, preview pictures checked in; README pictures via `npm run readme-shots` (entry in `e2e/readme.spec.ts`)
+- [ ] Long content: overviews through `ExpandableText`, tracks through `TrackList`, a navigation with libraries through `OverflowNav` (all in `default/components/`), so real libraries with long texts and many entries stay readable
+- [ ] Loading states without jumps: placeholders have the height of the loaded content, also for lines below the hero (dots, pause button)
+- [ ] **Legal:** no logos, brand names, original fonts or icons of streaming providers – neither in the code nor in file names, comments or texts. Colors only in a similar mood, no exact brand colors. Fonts freely licensed through `@fontsource`. Icons drawn ourselves. No "in the style of …" in the UI.
 
-## 11. Die mitgelieferten Themes
+## 11. The bundled themes
 
-Was jedes Theme selbst zeichnet und was es von Classic übernimmt. Gute Vorlagen für ein neues Theme sind Horizon und Constellation (wenige, klar getrennte Komponenten) sowie Neon Grid (eigene Anmeldung und eigene Zustände).
+What each theme draws itself and what it takes over from Classic. Good templates for a new theme are Horizon and Constellation (few, clearly separated components) and Neon Grid (its own sign-in and its own states).
 
-| Theme               | Eigene Komponenten                                                                                                                                       | Von Classic                                               | Optionen                                                                    | Schrift                             |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------- | ----------------------------------- |
-| Classic (`default`) | alle (Referenz)                                                                                                                                          | –                                                         | –                                                                           | Inter                               |
-| Neon Grid           | AppShell, LoginPage, ProfileSelect, HomePage, ItemDetailPage, SeriesPage, SearchPage, PlayerOverlay, ResumePrompt, Hero, Row, MediaCard, Toast, Zustände | Bibliothek, Favoriten, Einstellungen                      | `heroItemCount: 6`                                                          | Orbitron, Rajdhani, Share Tech Mono |
-| Crimson             | AppShell, ProfileSelect, HomePage, ItemDetailPage, SeriesPage, SearchPage, PlayerOverlay, Hero, Row, MediaCard                                           | Anmeldung, Bibliothek, Favoriten, Einstellungen, Zustände | `detailPresentation: 'modal'`, `heroItemCount: 1`, `cardShape: 'landscape'` | Inter                               |
-| Glass               | AppShell, HomePage, ItemDetailPage, SeriesPage, SearchPage, PlayerOverlay, Hero, Row, MediaCard                                                          | Anmeldung, Bibliothek, Favoriten, Einstellungen, Zustände | `heroItemCount: 6`                                                          | Inter                               |
-| Horizon             | AppShell, HomePage, ItemDetailPage, SeriesPage, SearchPage, PlayerOverlay, Hero, Row, MediaCard                                                          | Anmeldung, Bibliothek, Favoriten, Einstellungen, Zustände | `heroItemCount: 6`, `cardShape: 'landscape'`                                | Figtree                             |
-| Constellation       | AppShell, HomePage, ItemDetailPage, SeriesPage, SearchPage, PlayerOverlay, Hero, Row, MediaCard                                                          | Anmeldung, Bibliothek, Favoriten, Einstellungen, Zustände | `heroItemCount: 6`, `cardShape: 'landscape'`                                | Nunito Sans                         |
+| Theme               | Own components                                                                                                                                         | From Classic                                  | Options                                                                     | Font                                |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------- | --------------------------------------------------------------------------- | ----------------------------------- |
+| Classic (`default`) | all (reference)                                                                                                                                        | –                                             | –                                                                           | Inter                               |
+| Neon Grid           | AppShell, LoginPage, ProfileSelect, HomePage, ItemDetailPage, SeriesPage, SearchPage, PlayerOverlay, ResumePrompt, Hero, Row, MediaCard, Toast, states | Library, favorites, settings                  | `heroItemCount: 6`                                                          | Orbitron, Rajdhani, Share Tech Mono |
+| Crimson             | AppShell, ProfileSelect, HomePage, ItemDetailPage, SeriesPage, SearchPage, PlayerOverlay, Hero, Row, MediaCard                                         | Sign-in, library, favorites, settings, states | `detailPresentation: 'modal'`, `heroItemCount: 1`, `cardShape: 'landscape'` | Inter                               |
+| Glass               | AppShell, HomePage, ItemDetailPage, SeriesPage, SearchPage, PlayerOverlay, Hero, Row, MediaCard                                                        | Sign-in, library, favorites, settings, states | `heroItemCount: 6`                                                          | Inter                               |
+| Horizon             | AppShell, HomePage, ItemDetailPage, SeriesPage, SearchPage, PlayerOverlay, Hero, Row, MediaCard                                                        | Sign-in, library, favorites, settings, states | `heroItemCount: 6`, `cardShape: 'landscape'`                                | Figtree                             |
+| Constellation       | AppShell, HomePage, ItemDetailPage, SeriesPage, SearchPage, PlayerOverlay, Hero, Row, MediaCard                                                        | Sign-in, library, favorites, settings, states | `heroItemCount: 6`, `cardShape: 'landscape'`                                | Nunito Sans                         |
 
-Bilder aller Themes stehen im [README](../README.md#themes), die Entscheidungen zu jedem Theme in CLAUDE.md §12.
+Pictures of every theme are in the [README](../README.md#themes), the decisions on each theme in CLAUDE.md §12.

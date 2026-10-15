@@ -1,114 +1,121 @@
 # Changelog
 
-Alle nennenswerten Änderungen an Jellymorph. Die Versionen folgen [Semantic Versioning](https://semver.org/lang/de/). Die Release-Notizen auf GitHub entstehen zusätzlich automatisch aus den Commits.
+All notable changes to Jellymorph. Versions follow [Semantic Versioning](https://semver.org/). The release notes on GitHub are also generated automatically from the commits.
+
+## Unreleased
+
+### Changed
+
+- New app icon: a play symbol cut into three purple facets on a dark violet square. Every theme tints the mark in its own colors.
+- The README, this changelog, the documentation and the release notes are now in English. The app itself stays in German and English.
 
 ## 1.2.0 – 2026-10-15
 
-Gestaltung anpassen: Jeder ordnet Startseite, Navigation und Detailseiten so, wie er es mag, und Betreiber geben Jellymorph eigene Farben und Schriften.
+Make it your own: everybody arranges the home page, the navigation and the detail pages the way they like, and operators give Jellymorph their own colors and fonts.
 
-### Neu
+### New
 
-- **Anordnung** in den Einstellungen, für alle Themes: Reihenfolge und Sichtbarkeit der Bereiche der Startseite (Titelbild, Bibliotheken, Weiterschauen, „Neu in …“, Favoriten, Sammlungen, Genres), der Navigation sowie der Knöpfe und Angaben auf Detailseiten. Einträge lassen sich am Griff ziehen oder mit den Pfeilen verschieben (Tastatur, Fernbedienung); jede Änderung wird für Screenreader angesagt. Die Anordnung gilt auf allen Geräten des Benutzers.
-- **Vorgabe für alle:** Administratoren legen eine Anordnung für alle fest. Sie gilt für jede Liste, die ein Benutzer nicht selbst angeordnet hat, und erreicht auch Benutzer, die später dazukommen.
-- **Eigene Farben, Schriften und CSS** aus einem gemappten Ordner `/custom`: `custom.css` für alle Themes, `<theme>.css` für eines, Schriften und Bilder daneben. Ohne Ausnahme in der Content Security Policy.
+- **Arrangement** in the settings, for every theme: order and visibility of the home page areas (title picture, libraries, continue watching, "New in …", favorites, collections, genres), of the navigation and of the buttons and details on detail pages. Entries can be dragged by their handle or moved with the arrows (keyboard, remote control); every change is announced to screen readers. The arrangement applies on all of the user's devices.
+- **Default for everybody:** administrators set an arrangement for everybody. It applies to every list a user has not arranged themselves, and it also reaches users added later.
+- **Own colors, fonts and CSS** from a mounted folder `/custom`: `custom.css` for every theme, `<theme>.css` for one, fonts and pictures next to them. No exception in the Content Security Policy needed.
 
-### Geändert
+### Changed
 
-- Jedes Theme behält seine bisherige Anordnung als Vorgabe. Einzige Ausnahme: Bei Crimson, Glass und Horizon folgen die Bibliotheken jetzt immer auf dieselben Reihen statt auf „die ersten zwei Reihen“ (auch wenn „Weiterschauen“ leer ist).
+- Every theme keeps its previous arrangement as its default. The one exception: in Crimson, Glass and Horizon the libraries now always follow the same rows instead of "the first two rows" (also when "Continue watching" is empty).
 
 ## 1.1.0 – 2026-10-14
 
-Verwaltung direkt in Jellymorph: Administratoren pflegen ihre Titel, ohne zur Jellyfin-Oberfläche zu wechseln.
+Administration right inside Jellymorph: administrators look after their titles without switching to the Jellyfin interface.
 
-### Neu
+### New
 
-- Menü **„Bearbeiten“** auf jeder Detailseite, in allen Themes, nur für Administratoren:
-  - **Identifizieren:** nach Titel, Jahr oder einer externen ID bei den Metadaten-Anbietern suchen und einen Treffer übernehmen, auf Wunsch samt Bildern.
-  - **Metadaten bearbeiten:** Titel, Originaltitel, Sortiertitel, Jahr, Daten, Altersfreigabe, Bewertungen, Slogan, Beschreibung, Genres, Tags, Studios, externe IDs und die Sperre gegen automatische Änderungen.
-  - **Bilder:** je Bildtyp (Poster, Hintergrund, Logo, Vorschaubild, Banner, Clearart) ein Bild der Anbieter übernehmen, ein eigenes hochladen oder eines löschen.
-  - **Untertitel:** bei den Untertitel-Anbietern des Servers suchen und herunterladen, eigene Dateien hochladen (SRT, VTT, ASS, SSA) und externe Untertitel löschen.
-  - **Metadaten aktualisieren:** nach neuen und geänderten Dateien suchen, fehlende Metadaten ergänzen oder alle ersetzen, auf Wunsch auch die Bilder.
-  - **Löschen:** Eintrag samt Dateien löschen (nur mit Löschrecht), danach geht es zur vorherigen Seite zurück.
-- **„Bibliothek scannen“** auf der Bibliotheksseite.
-- **„Server-Verwaltung“** im Profilmenü öffnet das Dashboard von Jellyfin in einem neuen Tab.
-- Demo-Modus: Alex (Administrator) kann alles davon ausprobieren; Änderungen gelten bis zum Neuladen.
+- An **"Edit"** menu on every detail page, in every theme, for administrators only:
+  - **Identify:** search the metadata providers by title, year or an external ID and apply a match, optionally including its pictures.
+  - **Edit metadata:** title, original title, sort title, year, dates, parental rating, ratings, tagline, overview, genres, tags, studios, external IDs and the lock against automatic changes.
+  - **Pictures:** per picture type (poster, backdrop, logo, thumbnail, banner, clear art) apply a picture from the providers, upload your own or delete one.
+  - **Subtitles:** search the server's subtitle providers and download, upload your own files (SRT, VTT, ASS, SSA) and delete external subtitles.
+  - **Refresh metadata:** scan for new and changed files, fill in missing metadata or replace all of it, optionally the pictures too.
+  - **Delete:** delete the item including its files (only with the right to delete), then go back to the previous page.
+- **"Scan library"** on the library page.
+- **"Server administration"** in the profile menu opens Jellyfin's dashboard in a new tab.
+- Demo mode: Alex (administrator) can try all of this; changes last until the page is reloaded.
 
-### Geändert
+### Changed
 
-- Content Security Policy: Bilder dürfen von allen HTTPS-Adressen kommen. Die Bildvorschläge der Metadaten-Anbieter lädt der Browser direkt von deren Seiten.
+- Content Security Policy: pictures may come from any HTTPS address. The browser loads the picture suggestions of the metadata providers directly from their sites.
 
-### Behoben
+### Fixed
 
-- Beschreibungen mit HTML aus den Metadaten zeigten Zeilenumbrüche als `<br>`. Jetzt werden daraus Absätze.
-- Lange Beschreibungen sind auf vier Zeilen gekürzt, „Mehr anzeigen“ klappt sie auf. Ton- und Untertitelspuren stehen untereinander, nach drei Einträgen geht es mit „+ n weitere“ weiter.
-- Studios und Regie stehen ebenfalls untereinander und sind nach drei Einträgen gekürzt.
-- Die Bibliotheksbilder von Jellyfin enthalten den Namen schon; die Themes schreiben ihn nicht mehr ein zweites Mal darüber.
-- Die Sprungleiste der Bibliothek setzt den gewählten Buchstaben an den oberen Rand statt an den unteren.
-- Mit vielen Bibliotheken lief die Navigation über den Rand. Was nicht passt, steht jetzt im Menü „Mehr“; Startseite, Suche und Favoriten bleiben immer sichtbar.
-- Glass auf dem Handy: Der Link mit dem Logo hatte für Screenreader keinen Namen.
-- Crimson: Nach dem Schließen der Details landete der Fokus selten auf einem anderen Link zum selben Titel (z. B. im Hero) statt auf der Karte, die sie geöffnet hatte. Die Details merken sich jetzt den angeklickten Link.
-- Sprachlisten zeigten für Sprachen ohne Übersetzung im Browser nur das Kürzel (z. B. „aa“) statt des Namens.
+- Overviews with HTML from the metadata showed line breaks as `<br>`. They now become paragraphs.
+- Long overviews are cut to four lines, "Show more" expands them. Audio and subtitle tracks are listed one below the other, after three entries "+ n more" continues.
+- Studios and directors are listed one below the other as well and cut after three entries.
+- Jellyfin's library pictures already contain the name; the themes no longer write it over them a second time.
+- The jump bar of the library puts the chosen letter at the top edge instead of the bottom.
+- With many libraries the navigation ran over the edge. Whatever does not fit is now in a "More" menu; home, search and favorites always stay visible.
+- Glass on phones: the logo link had no name for screen readers.
+- Crimson: after closing the details, the focus occasionally landed on another link to the same title (e.g. in the hero) instead of the card that had opened them. The details now remember the clicked link.
+- Language lists showed only the code (e.g. "aa") for languages the browser has no translation for, instead of the name.
 
 ## 1.0.0 – 2026-10-14
 
-Die erste stabile Version: sechs Themes, der vollständige Funktionsumfang und ein geprüftes Docker-Image.
+The first stable version: six themes, the full feature set and a tested Docker image.
 
-### Neu
+### New
 
-- Prüfung der Barrierefreiheit über alle Seiten aller Themes (Bibliothek, Sammlung, Genre, Person, Favoriten, Suche, Einstellungen, Player mit offenem Menü), auch im hellen Schema von Classic und Glass.
-- Bilder aller Themes im README (`npm run readme-shots`), dazu dieser Changelog.
+- Accessibility checks of every page in every theme (library, collection, genre, person, favorites, search, settings, player with an open menu), also in the light scheme of Classic and Glass.
+- Pictures of every theme in the README (`npm run readme-shots`), plus this changelog.
 
-### Verbessert
+### Improved
 
-- Horizon und Constellation: Nichts springt mehr, wenn die Titel des Hero geladen sind. Der Platzhalter hat jetzt die volle Höhe samt Punkten (Layout-Verschiebung von 0,05 auf 0,001).
-- Constellation: Die Seitenleiste steht oben statt mittig, damit später geladene Bibliotheken die Einträge darüber nicht verschieben. Das Logo des aktuellen Banners lädt mit Vorrang.
-- Horizon: Die aufgeklappte Karte passt auch bei kleineren Fenstern (z. B. 1280 px). Vorher ragten der Details-Knopf und die Bewertung aus der Karte.
-- Barrierefreiheit (WCAG 2.5.3, sichtbare Beschriftung im Namen): Der Profilknopf von Neon Grid heißt jetzt so, wie er beschriftet ist („Operator …“), die Banner von Constellation tragen ihren sichtbaren Text als Namen, und die Initialen im Avatar zählen nicht mehr als Beschriftung.
+- Horizon and Constellation: nothing jumps any more once the hero titles have loaded. The placeholder now has the full height including the dots (layout shift from 0.05 down to 0.001).
+- Constellation: the side bar sits at the top instead of the middle, so libraries loaded later no longer move the entries above them. The logo of the current banner loads with priority.
+- Horizon: the unfolded card also fits in smaller windows (e.g. 1280 px). Before, the details button and the rating stuck out of the card.
+- Accessibility (WCAG 2.5.3, visible label in the name): Neon Grid's profile button is now named the way it is labeled ("Operator …"), Constellation's banners carry their visible text as their name, and the initials in the avatar no longer count as a label.
 
-### Behoben
+### Fixed
 
-- Demo-Modus: Genre-Seiten zeigten „Nicht gefunden“, weil der Demo-Server Genres nicht über ihre ID fand.
+- Demo mode: genre pages showed "Not found", because the demo server did not find genres by their ID.
 
 ## 0.10.0 – 2026-10-13
 
-- Theme **Constellation**: Sternenhimmel, aufklappende Icon-Leiste, Banner-Karussell, leuchtende Kacheln für Bibliotheken und Sammlungen, Detailseiten mit Abschnitten.
+- Theme **Constellation**: a starry sky, an expanding icon rail, a banner carousel, glowing tiles for libraries and collections, detail pages with sections.
 
 ## 0.9.0 – 2026-10-13
 
-- Theme **Horizon**: Leiste mit Textlinks, Karussell mit seitlichen Pfeilen, aufklappende 16:9-Karten, Detailseiten mit Tabs.
-- Das Docker-Image entsteht ohne Docker Hub (Pull-Limit und Ausfälle).
+- Theme **Horizon**: a bar with text links, a carousel with side arrows, 16:9 cards that unfold, detail pages with tabs.
+- The Docker image is built without Docker Hub (pull limit and outages).
 
 ## 0.8.0 – 2026-10-09
 
-- Theme **Glass**: Milchglas, Vollbild-Karussell, Karten mit Neigung und Lichtreflex, Hell- und Dunkelmodus.
-- README mit Logo und Status-Badges.
+- Theme **Glass**: frosted glass, a full-screen carousel, cards with tilt and light reflection, light and dark mode.
+- README with logo and status badges.
 
 ## 0.7.0 – 2026-10-09
 
-- Theme **Crimson**: Profilauswahl, Vorschaukarten, Details als Fenster über der Seite, Trailer im Hero.
+- Theme **Crimson**: profile picker, preview cards, details as a sheet above the page, trailer in the hero.
 
 ## 0.6.0 – 2026-10-08
 
-- Theme **Neon Grid**: HUD-Oberfläche mit Raster, Glitch-Effekten, Boot-Sequenz, Terminal-Suche und optionalen UI-Klängen.
+- Theme **Neon Grid**: a HUD interface with a grid, glitch effects, a boot sequence, a terminal search and optional UI sounds.
 
 ## 0.5.0 – 2026-10-08
 
-- Docker-Image für amd64 und arm64 mit nginx, Entrypoint, Proxy zu Jellyfin, strikter CSP und Healthcheck, Beispiel für Docker Compose, Release-Workflow, PWA-Manifest.
+- Docker image for amd64 and arm64 with nginx, entrypoint, proxy to Jellyfin, a strict CSP and a health check, a Docker Compose example, the release workflow, a PWA manifest.
 
 ## 0.4.0 – 2026-10-08
 
-- Theme-System mit Registry, Fallback auf Classic, Wechsel ohne Neuladen und Live-Vorschau.
-- Einstellungen, gespeichert pro Benutzer auf dem Jellyfin-Server.
-- Bedienung mit Pfeiltasten und Fernbedienung, TV-Modus.
+- Theme system with a registry, fallback to Classic, switching without a reload and a live preview.
+- Settings, stored per user on the Jellyfin server.
+- Arrow key and remote control navigation, TV mode.
 
 ## 0.3.0 – 2026-10-08
 
-- Player: Direct Play und HLS, Ton- und Untertitelspuren, Qualität, Trickplay, Intro und Abspann überspringen, nächste Folge, Fortschrittsmeldung an Jellyfin.
+- Player: direct play and HLS, audio and subtitle tracks, quality, trickplay, skipping intro and credits, next episode, progress reporting to Jellyfin.
 
 ## 0.2.0 – 2026-10-07
 
-- Alle Inhaltsseiten im Theme Classic: Startseite, Bibliotheken, Details, Serien, Suche, Favoriten.
+- All content pages in the Classic theme: home, libraries, details, series, search, favorites.
 
 ## 0.1.0 – 2026-10-07
 
-- Grundgerüst, Anmeldung (Server, Profile, Passwort, Quick Connect), Demo-Modus mit Mock-Server, Deutsch und Englisch.
+- Foundation, sign-in (server, profiles, password, Quick Connect), demo mode with a mock server, German and English.

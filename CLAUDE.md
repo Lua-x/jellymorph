@@ -1,77 +1,79 @@
 # CLAUDE.md – Jellyfin Theme Client
 
-Projektname: **Jellymorph** · Repo: `github.com/Lua-x/jellymorph` · Image: `ghcr.io/lua-x/jellymorph`
+Project name: **Jellymorph** · Repo: `github.com/Lua-x/jellymorph` · Image: `ghcr.io/lua-x/jellymorph`
 
-Diese Datei ist die verbindliche Spezifikation. Lies sie zu Beginn jeder Sitzung vollständig. Weiche nur nach Rückfrage davon ab. Halte Abschnitt 11 (Status) und 12 (Entscheidungen) aktuell.
+This file is the binding specification. Read it completely at the start of every session. Only deviate from it after asking. Keep section 11 (status) and 12 (decisions) up to date.
 
-## 1. Produktziel
+The user writes in German; summaries and questions to the user stay in German. This file, the README, the docs and everything else visible on GitHub are in English (user decision 2026-10-15).
 
-Ein eigenständiger, selbst gehosteter Web-Client für Jellyfin, betrieben als Docker-Container. Der Nutzer meldet sich an seinem Jellyfin-Server an und wählt in den Einstellungen ein Theme.
+## 1. Product goal
 
-Ein Theme ist kein Farbschema, sondern ein komplettes Bedienkonzept: Layout, Navigation, Kartenformen, Detailseiten, Player-Overlay und Animationen. Vier Themes orientieren sich am Aufbau großer Streaming-Dienste, eines ist ein eigenes Cyberpunk-Design.
+A standalone, self-hosted web client for Jellyfin, run as a Docker container. The user signs in to their Jellyfin server and chooses a theme in the settings.
 
-Qualitätsmaßstab: Die App soll sich wie ein fertiges kommerzielles Produkt anfühlen, nicht wie eine Demo. Flüssige Animationen (60 fps), keine Layout-Sprünge, sofortiges Feedback bei jeder Interaktion, durchdachte Lade-, Leer- und Fehlerzustände.
+A theme is not a color scheme but a complete way of using the app: layout, navigation, card shapes, detail pages, player overlay and animations. Four themes take their cues from the structure of large streaming services, one is a cyberpunk design of our own.
 
-## 2. Rechtliche Leitplanken (nicht verhandelbar)
+Quality bar: the app should feel like a finished commercial product, not like a demo. Smooth animations (60 fps), no layout shifts, immediate feedback on every interaction, well-thought-out loading, empty and error states.
 
-- Keine Logos, Markennamen, Wortmarken, Original-Schriften, Icons oder Grafiken von Netflix, Apple, Amazon, Disney oder anderen Anbietern – weder in Code, Assets, UI noch Dateinamen.
-- Übernommen werden nur Layout-Prinzipien und Bedienmuster. Farben: ähnliche Stimmung, keine exakten Markenfarben.
-- Themes tragen eigene, neutrale Namen. Im UI keine Hinweise wie „im Stil von …“.
-- README: nur allgemeiner Hinweis, dass sich Themes an gängigen Streaming-Oberflächen orientieren, plus Haftungsausschluss (keine Verbindung zu den Anbietern, keine Markenrechte).
-- Nur Schriften mit freier Lizenz, selbst gehostet über @fontsource (keine CDN-Abhängigkeit).
-- Demo-/Mock-Daten verwenden keine echten Poster, sondern generierte Platzhalterbilder.
-- Titel-Logos, Poster und Backdrops der eigenen Medien kommen ausschließlich vom Jellyfin-Server.
+## 2. Legal guardrails (not negotiable)
 
-## 3. Tech-Stack
+- No logos, brand names, word marks, original fonts, icons or graphics of Netflix, Apple, Amazon, Disney or other providers – neither in code, assets, UI nor file names.
+- Only layout principles and interaction patterns are taken over. Colors: a similar mood, no exact brand colors.
+- Themes carry their own neutral names. No notes like "in the style of …" in the UI.
+- README: only a general note that the themes take their cues from common streaming interfaces, plus a disclaimer (no affiliation with the providers, no trademark rights).
+- Only fonts with a free license, self-hosted through @fontsource (no CDN dependency).
+- Demo/mock data uses no real posters, but generated placeholder pictures.
+- Title logos, posters and backdrops of the user's own media come exclusively from the Jellyfin server.
 
-| Bereich       | Wahl                                                                                  |
-| ------------- | ------------------------------------------------------------------------------------- |
-| Framework     | React (aktuelle stabile Version) + TypeScript (strict) + Vite                         |
-| API           | @jellyfin/sdk – kein handgeschriebener Fetch, wo das SDK eine Methode bietet          |
-| Server-State  | TanStack Query (Caching, Hintergrund-Refresh, Request-Abbruch)                        |
-| App-State     | zustand (Session, Einstellungen, Theme)                                               |
-| Routing       | react-router                                                                          |
-| Listen        | TanStack Virtual für große Bibliotheken                                               |
-| Wiedergabe    | hls.js (Safari: natives HLS)                                                          |
-| Animation     | Motion (Framer Motion)                                                                |
-| Navigation    | Spatial Navigation für Fernbedienung, z. B. @noriginmedia/norigin-spatial-navigation  |
-| Styling       | CSS Modules + Design-Tokens als CSS Custom Properties je Theme                        |
-| i18n          | i18next – Deutsch (Standard), Englisch                                                |
-| Tests         | Vitest + React Testing Library, MSW als Mock-Jellyfin, Playwright (E2E + Screenshots) |
-| Code-Qualität | ESLint, Prettier, Conventional Commits                                                |
+## 3. Tech stack
 
-Keine weiteren größeren Abhängigkeiten ohne Rückfrage.
+| Area         | Choice                                                                                |
+| ------------ | ------------------------------------------------------------------------------------- |
+| Framework    | React (current stable version) + TypeScript (strict) + Vite                           |
+| API          | @jellyfin/sdk – no hand-written fetch where the SDK offers a method                   |
+| Server state | TanStack Query (caching, background refresh, request cancellation)                    |
+| App state    | zustand (session, settings, theme)                                                    |
+| Routing      | react-router                                                                          |
+| Lists        | TanStack Virtual for large libraries                                                  |
+| Playback     | hls.js (Safari: native HLS)                                                           |
+| Animation    | Motion (Framer Motion)                                                                |
+| Navigation   | Spatial navigation for remote controls, e.g. @noriginmedia/norigin-spatial-navigation |
+| Styling      | CSS Modules + design tokens as CSS custom properties per theme                        |
+| i18n         | i18next – German (default), English                                                   |
+| Tests        | Vitest + React Testing Library, MSW as mock Jellyfin, Playwright (E2E + screenshots)  |
+| Code quality | ESLint, Prettier, Conventional Commits                                                |
 
-## 4. Architektur
+No further major dependencies without asking.
 
-### Grundprinzip
+## 4. Architecture
 
-Strikte Trennung: Datenschicht und Logik sind theme-unabhängig (headless). Themes enthalten nur Darstellung und Bewegung. Ein Theme macht nie eigene API-Aufrufe, sondern nutzt ausschließlich die gemeinsamen Hooks.
+### Basic principle
 
-### Ordnerstruktur
+Strict separation: the data layer and logic are theme-independent (headless). Themes only contain presentation and motion. A theme never makes API calls of its own, but uses the shared hooks exclusively.
+
+### Folder structure
 
 ```
 src/
-  app/            # Bootstrapping, Router, Provider
-  config/         # Laufzeit-Konfiguration (window.__APP_CONFIG__)
-  api/            # SDK-Instanz, Auth, Geräte-/Client-Infos, Bild-URL-Helfer
+  app/            # bootstrapping, router, providers
+  config/         # runtime configuration (window.__APP_CONFIG__)
+  api/            # SDK instance, auth, device/client info, image URL helpers
   hooks/          # headless: useHomeSections, useLibrary, useItem, useSeries,
                   #           useSearch, useFavorites, usePlayback …
-  player/         # DeviceProfile, PlaybackInfo, hls.js, Reporting, Segmente, Trickplay
-  navigation/     # Fokus-/Spatial-Navigation, Tastenkürzel
-  settings/       # Einstellungs-Store und Persistenz
+  player/         # DeviceProfile, PlaybackInfo, hls.js, reporting, segments, trickplay
+  navigation/     # focus/spatial navigation, keyboard shortcuts
+  settings/       # settings store and persistence
   i18n/
   themes/
-    contract.ts   # Theme-Vertrag (Typen)
-    registry.ts   # alle Themes, Lazy Loading
+    contract.ts   # theme contract (types)
+    registry.ts   # all themes, lazy loading
     ThemeProvider.tsx
-    default/      # Referenz-Theme, Fallback für jede Komponente
+    default/      # reference theme, fallback for every component
     neon-grid/
     crimson/
     glass/
     horizon/
     constellation/
-  mocks/          # MSW-Handler + Fixtures (Demo-Modus)
+  mocks/          # MSW handlers + fixtures (demo mode)
 docker/
   nginx.conf.template
   entrypoint.sh
@@ -80,18 +82,18 @@ docs/             # architecture.md, themes.md
 .github/workflows/
 ```
 
-### Theme-Vertrag (Richtwert, in Phase 0 verfeinern)
+### Theme contract (guideline, refine in phase 0)
 
 ```ts
 import type { ComponentType } from 'react';
 
 export interface ThemeManifest {
   id: string; // 'neon-grid'
-  nameKey: string; // i18n-Key Anzeigename
-  descriptionKey: string; // i18n-Key Kurzbeschreibung
-  preview: string; // Vorschaubild für die Einstellungen
+  nameKey: string; // i18n key of the display name
+  descriptionKey: string; // i18n key of the short description
+  preview: string; // preview picture for the settings
   colorSchemes: Array<'dark' | 'light'>;
-  load: () => Promise<ThemeModule>; // eigener Lazy-Chunk
+  load: () => Promise<ThemeModule>; // its own lazy chunk
 }
 
 export interface ThemeModule {
@@ -119,362 +121,366 @@ export interface ThemeComponents {
 }
 ```
 
-Regeln:
+Rules:
 
-- Fehlt einem Theme eine Komponente, wird automatisch die des Default-Themes verwendet.
-- Alle Theme-Tokens und globalen Theme-Styles sind unter `[data-theme="<id>"]` gescoped, damit sich Themes beim Wechsel nicht gegenseitig beeinflussen.
-- Theme-Wechsel ohne Neuladen der Seite, mit kurzer Überblendung.
-- Nicht aktive Themes werden nicht geladen.
-- Neues Theme = neuer Ordner + ein Registry-Eintrag. Dokumentiert in docs/themes.md.
+- If a theme lacks a component, the default theme's component is used automatically.
+- All theme tokens and global theme styles are scoped under `[data-theme="<id>"]`, so themes do not affect each other when switching.
+- Switching themes without reloading the page, with a short cross-fade.
+- Inactive themes are not loaded.
+- New theme = new folder + one registry entry. Documented in docs/themes.md.
 
-### Laufzeit-Konfiguration
+### Runtime configuration
 
-Der Container schreibt beim Start `config.js` (`window.__APP_CONFIG__`). Die App liest sie vor dem Rendern. Keine Konfiguration wird beim Build eingebacken.
+On start, the container writes `config.js` (`window.__APP_CONFIG__`). The app reads it before rendering. No configuration is baked in at build time.
 
-## 5. Funktionsumfang (gilt für alle Themes)
+## 5. Feature set (applies to every theme)
 
-### Server & Anmeldung
+### Server & sign-in
 
-- Server-URL eingeben, Erreichbarkeit und Version prüfen (`/System/Info/Public`), mehrere Server speichern.
-- Login per Benutzername/Passwort und Quick Connect; Profilauswahl über öffentliche Benutzer, falls der Server sie anzeigt.
-- Nur das Access-Token speichern, nie das Passwort. Abmelden beendet die Session am Server.
-- Mindestversion Jellyfin 10.10. Funktionen, die der Server nicht unterstützt, sauber ausblenden.
+- Enter the server URL, check reachability and version (`/System/Info/Public`), store several servers.
+- Sign-in with user name/password and Quick Connect; profile picker through public users, if the server shows them.
+- Only store the access token, never the password. Signing out ends the session on the server.
+- Minimum version Jellyfin 10.10. Cleanly hide features the server does not support.
 
-### Startseite (Inhalte gleich, Anordnung je Theme)
+### Home page (same content, arrangement per theme)
 
-- Hero/Featured mit Backdrop und Titel-Logo
-- Weiterschauen, Nächste Folgen, Neu hinzugefügt je Bibliothek, Favoriten, Genres, Sammlungen
-- Bibliotheks-Reihenfolge und ausgeblendete Bibliotheken des Benutzers respektieren
+- Hero/featured with backdrop and title logo
+- Continue watching, next up, recently added per library, favorites, genres, collections
+- Respect the user's library order and hidden libraries
 
-### Bibliotheken
+### Libraries
 
-- Virtualisiertes Raster, Sortierung (Titel, hinzugefügt, Erscheinungsjahr, Bewertung)
-- Filter (Genre, Jahr, gesehen/ungesehen, Favoriten), alphabetische Sprungleiste
-- Filme, Serien, Anime je nach Bibliothekstyp, Sammlungen
+- Virtualized grid, sorting (title, date added, release year, rating)
+- Filters (genre, year, watched/unwatched, favorites), alphabetical jump bar
+- Movies, series, anime depending on the library type, collections
 
-### Detailseiten
+### Detail pages
 
-- Film: Backdrop, Logo, Metadaten (Jahr, Laufzeit, Freigabe, Bewertung, Genres), Beschreibung, Besetzung, verfügbare Ton-/Untertitelspuren, Abspielen/Fortsetzen/Von vorne, lokaler Trailer, Favorit, gesehen markieren, ähnliche Titel
-- Serie: Staffelauswahl, Episodenliste mit Fortschritt, nächste Folge hervorgehoben
+- Movie: backdrop, logo, metadata (year, runtime, rating, community rating, genres), overview, cast, available audio/subtitle tracks, play/resume/from the start, local trailer, favorite, mark as played, similar titles
+- Series: season selection, episode list with progress, next episode highlighted
 
-### Suche
+### Search
 
-- Live-Suche mit Debounce, Ergebnisse nach Typ gruppiert, mit Fernbedienung bedienbar
+- Live search with debounce, results grouped by type, usable with a remote control
 
 ### Player
 
-- DeviceProfile aus den echten Browser-Fähigkeiten (canPlayType / MediaCapabilities) erzeugen und an PlaybackInfo übergeben. Direct Play wenn möglich, sonst HLS-Transcoding.
-- Audio- und Untertitelwahl. Textuntertitel als WebVTT, Bilduntertitel (PGS/VobSub) per Burn-in-Transcoding. Spurwechsel startet bei Bedarf einen neuen Stream an derselben Position.
-- Qualitätswahl (max. Bitrate), Geschwindigkeit, Vollbild, Bild-in-Bild
-- Trickplay-Vorschaubilder auf der Zeitleiste, falls vorhanden
-- „Intro überspringen“ / „Abspann überspringen“ über die MediaSegments-API, falls vorhanden
-- Nächste-Folge-Overlay mit Countdown, Auto-Play abschaltbar
-- Fortsetzen-Abfrage und Fortschrittsmeldung an Jellyfin (Start, Progress alle 10 s, Pause, Stop), damit „Weiterschauen“ geräteübergreifend stimmt
-- Tastenkürzel: Leertaste, F, M, ←/→ (±10 s), ↑/↓ (Lautstärke), Esc; Medientasten der Fernbedienung
-- Bei Wiedergabefehlern: verständliche Meldung und automatischer Fallback auf Transcoding
+- Create the DeviceProfile from the real browser capabilities (canPlayType / MediaCapabilities) and pass it to PlaybackInfo. Direct play when possible, otherwise HLS transcoding.
+- Audio and subtitle choice. Text subtitles as WebVTT, picture subtitles (PGS/VobSub) through burn-in transcoding. A track switch starts a new stream at the same position when needed.
+- Quality choice (max. bitrate), speed, full screen, picture-in-picture
+- Trickplay preview pictures on the timeline, if available
+- "Skip intro" / "Skip credits" through the MediaSegments API, if available
+- Next episode overlay with a countdown, autoplay can be switched off
+- Resume question and progress reporting to Jellyfin (start, progress every 10 s, pause, stop), so "Continue watching" is right across devices
+- Keyboard shortcuts: Space, F, M, ←/→ (±10 s), ↑/↓ (volume), Esc; media keys of the remote control
+- On playback errors: an understandable message and an automatic fallback to transcoding
 
-### Einstellungen
+### Settings
 
-- Theme-Auswahl mit Vorschaubildern und Live-Vorschau; Farbschema, wenn das Theme mehrere hat
-- Sprache, reduzierte Bewegung, Trailer-Autoplay, nächste Folge automatisch, Standard-Audio-/Untertitelsprache, max. Streaming-Qualität
-- Server wechseln, abmelden
-- Speicherung lokal (sofort) und pro Benutzer über die DisplayPreferences-API (geräteübergreifend). Beim Login gewinnt der Server-Wert.
+- Theme choice with preview pictures and a live preview; color scheme if the theme has several
+- Language, reduced motion, trailer autoplay, next episode automatically, default audio/subtitle language, max. streaming quality
+- Change server, sign out
+- Stored locally (immediately) and per user through the DisplayPreferences API (across devices). On sign-in the server value wins.
 
-### Bedienung & Plattformen
+### Input & platforms
 
-- Maus, Touch, Tastatur und Fernbedienung (Pfeile, Enter, Zurück)
-- Jedes interaktive Element ist fokussierbar. Der Fokuszustand ist mindestens so deutlich wie der Hover-Zustand – in jedem Theme gilt: Fokus = Hover.
-- Responsiv: Smartphone ab 360 px, Tablet, Desktop, TV in 1080p und 4K (10-Foot-UI mit größerer Schrift und Overscan-Rand)
-- Installierbar als PWA (Manifest, Icons; kein Offline-Caching von Medien)
-- Bilder immer mit BlurHash-Platzhalter aus Jellyfin
+- Mouse, touch, keyboard and remote control (arrows, Enter, Back)
+- Every interactive element is focusable. The focus state is at least as clear as the hover state – in every theme: focus = hover.
+- Responsive: phones from 360 px, tablet, desktop, TV in 1080p and 4K (10-foot UI with larger type and an overscan margin)
+- Installable as a PWA (manifest, icons; no offline caching of media)
+- Pictures always with a BlurHash placeholder from Jellyfin
 
 ## 6. Themes
 
-Für alle gilt: `prefers-reduced-motion` und die Einstellung „Reduzierte Bewegung“ werden respektiert. Animiert werden nur `transform`, `opacity` und `filter`.
+For all of them: `prefers-reduced-motion` and the "Reduced motion" setting are respected. Only `transform`, `opacity` and `filter` are animated.
 
-### default – „Classic“
+### default – "Classic"
 
-Schlicht und funktional. Referenzimplementierung aller Komponenten, Fallback für andere Themes und Vorlage im Theme-Guide.
+Plain and functional. Reference implementation of every component, fallback for other themes and template in the theme guide.
 
-### neon-grid – „Neon Grid“ (eigenes Theme, Aushängeschild des Projekts)
+### neon-grid – "Neon Grid" (our own theme, the project's flagship)
 
-Futuristisch, Cyberpunk. Soll mit Abstand am eigenständigsten wirken.
+Futuristic, cyberpunk. Should look by far the most distinctive.
 
-- Farben: fast schwarzer Grund, Neon-Magenta und Cyan als Hauptakzente, Gelb für Aktionen und Warnungen; Leuchten über `text-shadow` / `box-shadow`
-- Formen: abgeschrägte Ecken (`clip-path`), HUD-Rahmen mit Eckmarkierungen, perspektivisches Rasterfeld im Hintergrund
-- Effekte: Glitch bei Fokus und Seitenwechsel, chromatische Aberration auf Bildern bei Fokus, dezente Scanlines, Text-Scramble beim Einblenden von Titeln
-- Login als Boot-Sequenz (überspringbar, nur einmal pro Sitzung)
-- Suche im Terminal-Stil mit blinkendem Cursor
-- Fortschrittsbalken als segmentierte Energieleisten, Metadaten als HUD-Datenfelder
-- Player-Overlay als HUD mit Zeit, Kapiteln und Spuren
-- Schriften: z. B. Orbitron oder Rajdhani für Überschriften, Share Tech Mono oder JetBrains Mono für Daten
-- Optionale UI-Sounds, standardmäßig aus
-- Lesbarkeit hat Vorrang: Textkontrast mindestens WCAG AA, Effekte nie über Fließtext
+- Colors: almost black background, neon magenta and cyan as the main accents, yellow for actions and warnings; glow through `text-shadow` / `box-shadow`
+- Shapes: beveled corners (`clip-path`), HUD frames with corner marks, a perspective grid in the background
+- Effects: glitch on focus and page change, chromatic aberration on pictures on focus, subtle scanlines, text scramble when titles appear
+- Sign-in as a boot sequence (skippable, only once per session)
+- Terminal-style search with a blinking cursor
+- Progress bars as segmented energy bars, metadata as HUD data fields
+- Player overlay as a HUD with time, chapters and tracks
+- Fonts: e.g. Orbitron or Rajdhani for headings, Share Tech Mono or JetBrains Mono for data
+- Optional UI sounds, off by default
+- Readability comes first: text contrast at least WCAG AA, effects never over body text
 
-### crimson – „Crimson“
+### crimson – "Crimson"
 
-Orientierung: Netflix
+Model: Netflix
 
-- Profilauswahl „Wer schaut?“ mit großen Avataren der Jellyfin-Benutzer
-- Navigation oben, transparent über dem Hero, beim Scrollen deckend
-- Großes Hero mit Backdrop, Titel-Logo und Kurzbeschreibung; nach ca. 3 s stummer lokaler Trailer (falls vorhanden und erlaubt), sonst langsamer Ken-Burns-Effekt
-- Horizontale Reihen mit Randpfeilen und Querformat-Karten; bei Hover/Fokus nach ca. 400 ms vergrößerte Vorschaukarte mit Abspielen, Favorit, Info und Metadaten
-- Detailansicht als Modal über der Startseite, Episoden direkt im Modal
-- Fast schwarzer Grund, tiefes Rot als Akzent; Schrift z. B. Inter
+- Profile picker "Who's watching?" with large avatars of the Jellyfin users
+- Navigation at the top, transparent over the hero, opaque when scrolling
+- Large hero with backdrop, title logo and a short overview; after about 3 s a muted local trailer (if available and allowed), otherwise a slow Ken Burns effect
+- Horizontal rows with edge arrows and landscape cards; on hover/focus, after about 400 ms, an enlarged preview card with play, favorite, info and metadata
+- Detail view as a modal above the home page, episodes directly in the modal
+- Almost black background, deep red as the accent; font e.g. Inter
 
-### glass – „Glass“
+### glass – "Glass"
 
-Orientierung: Apple TV
+Model: Apple TV
 
-- Zentrierte Tab-Leiste oben in Pillenform mit Blur-Hintergrund
-- Vollbild-Hero-Karussell mit automatischem Wechsel und Seitenindikator
-- tvOS-Fokuseffekt: Karte hebt sich, leichte 3D-Neigung zur Zeigerposition, Lichtreflex
-- Milchglasflächen (`backdrop-filter`), viel Weißraum, große Radien, ruhige Feder-Animationen
-- Detailseite: Vollbild-Backdrop mit Verlauf, Titel-Logo statt Text, Glas-Buttons
-- Hell- und Dunkelmodus; Schrift z. B. Inter
+- A centered pill-shaped tab bar at the top with a blurred background
+- Full-screen hero carousel with automatic change and a page indicator
+- tvOS focus effect: the card lifts, a slight 3D tilt towards the pointer, light reflection
+- Frosted glass surfaces (`backdrop-filter`), lots of white space, large radii, calm spring animations
+- Detail page: full-screen backdrop with a gradient, title logo instead of text, glass buttons
+- Light and dark mode; font e.g. Inter
 
-### horizon – „Horizon“
+### horizon – "Horizon"
 
-Orientierung: Prime Video
+Model: Prime Video
 
-- Navigation oben mit Textlinks, Profil rechts
-- Hero-Karussell mit seitlichen Pfeilen
-- Reihen mit 16:9-Karten; bei Hover/Fokus klappt die Karte nach unten auf (Beschreibung, Laufzeit, Buttons)
-- Detailseite mit Tabs: Episoden, Ähnliches, Details
-- Dunkles Blaugrau, kräftiges Blau als Akzent
+- Navigation at the top with text links, profile on the right
+- Hero carousel with side arrows
+- Rows with 16:9 cards; on hover/focus the card unfolds downwards (overview, runtime, buttons)
+- Detail page with tabs: episodes, related, details
+- Dark blue-gray, a strong blue as the accent
 
-### constellation – „Constellation“
+### constellation – "Constellation"
 
-Orientierung: Disney+
+Model: Disney+
 
-- Unter dem Hero eine Reihe großer Kacheln für Bibliotheken und Sammlungen, Glow-Rahmen bei Fokus
-- Dunkelblauer Verlaufshintergrund mit dezentem Sternenfeld
-- Auf Desktop/TV schmale Icon-Seitenleiste, die bei Fokus aufklappt
-- Abgerundete Karten mit weichem Schatten, leichte Skalierung bei Fokus
+- Below the hero a row of large tiles for libraries and collections, glow frame on focus
+- Dark blue gradient background with a subtle star field
+- On desktop/TV a narrow icon side bar that expands on focus
+- Rounded cards with a soft shadow, slight scaling on focus
 
-## 7. Docker & Betrieb
+## 7. Docker & operation
 
-- Multi-Stage-Dockerfile: Node (Build) → `nginxinc/nginx-unprivileged:alpine` (Nicht-Root, Port 8080)
-- nginx: SPA-Fallback, gzip, Cache-Header (gehashte Assets immutable, `index.html` und `config.js` no-cache), Security-Header (CSP, X-Content-Type-Options, Referrer-Policy, Permissions-Policy)
-- Entrypoint schreibt `config.js` aus Umgebungsvariablen und rendert die nginx-Config per envsubst. Konfigurationsänderungen brauchen keinen Rebuild.
-- Healthcheck-Endpunkt `/healthz`; Betrieb mit read-only Root-Filesystem möglich (benötigte Schreibpfade als tmpfs dokumentieren)
-- Beispiel-`docker-compose.yml` im Repo
+- Multi-stage Dockerfile: Node (build) → `nginxinc/nginx-unprivileged:alpine` (non-root, port 8080)
+- nginx: SPA fallback, gzip, cache headers (hashed assets immutable, `index.html` and `config.js` no-cache), security headers (CSP, X-Content-Type-Options, Referrer-Policy, Permissions-Policy)
+- The entrypoint writes `config.js` from environment variables and renders the nginx config through envsubst. Configuration changes need no rebuild.
+- Health check endpoint `/healthz`; operation with a read-only root filesystem possible (document the needed write paths as tmpfs)
+- Example `docker-compose.yml` in the repo
 
-| Variable                | Zweck                                                                                   | Standard     |
-| ----------------------- | --------------------------------------------------------------------------------------- | ------------ |
-| `JELLYFIN_URL`          | Server-URL vorbelegen                                                                   | leer         |
-| `LOCK_SERVER`           | Server-URL fest, im UI nicht änderbar                                                   | `false`      |
-| `JELLYFIN_PROXY_TARGET` | nginx leitet `/jellyfin/` an diesen Server weiter (gleiche Origin, keine CORS-Probleme) | leer         |
-| `DEFAULT_THEME`         | Theme für neue Benutzer                                                                 | `default`    |
-| `APP_TITLE`             | Titel im Browser                                                                        | `Jellymorph` |
+| Variable                | Purpose                                                                    | Default      |
+| ----------------------- | -------------------------------------------------------------------------- | ------------ |
+| `JELLYFIN_URL`          | Pre-fill the server URL                                                    | empty        |
+| `LOCK_SERVER`           | Server URL fixed, cannot be changed in the UI                              | `false`      |
+| `JELLYFIN_PROXY_TARGET` | nginx forwards `/jellyfin/` to this server (same origin, no CORS problems) | empty        |
+| `DEFAULT_THEME`         | Theme for new users                                                        | `default`    |
+| `APP_TITLE`             | Title in the browser                                                       | `Jellymorph` |
 
-Lokale Entwicklung: Vite-Dev-Proxy auf `JELLYFIN_DEV_URL` aus `.env.local` (in `.gitignore`). Ohne Server läuft die App im Demo-Modus mit MSW.
+Local development: Vite dev proxy to `JELLYFIN_DEV_URL` from `.env.local` (in `.gitignore`). Without a server the app runs in demo mode with MSW.
 
 ## 8. CI/CD (GitHub Actions)
 
-- `ci.yml` bei Push und PR: Lint, Typecheck, Unit-Tests, Build, Playwright gegen Mock-Server
-- `release.yml`: Multi-Arch-Image (`linux/amd64`, `linux/arm64`) nach ghcr.io über `docker/metadata-action` – Push auf `main` → Tag `edge`; Git-Tag `v*` → Semver-Tags und `latest`, dazu GitHub-Release mit Changelog
-- Dependabot für npm, Docker und Actions
+- `ci.yml` on push and PR: lint, typecheck, unit tests, build, Playwright against the mock server
+- `release.yml`: multi-arch image (`linux/amd64`, `linux/arm64`) to ghcr.io through `docker/metadata-action` – push to `main` → tag `edge`; Git tag `v*` → semver tags and `latest`, plus a GitHub release with a changelog
+- Dependabot for npm, Docker and Actions
 
-## 9. Definition of Done (pro Phase)
+## 9. Definition of done (per phase)
 
-- `npm run lint`, `npm run typecheck`, `npm test` und `npm run build` laufen fehlerfrei
-- Kein `any`, keine auskommentierten Reste, keine Platzhalter für Kernfunktionen
-- Lade-, Leer- und Fehlerzustände umgesetzt
-- UI-Phasen: Playwright-Screenshots im Demo-Modus bei 1920×1080, 3840×2160, 1280×800 und 390×844 erzeugen, selbst ansehen, gegen diese Spezifikation prüfen und Mängel beheben
-- Tastatur-/Fernbedienungsnavigation durch alle neuen Seiten geprüft
-- Status (Abschnitt 11) aktualisiert, Commits nach Conventional Commits
+- `npm run lint`, `npm run typecheck`, `npm test` and `npm run build` run without errors
+- No `any`, no commented-out leftovers, no placeholders for core features
+- Loading, empty and error states implemented
+- UI phases: create Playwright screenshots in demo mode at 1920×1080, 3840×2160, 1280×800 and 390×844, look at them yourself, check them against this specification and fix shortcomings
+- Keyboard/remote control navigation through all new pages checked
+- Status (section 11) updated, commits following Conventional Commits
 
-Performance-Ziele: Basis-Bundle ohne Theme < 250 KB gzip, LCP < 2,5 s auf Desktop. Bilder immer über die Jellyfin-Bild-API in passender Größe (`maxWidth`, `quality`), außerhalb des Viewports lazy. Barrierefreiheit: semantisches HTML, ARIA wo nötig, Kontrast WCAG AA.
+Performance goals: base bundle without a theme < 250 KB gzip, LCP < 2.5 s on desktop. Pictures always through the Jellyfin image API in a fitting size (`maxWidth`, `quality`), lazy outside the viewport. Accessibility: semantic HTML, ARIA where needed, contrast WCAG AA.
 
-## 10. Arbeitsweise
+## 10. Way of working
 
-- Phasen strikt nacheinander. Am Ende jeder Phase: kurze Zusammenfassung (gebaut, offen, bekannte Einschränkungen), dann auf mein OK warten.
-- Ist eine Vorgabe unklar oder technisch schlecht: nachfragen oder begründeten Gegenvorschlag machen, nicht stillschweigend abweichen.
-- API-Details gegen die SDK-Typen bzw. die OpenAPI-Spezifikation des Servers prüfen, nicht raten.
-- Keine Secrets, Tokens oder privaten Server-URLs committen.
-- Code und Code-Kommentare auf Englisch, UI-Texte nur über i18n, README auf Deutsch.
+- Phases strictly one after another. At the end of every phase: a short summary (built, open, known limitations), then wait for my OK.
+- If a requirement is unclear or technically bad: ask or make a reasoned counter-proposal, do not silently deviate.
+- Check API details against the SDK types or the server's OpenAPI specification, do not guess.
+- Do not commit secrets, tokens or private server URLs.
+- Code and code comments in English, UI texts only through i18n. README, changelog, docs, release notes and this file in English (since 2026-10-15; before that the README was German). Summaries and questions to the user in German.
+- Git tags are set by the user. Whenever the user has to push or tag something, give them the exact commands.
 
-## 11. Phasen & Status
+## 11. Phases & status
 
-- [x] Phase 0 – Plan: Architektur, finaler Theme-Vertrag, Abhängigkeiten mit Begründung, Player-Datenfluss, Risiken, offene Fragen → docs/architecture.md. Keine Implementierung. _(freigegeben 2026-10-07)_
-- [x] Phase 1 – Fundament: Setup, Tooling, ci.yml, Laufzeit-Config, API-Client, Auth (Server, Login, Quick Connect, Profilauswahl), Mock-Server + Demo-Modus, i18n _(fertig 2026-10-07, v0.1.0, freigegeben)_
-- [x] Phase 2 – Default-Theme: alle Seiten funktional (Home, Bibliothek, Details, Serien, Suche, Favoriten) _(fertig 2026-10-07, v0.2.0, freigegeben 2026-10-07)_
-- [x] Phase 3 – Player: komplett inkl. Reporting, Spuren, Trickplay, Segmente, Nächste Folge _(fertig 2026-10-08, v0.3.0, freigegeben 2026-10-08)_
-- [x] Phase 4 – Theme-System: Registry, Fallback, Einstellungen mit Live-Vorschau, Persistenz, Spatial Navigation _(fertig 2026-10-08, v0.4.0, freigegeben 2026-10-08)_
-- [x] Phase 5 – Docker & Release: Dockerfile, nginx, Entrypoint, Compose, release.yml _(fertig 2026-10-08, v0.5.0, freigegeben 2026-10-08)_
-- [x] Phase 6 – Theme neon-grid _(fertig 2026-10-08, v0.6.0, freigegeben 2026-10-09)_
-- [x] Phase 7 – Theme crimson _(fertig 2026-10-09, v0.7.0, freigegeben 2026-10-09)_
-- [x] Phase 8 – Theme glass _(fertig 2026-10-09, v0.8.0, freigegeben 2026-10-13)_
-- [x] Phase 9 – Theme horizon _(fertig 2026-10-13, v0.9.0, freigegeben 2026-10-13)_
-- [x] Phase 10 – Theme constellation _(fertig 2026-10-13, v0.10.0, freigegeben 2026-10-14)_
-- [x] Phase 11 – Feinschliff: README mit Screenshots, docs/themes.md, Performance- und Barrierefreiheits-Prüfung, erster Release-Tag v1.0.0 _(fertig 2026-10-14, freigegeben 2026-10-14; der Tag `v1.0.0` folgt nach Phase 12)_
+- [x] Phase 0 – Plan: architecture, final theme contract, dependencies with reasoning, player data flow, risks, open questions → docs/architecture.md. No implementation. _(approved 2026-10-07)_
+- [x] Phase 1 – Foundation: setup, tooling, ci.yml, runtime config, API client, auth (server, sign-in, Quick Connect, profile picker), mock server + demo mode, i18n _(done 2026-10-07, v0.1.0, approved)_
+- [x] Phase 2 – Default theme: all pages functional (home, library, details, series, search, favorites) _(done 2026-10-07, v0.2.0, approved 2026-10-07)_
+- [x] Phase 3 – Player: complete incl. reporting, tracks, trickplay, segments, next episode _(done 2026-10-08, v0.3.0, approved 2026-10-08)_
+- [x] Phase 4 – Theme system: registry, fallback, settings with live preview, persistence, spatial navigation _(done 2026-10-08, v0.4.0, approved 2026-10-08)_
+- [x] Phase 5 – Docker & release: Dockerfile, nginx, entrypoint, Compose, release.yml _(done 2026-10-08, v0.5.0, approved 2026-10-08)_
+- [x] Phase 6 – Theme neon-grid _(done 2026-10-08, v0.6.0, approved 2026-10-09)_
+- [x] Phase 7 – Theme crimson _(done 2026-10-09, v0.7.0, approved 2026-10-09)_
+- [x] Phase 8 – Theme glass _(done 2026-10-09, v0.8.0, approved 2026-10-13)_
+- [x] Phase 9 – Theme horizon _(done 2026-10-13, v0.9.0, approved 2026-10-13)_
+- [x] Phase 10 – Theme constellation _(done 2026-10-13, v0.10.0, approved 2026-10-14)_
+- [x] Phase 11 – Polish: README with screenshots, docs/themes.md, performance and accessibility review, first release tag v1.0.0 _(done 2026-10-14, approved 2026-10-14; the tag `v1.0.0` follows after phase 12)_
 
-### Nach 1.0 (festgelegt 2026-10-14)
+### After 1.0 (decided 2026-10-14)
 
-Ab hier gilt: Phase n → nächste Minor-Version (1.x.0), Fehlerbehebungen als Patch (1.x.y). Arbeitsweise wie bisher: eine Phase nach der anderen, am Ende Zusammenfassung und OK abwarten.
+From here on: phase n → next minor version (1.x.0), bug fixes as a patch (1.x.y). Way of working as before: one phase after another, at the end a summary and wait for the OK.
 
-- [x] Phase 12 – Praxis-Feinschliff vor dem Release: Beschreibung gekürzt mit „Mehr anzeigen“, Ton- und Untertitelspuren auf 3 Einträge gekürzt mit „weitere anzeigen“, HTML-Zeilenumbrüche (`<br>`) aus den Metadaten als Absätze statt als Text, Navigation mit vielen Bibliotheken (Überlauf in ein Menü „Mehr“), Test am echten Server des Nutzers (Bilder, Sprungleiste, Genre-Seiten, Wiedergabe direkt und per Transcoding, Untertitel, Einstellungen am Server). Alles in allen Themes. → v1.0.0, danach setzt der Nutzer den Tag `v1.0.0` _(fertig 2026-10-14, freigegeben 2026-10-14; ausgeliefert mit v1.1.0, weil der Tag `v1.0.0` auf dem Stand von Phase 11 liegt, 697918c)_
-- [x] Phase 13 – Admin-Funktionen je Titel (nur für Administratoren sichtbar): Menü „Bearbeiten“ auf den Detailseiten mit Identifizieren, Metadaten bearbeiten, Bilder (aus Online-Quellen wählen, hochladen, löschen), Metadaten aktualisieren, Untertitel suchen/herunterladen/hochladen/löschen, Eintrag löschen; Bibliothek scannen; „Server-Verwaltung öffnen“ verlinkt das Jellyfin-Dashboard (das Dashboard selbst wird nicht nachgebaut). → v1.1.0 _(fertig 2026-10-14, freigegeben 2026-10-15, Tag `v1.1.0` auf e7243ee)_
-- [x] Phase 14 – Gestaltung anpassen: eigene Farben, Schriften und CSS je Theme (Dateien aus einem gemappten Ordner, wegen der CSP kein eingefügtes CSS); Anordnung per Einstellung in allen Themes: Reihenfolge und Sichtbarkeit der Knöpfe auf der Detailseite, angezeigte Fakten, Startseiten-Bereiche, Einträge der Navigation; Vorgabe für alle (Admin) und pro Benutzer, per Drag & Drop. Kein fremder Code. → v1.2.0 _(fertig 2026-10-15)_
-- [ ] Phase 15 – Eigene Themes als Plugins: öffentliche, versionierte Theme-Schnittstelle, Laden zur Laufzeit aus dem gemappten Ordner, Starter-Vorlage zum Bauen, Auswahl installierter Themes in den Einstellungen. Sicherheitskonzept: Plugin-Themes sind Code mit Zugriff auf die Sitzung, installieren darf nur der Container-Admin. → v1.3.0
+- [x] Phase 12 – Real-world polish before the release: overview shortened with "Show more", audio and subtitle tracks shortened to 3 entries with "show more", HTML line breaks (`<br>`) from the metadata as paragraphs instead of text, navigation with many libraries (overflow into a "More" menu), test on the user's real server (pictures, jump bar, genre pages, playback direct and through transcoding, subtitles, settings on the server). Everything in every theme. → v1.0.0, then the user sets the tag `v1.0.0` _(done 2026-10-14, approved 2026-10-14; shipped with v1.1.0, because the tag `v1.0.0` sits on the state of phase 11, 697918c)_
+- [x] Phase 13 – Admin functions per title (only visible to administrators): "Edit" menu on the detail pages with identify, edit metadata, pictures (choose from online sources, upload, delete), refresh metadata, search/download/upload/delete subtitles, delete item; scan library; "Open server administration" links to the Jellyfin dashboard (the dashboard itself is not rebuilt). → v1.1.0 _(done 2026-10-14, approved 2026-10-15, tag `v1.1.0` on e7243ee)_
+- [x] Phase 14 – Make it your own: own colors, fonts and CSS per theme (files from a mounted folder, no injected CSS because of the CSP); arrangement by setting in every theme: order and visibility of the buttons on the detail page, details shown, home page areas, navigation entries; a default for everybody (admin) and per user, by drag and drop. No foreign code. → v1.2.0 _(done 2026-10-15, approved 2026-10-15)_
+- [ ] Phase 15 – Own themes as plugins: a public, versioned theme interface, loading at runtime from the mounted folder, a starter template for building, choosing installed themes in the settings. Security concept: plugin themes are code with access to the session; only the container admin may install them. → v1.3.0
 
-Nicht geplant (Nutzerentscheidung 2026-10-14): native Apps für Android/iOS, SSO.
+Not planned (user decision 2026-10-14): native apps for Android/iOS, SSO.
 
-## 12. Entscheidungen & Notizen
+## 12. Decisions & notes
 
-Hier trägt Claude Code wichtige Architekturentscheidungen und Abweichungen mit Begründung ein.
+Claude Code records important architecture decisions and deviations here, with reasoning.
 
-- **2026-10-07 – Name „Jellymorph“** (Nutzerentscheidung). „Morph“ steht für den Kern der App: Ein Theme verwandelt die ganze Oberfläche. Der Name war auf GitHub frei; JellyStream, JellyFrame und JellyShift sind schon vergeben. Das Default-Theme heißt deshalb **„Classic“** statt „Jelly“, damit App und Theme nicht verwechselt werden. Kennung im Code und für Jellyfin (`clientInfo.name`, DisplayPreferences-Client): `jellymorph`.
-- **2026-10-07 – Antworten auf die offenen Fragen aus docs/architecture.md §19** (Nutzer: „alles ja“, also jeweils die Empfehlung):
-  - Zusätzliche Pakete `blurhash`, `@axe-core/playwright` sowie Test- und ESLint-Zubehör sind freigegeben.
-  - Neue Container-Variable `DEMO_MODE` (Standard `false`).
-  - Audio-/Untertitelsprache, Untertitelmodus und „nächste Folge automatisch“ liegen in der Jellyfin-`UserConfiguration`. Streaming-Qualität und Bedienmodus bleiben lokal pro Gerät.
-  - Mehrere gemerkte Profile pro Gerät, mit Schalter „Auf diesem Gerät merken“ beim Login.
-  - ASS/SSA werden standardmäßig als WebVTT angezeigt, dazu die Option „gestaltete Untertitel einbrennen“. Kein JASSUB.
-  - Musik, Bücher, Fotos, Live-TV und Playlists sind in v1 ausgeblendet.
-  - Deutsche Texte in Du-Form.
-  - Docker wird nur in GitHub Actions geprüft.
-  - Das Demo-Video entsteht per Browser-Aufnahme (MediaRecorder), ohne ffmpeg.
-  - Lizenz AGPL-3.0.
-  - Browser-Basis: Chrome/Edge ≥ 111, Firefox ≥ 128, Safari ≥ 16.4.
-  - Noch offen (Frage 2): Version und Adresse des eigenen Jellyfin-Servers. Bis dahin wird nur gegen den Mock-Server entwickelt.
-- **2026-10-07 – Phase 1, Umsetzungsentscheidungen:**
-  - axios läuft global mit dem Fetch-Adapter: wegen `keepalive` für die spätere Stop-Meldung und weil MSW 3 im Test-DOM nur `fetch` abfängt.
-  - Bild-URLs entstehen über `api.getUri()` in `src/api/urls.ts`. Die SDK-`ImageUrlsApi` kostet ~48 KB, und ihr `getUserImageUrl()` zielt auf eine nicht existierende Route.
-  - `UserDto.HasPassword` wird trotz Deprecation gelesen (siehe architecture.md §1.2).
-  - Der Theme-Vertrag wächst je Phase. Phase 1 enthält `AppShell`, `LoginPage`, `ProfileSelect`, `HomePage` (vorläufig: Begrüßung + Bibliotheken), `Toast` und die Zustände. `LoginPage` bekommt ein `LoginFlow`-Modell mit den Schritten server/credentials/quickConnect.
-  - Der Demo-Server speichert ausgegebene Tokens in `localStorage`, damit eine Sitzung ein Neuladen übersteht, wie bei einem echten Server.
-  - Globale Theme-Regeln stehen unter `:where([data-theme='…'])`, damit Komponentenstile immer Vorrang haben.
-  - Vor dem ersten Rendern zeigt `index.html` einen neutralen Splash. Fehler beim Start (z. B. Demo ohne Service Worker) erscheinen als zweisprachige Meldung in `app/boot-error.ts`.
-  - Version je Phase: Phase n → 0.n.0 (wie bei Crystal).
-- **2026-10-07 – Phase 2, Umsetzungsentscheidungen:**
-  - Theme-Vertrag v1 ergänzt um `LibraryPage`, `ItemDetailPage`, `SeriesPage`, `SearchPage`, `FavoritesPage`, `Hero`, `Row` und `MediaCard`.
-    - `SeriesPageProps.series` ist ein geladenes `ItemDetail` statt eines `QueryResult`: Ob ein Eintrag eine Serie ist, steht erst nach dem Laden fest. Bis dahin zeigt `ItemDetailPage` den Ladezustand.
-    - `CardVariant` ist `poster | landscape | episode`.
-    - Themes setzen andere Slots über `<ThemeSlot>` zusammen, nicht über `useThemeComponent()` + JSX. So bleibt die Komponentenidentität stabil (React-Compiler-Regel), und jeder Baustein hat eine eigene Fehlergrenze.
-  - „Abspielen“-Buttons erscheinen erst mit dem Player in Phase 3. `useMediaActions().play` ist bis dahin `null`, damit es keine toten Buttons gibt.
-  - Favorit und gesehen werden sofort im ganzen Cache aktualisiert (optimistisch) und nach der Server-Antwort bestätigt bzw. bei Fehlern zurückgesetzt, mit Toast.
-  - Live-Updates kommen über den SDK-WebSocket (`UserDataChanged`, `LibraryChanged`), gebündelt nach 1,5 s.
-  - Sortierung und Filter der Bibliothek stehen in der URL (teilbar, Zurück-Taste funktioniert).
-  - Die Sprungleiste zählt per `nameLessThan` (klein geschrieben, weil Jellyfin Sortiernamen klein speichert). Das muss am echten Server noch geprüft werden.
-  - Jahre im Filter kommen vom Legacy-Endpunkt `/Items/Filters`, weil `/Items/Filters2` keine Jahre liefert.
-  - „Nächste Folgen“ auf der Startseite lässt angefangene Folgen weg, die stehen unter „Weiterschauen“. Auf der Serienseite ist die angefangene Folge die nächste.
-  - Inhaltsseiten außer der Startseite werden per Lazy Loading nachgeladen.
-  - **Theme-Regel:** Seiten-Grids brauchen `grid-template-columns: minmax(0, 1fr)`. Sonst wächst die Spalte mit einer langen Kartenreihe mit, und die Seite scrollt seitlich. Ein E2E-Test prüft das.
-  - Der Demo-Server speichert auch Favoriten und den Gesehen-Status pro Benutzer in `localStorage`.
-- **2026-10-08 – Phase 3, Umsetzungsentscheidungen:**
-  - Der Player ist eine eigene Vollbild-Route `/play/:itemId?start=<Sekunden>` statt einer Ebene über der vorherigen Seite. Die Startposition steht in der URL, ein Neuladen setzt also an derselben Stelle fort. Die vorherige Seite kommt beim Zurückgehen aus dem Cache. Beim Wechsel zur nächsten Folge bleibt der Bildschirm montiert, Vollbild bleibt erhalten.
-  - Ohne `start` fragt die Route nach (Slot `ResumePrompt`), wenn eine gespeicherte Position existiert. Serien werden auf die nächste Folge aufgelöst.
-  - Quellenwahl wie jellyfin-web (im Quelltext geprüft): `SupportsDirectPlay` oder `SupportsDirectStream` → statische Datei, sonst `TranscodingUrl`. HLS beginnt bei 0, der Player springt selbst an die Startposition. Bei progressivem Transcoding gilt ein Zeitversatz, außer die URL enthält `copytimestamps=true`.
-  - DeviceProfile nach den Konventionen von jellyfin-web: `IsSecondaryAudio = false` (Tonspurwechsel immer über einen neuen Stream), MKV per `canPlayType` statt User-Agent (Chrome 153 meldet `maybe`), Untertitel nur als `vtt` extern (der Server wandelt SRT und ASS um), Bilduntertitel werden eingebrannt. „Gestaltete Untertitel einbrennen“ nutzt `AlwaysBurnInSubtitleWhenTranscoding` ohne Direct Play und ohne Video-Stream-Copy.
-  - HLS läuft außerhalb von Safari über `hls.js/light` (116 statt 181 KB gzip, nur bei Bedarf geladen). Chrome meldet inzwischen natives HLS, trotzdem bleibt hls.js dort die erste Wahl, weil es erprobter ist.
-  - `DELETE /Videos/ActiveEncodings` existiert in Jellyfin 12 weiter (`HlsSegmentController`, per `IgnoreApi` aus der OpenAPI ausgeblendet, deshalb fehlt er im SDK).
-  - Die Laufzeit vom Server gilt als Dauer. Browser kennen bei fragmentierten Dateien und laufenden Transcodes oft nur den geladenen Teil.
-  - Qualität, Lautstärke und „einbrennen“ sind Geräte-Einstellungen (lokal). „Nächste Folge automatisch“ liest der Player aus `UserConfiguration.EnableNextEpisodeAutoPlay`; die Einstellungsseite dafür kommt in Phase 4. Die Trailer-Vorschau im Hero (architecture.md §9.13) hängt an „Trailer-Autoplay“ und folgt deshalb ebenfalls in Phase 4. Lokale Trailer lassen sich schon jetzt auf der Detailseite abspielen.
-  - Theme-Vertrag: neue Slots `PlayerOverlay` (bekommt ein `PlayerModel`) und `ResumePrompt`. Das `<video>`-Element gehört der App, das Overlay liegt darüber. Gemeinsame Bausteine für alle Themes: `useScrubber` (Zeitleiste) und `formatClock` in `src/ui/`.
-  - Player-Bildschirme sind in jedem Farbschema dunkel: Die Bühne setzt das aktive Theme mit `data-color-scheme="dark"` erneut (derselbe Mechanismus wie die spätere Live-Vorschau).
-  - Classic: Primär-Buttons werden bei Hover und Fokus dunkler statt heller. Vorher hatte weiße Schrift auf dem fokussierten Button nur 3,99:1.
-  - **Demo-Video:** Jeder Titel spielt im Demo-Modus denselben 60-Sekunden-Clip. `scripts/record-demo-clip.ts` nimmt ihn per MediaRecorder in Chromium auf (VP9/Opus als fragmentiertes MP4, 2,9 MB) und korrigiert danach VP9-Level und Dauer im Header. Dieselbe Datei dient als Direct-Play-Datei und, über Byte-Ranges, als HLS-Stream. Gespeicherte Positionen beziehen sich im Demo-Modus auf den Clip.
-  - Der Demo-Server beantwortet Range-Anfragen für Direct Play selbst: Der MSW-Service-Worker verliert beim Weiterreichen von `<video>`-Anfragen (no-cors) den Range-Header, die Datei wäre sonst nicht spulbar. Für Tests lassen sich Fehler einschalten (`localStorage["jellymorph.demo.faults"]`: `directPlay`, `transcode`, `playbackInfo`).
-  - Bekannte Einschränkung im Demo-Modus: Beim Neuladen der Seite geht die Stop-Meldung verloren, weil der Mock-Server im Tab selbst läuft. Bei einem echten Server greift `keepalive`.
-- **2026-10-08 – Phase 4, Umsetzungsentscheidungen:**
-  - **Eigene Spatial Navigation statt norigin** (`src/navigation/spatial.ts`, keine Abhängigkeit). norigin verlangt, dass jedes fokussierbare Element sich per `useFocusable()` registriert. Bei sechs Themes mit eigenen Komponenten wäre jedes vergessene Element mit der Fernbedienung unerreichbar. Die eigene Lösung sucht das nächste fokussierbare DOM-Element in Pfeilrichtung (Querversatz zählt dreifach). Feste und klebende Leisten sind eine eigene Ebene. Komponenten mit eigener Pfeillogik rufen `preventDefault()` auf. Konventionen für Themes: `data-autofocus` (Einstieg), `data-nav-ignore` (nur per Tab). Details: architecture.md §8.1.
-  - **Zurück-Tasten** (Esc, Backspace außerhalb von Feldern, `GoBack`/`BrowserBack`/`XF86Back`, webOS 461, Tizen 10009) gehen nur zurück, wenn es in der App eine vorherige Seite gibt. So verlässt niemand die App aus Versehen.
-  - **TV-Modus:** `data-device` = `tv` per Einstellung „Bedienmodus“ (Automatisch/Computer/Fernseher) oder User-Agent-Erkennung bei „Automatisch“. Schrift `clamp(16px, 100vw / 80, 48px)`, Bildrand 0–5 % (Standard 3 %) über `--overscan-x`/`-y` im `--page-gutter`.
-  - **Speicherung der Benutzer-Einstellungen:** lokal sofort (`jellymorph.user.<serverId>:<userId>`), am Server in DisplayPreferences `settings`/`jellymorph` mit flachen `CustomPrefs`-Schlüsseln (`jellymorph.theme` …, Schema-Version 1), 1 s gebündelt. Der Server gewinnt beim Start, **außer** eine lokale Änderung hat ihn noch nicht erreicht (Merker `pending`) oder wurde während des Ladens gemacht. Grund: Ohne diese Ausnahme ging eine Änderung verloren, wenn die Seite innerhalb der Wartezeit neu geladen wurde (im E2E-Test gefunden). Zusätzlich sendet `pagehide` einen offenen Stand mit `keepalive`. Gespeichert wird auf Basis des zuletzt gelesenen DTO, ohne erneutes GET; fremde Schlüssel bleiben erhalten.
-  - **Live-Vorschau:** `ThemePreview` rendert `Hero` und eine Reihe des gezeigten Themes mit echten Daten in einem 1280 px breiten, skalierten, `inert`en Container mit eigenem `data-theme`/`data-color-scheme`. Classic rechnet in `Hero` und `Row` mit `cqi`. Die Vorschaubilder der Theme-Kacheln entstehen mit `npm run previews` (Playwright im Demo-Modus).
-  - **Theme-Wechsel:** Chunk vorladen, dann `document.startViewTransition` + `flushSync` (260 ms), sonst Overlay-Überblendung, bei reduzierter Bewegung sofort. Der Loader merkt sich Status und Wert jedes Promises, damit `use()` beim Zurückwechseln nicht suspendiert.
-  - **Motion (Framer Motion) noch nicht installiert:** Classic kommt mit CSS-Übergängen aus. Die Bibliothek folgt mit dem ersten Theme, das Feder-Animationen braucht (Abweichung nur im Zeitpunkt, nicht in der Wahl).
-  - **Trailer-Vorschau im Hero** (aus Phase 3 verschoben): `useTrailerPreview` startet den lokalen Trailer stumm nach 3 s Ruhe mit höchstens 3 Mbit/s und ohne Reporting. Nur bei eingeschaltetem Trailer-Autoplay, voller Bewegung, ohne Datensparmodus und nicht auf Touch-Geräten. Stopp bei Scrollen (> 120 px), verborgenem Tab, Titelwechsel und wenn der Fokus den Hero verlässt.
-  - **„Nächste Folge automatisch“** steht jetzt in den Einstellungen (Abschnitt Wiedergabe) zusammen mit Ton-/Untertitelsprache und Untertitelmodus. Sie werden in die `UserConfiguration` geschrieben (als Ganzes, optimistisch mit Rücknahme). Die Sprachliste kommt von `/Localization/Cultures`, übersetzt per `Intl.DisplayNames`.
-  - Theme-Vertrag: `SettingsPage` ist jetzt Slot, `ToastProps.action` für „Erneut versuchen“, `THEME_SLOTS` mit Compile-Check für den Vertragstest. Ist das gezeigte Theme bereits aktiv, zeigt die Auswahl „Dieses Theme ist aktiv.“ statt eines deaktivierten Buttons.
-  - Demo-Server: DisplayPreferences, `UserConfiguration` und `/Localization/Cultures` mit Speicherung in `localStorage`; neuer Fehlerschalter `preferences`. Lange Titel im generierten Logo werden in die Fläche eingepasst.
-- **2026-10-08 – Phase 5, Umsetzungsentscheidungen** (Details: docs/architecture.md §15.1):
-  - Basis-Images: `node:24-alpine` als Build-Stage auf der Plattform des Build-Rechners (statisches Ergebnis, arm64 braucht keinen emulierten Node-Build) und `nginxinc/nginx-unprivileged:1.31-alpine` (Mainline wie der Tag `alpine` der Vorgabe, aber mit Versionsnummer, damit Dependabot Updates vorschlagen kann).
-  - **Eigener Entrypoint** statt der Skripte des Basis-Images: Er prüft alle Variablen und **stoppt den Container bei ungültigen Werten** mit einer Meldung, die die Variable nennt (z. B. Tippfehler in `DEFAULT_THEME`). Die App würde sie still ignorieren; ein Container, der unbemerkt mit Standardwerten läuft, fällt erst viel später auf. Alle Laufzeitdateien liegen in `/tmp/jellymorph`, nginx schreibt nur nach `/tmp`: läuft mit `--read-only`, `--cap-drop ALL` und beliebiger UID.
-  - **Proxy** (`JELLYFIN_PROXY_TARGET`) mit Variable in `proxy_pass` und `resolver` aus `/etc/resolv.conf`: Der Container startet auch, wenn Jellyfin noch nicht läuft, und folgt einer neuen Container-Adresse. Pfad und Query gehen unverändert aus `$request_uri` weiter. Einschränkung: In Kubernetes ist der volle DNS-Name nötig (nginx kennt keine Suchdomänen).
-  - **CSP je Modus** (Demo/Proxy: nur eigene Origin; `LOCK_SERVER`: genau eine Origin; sonst `https: http:`). Geprüft, indem die CI die komplette E2E-Suite gegen den Container im Demo-Modus laufen lässt; das Fixture `e2e/fixtures.ts` lässt jeden Test bei einer CSP-Verletzung scheitern.
-  - **PWA ohne Service Worker** (Abweichung von architecture.md §15, Plan aus Phase 0): Manifest und Icons reichen für „App installieren“ im Browser-Menü (Chrome ab 108/112). Ein Service Worker brächte ohne Offline-Funktionen nur Risiko bei Medienanfragen und würde mit MSW im Demo-Modus um den Scope konkurrieren. Der automatische Installationshinweis von Chrome entfällt deshalb. `APP_TITLE` setzt auch den Namen im Manifest.
-  - **Workflows:** `release.yml` ruft bei Push auf `main` und bei Tags `v*` zuerst die ganze CI auf (`workflow_call`) und veröffentlicht nur danach: `main` → `edge`, `v1.2.3` → `1.2.3`, `1.2`, `1` (nicht bei 0.x), `latest` (nicht bei Vorabversionen). `ci.yml` läuft deshalb direkt nur für andere Zweige und Pull Requests, `main` wird nicht doppelt geprüft. GitHub-Releases bekommen Notizen aus den Conventional Commits (`scripts/changelog.ts`, Überschriften auf Deutsch). Tags setzt weiterhin der Nutzer.
-  - Der Docker-Job der CI baut amd64 und arm64 und prüft das amd64-Image mit `scripts/test-container.ts` (Header, Caching, Fallback, ungültige Werte, Proxy samt WebSocket gegen einen Node-Ersatzserver, E2E unter CSP). Fehler erscheinen zusätzlich als Annotation, weil Job-Logs ohne Anmeldung nicht lesbar sind.
-  - Dependabot wöchentlich: npm (Tooling als eine Gruppe), Docker (ohne Node-Hauptversionen, die folgen `.node-version`), Actions (eine Gruppe).
-  - Das Paket auf ghcr.io ist öffentlich (erbt die Sichtbarkeit des Repositorys); ein anonymer Pull von `edge` mit amd64 und arm64 wurde nach dem ersten Release-Lauf geprüft.
+- **2026-10-07 – Name "Jellymorph"** (user decision). "Morph" stands for the core of the app: a theme transforms the whole interface. The name was free on GitHub; JellyStream, JellyFrame and JellyShift are already taken. The default theme is therefore called **"Classic"** instead of "Jelly", so app and theme are not confused. Identifier in code and for Jellyfin (`clientInfo.name`, DisplayPreferences client): `jellymorph`.
+- **2026-10-07 – Answers to the open questions from docs/architecture.md §19** (user: "alles ja", i.e. the recommendation each time):
+  - The additional packages `blurhash`, `@axe-core/playwright` and test and ESLint companions are approved.
+  - New container variable `DEMO_MODE` (default `false`).
+  - Audio/subtitle language, subtitle mode and "next episode automatically" live in the Jellyfin `UserConfiguration`. Streaming quality and input mode stay local per device.
+  - Several remembered profiles per device, with a switch "Remember on this device" at sign-in.
+  - ASS/SSA are shown as WebVTT by default, plus the option "burn in styled subtitles". No JASSUB.
+  - Music, books, photos, live TV and playlists are hidden in v1.
+  - German texts in the informal "du" form.
+  - Docker is only checked in GitHub Actions.
+  - The demo video is made by a browser recording (MediaRecorder), without ffmpeg.
+  - License AGPL-3.0.
+  - Browser baseline: Chrome/Edge ≥ 111, Firefox ≥ 128, Safari ≥ 16.4.
+  - Still open (question 2): version and address of the user's own Jellyfin server. Until then, development happens only against the mock server.
+- **2026-10-07 – Phase 1, implementation decisions:**
+  - axios runs globally with the fetch adapter: because of `keepalive` for the later stop report and because MSW 3 only intercepts `fetch` in the test DOM.
+  - Image URLs are built through `api.getUri()` in `src/api/urls.ts`. The SDK's `ImageUrlsApi` costs ~48 KB, and its `getUserImageUrl()` targets a route that does not exist.
+  - `UserDto.HasPassword` is read despite the deprecation (see architecture.md §1.2).
+  - The theme contract grows per phase. Phase 1 contains `AppShell`, `LoginPage`, `ProfileSelect`, `HomePage` (preliminary: greeting + libraries), `Toast` and the states. `LoginPage` gets a `LoginFlow` model with the steps server/credentials/quickConnect.
+  - The demo server stores issued tokens in `localStorage`, so a session survives a reload, as with a real server.
+  - Global theme rules live under `:where([data-theme='…'])`, so component styles always take precedence.
+  - Before the first render, `index.html` shows a neutral splash. Errors on start (e.g. demo without a service worker) appear as a bilingual message in `app/boot-error.ts`.
+  - Version per phase: phase n → 0.n.0 (as in Crystal).
+- **2026-10-07 – Phase 2, implementation decisions:**
+  - Theme contract v1 extended with `LibraryPage`, `ItemDetailPage`, `SeriesPage`, `SearchPage`, `FavoritesPage`, `Hero`, `Row` and `MediaCard`.
+    - `SeriesPageProps.series` is a loaded `ItemDetail` instead of a `QueryResult`: whether an item is a series is only known after loading. Until then `ItemDetailPage` shows the loading state.
+    - `CardVariant` is `poster | landscape | episode`.
+    - Themes compose other slots through `<ThemeSlot>`, not through `useThemeComponent()` + JSX. That keeps the component identity stable (React Compiler rule), and every building block has its own error boundary.
+  - "Play" buttons only appear with the player in phase 3. `useMediaActions().play` is `null` until then, so there are no dead buttons.
+  - Favorite and played are updated immediately in the whole cache (optimistically) and confirmed after the server's answer, or rolled back on errors, with a toast.
+  - Live updates come through the SDK WebSocket (`UserDataChanged`, `LibraryChanged`), batched after 1.5 s.
+  - The library's sorting and filters are in the URL (shareable, the back key works).
+  - The jump bar counts with `nameLessThan` (lowercase, because Jellyfin stores sort names in lowercase). This still has to be checked on a real server.
+  - Years in the filter come from the legacy endpoint `/Items/Filters`, because `/Items/Filters2` returns no years.
+  - "Next up" on the home page leaves out started episodes; they are under "Continue watching". On the series page, the started episode is the next one.
+  - Content pages other than the home page are lazy loaded.
+  - **Theme rule:** page grids need `grid-template-columns: minmax(0, 1fr)`. Otherwise the column grows with a long row of cards and the page scrolls sideways. An E2E test checks this.
+  - The demo server also stores favorites and the played status per user in `localStorage`.
+- **2026-10-08 – Phase 3, implementation decisions:**
+  - The player is a full-screen route of its own, `/play/:itemId?start=<seconds>`, instead of a layer above the previous page. The start position is in the URL, so a reload resumes at the same spot. The previous page comes from the cache when going back. When switching to the next episode the screen stays mounted, and full screen is kept.
+  - Without `start` the route asks (slot `ResumePrompt`) when a stored position exists. Series are resolved to the next episode.
+  - Source choice as in jellyfin-web (checked in the source): `SupportsDirectPlay` or `SupportsDirectStream` → static file, otherwise `TranscodingUrl`. HLS starts at 0, the player seeks to the start position itself. With progressive transcoding a time offset applies, unless the URL contains `copytimestamps=true`.
+  - DeviceProfile following the conventions of jellyfin-web: `IsSecondaryAudio = false` (audio track switches always through a new stream), MKV through `canPlayType` instead of the user agent (Chrome 153 reports `maybe`), subtitles only as external `vtt` (the server converts SRT and ASS), picture subtitles are burned in. "Burn in styled subtitles" uses `AlwaysBurnInSubtitleWhenTranscoding` without direct play and without video stream copy.
+  - Outside Safari, HLS runs through `hls.js/light` (116 instead of 181 KB gzip, only loaded when needed). Chrome now reports native HLS; hls.js still stays the first choice there because it is more proven.
+  - `DELETE /Videos/ActiveEncodings` still exists in Jellyfin 12 (`HlsSegmentController`, hidden from the OpenAPI through `IgnoreApi`, which is why it is missing from the SDK).
+  - The runtime from the server counts as the duration. With fragmented files and running transcodes, browsers often only know the loaded part.
+  - Quality, volume and "burn in" are device settings (local). The player reads "next episode automatically" from `UserConfiguration.EnableNextEpisodeAutoPlay`; the settings page for it comes in phase 4. The trailer preview in the hero (architecture.md §9.13) depends on "trailer autoplay" and therefore also follows in phase 4. Local trailers can already be played on the detail page.
+  - Theme contract: new slots `PlayerOverlay` (receives a `PlayerModel`) and `ResumePrompt`. The `<video>` element belongs to the app, the overlay lies above it. Shared building blocks for every theme: `useScrubber` (timeline) and `formatClock` in `src/ui/`.
+  - Player screens are dark in every color scheme: the stage sets the active theme again with `data-color-scheme="dark"` (the same mechanism as the later live preview).
+  - Classic: primary buttons get darker instead of lighter on hover and focus. Before, white text on the focused button had only 3.99:1.
+  - **Demo video:** in demo mode every title plays the same 60-second clip. `scripts/record-demo-clip.ts` records it through MediaRecorder in Chromium (VP9/Opus as fragmented MP4, 2.9 MB) and afterwards corrects the VP9 level and the duration in the header. The same file serves as the direct play file and, through byte ranges, as the HLS stream. In demo mode, stored positions refer to the clip.
+  - The demo server answers range requests for direct play itself: the MSW service worker loses the range header when passing on `<video>` requests (no-cors), and the file would not be seekable otherwise. For tests, faults can be switched on (`localStorage["jellymorph.demo.faults"]`: `directPlay`, `transcode`, `playbackInfo`).
+  - Known limitation in demo mode: on a page reload the stop report gets lost, because the mock server runs inside the tab itself. With a real server `keepalive` takes effect.
+- **2026-10-08 – Phase 4, implementation decisions:**
+  - **Own spatial navigation instead of norigin** (`src/navigation/spatial.ts`, no dependency). norigin requires every focusable element to register through `useFocusable()`. With six themes with their own components, every forgotten element would be unreachable with the remote control. Our solution looks for the nearest focusable DOM element in the arrow's direction (cross offset counts threefold). Fixed and sticky bars are a layer of their own. Components with their own arrow logic call `preventDefault()`. Conventions for themes: `data-autofocus` (entry point), `data-nav-ignore` (Tab only). Details: architecture.md §8.1.
+  - **Back keys** (Esc, Backspace outside fields, `GoBack`/`BrowserBack`/`XF86Back`, webOS 461, Tizen 10009) only go back when there is a previous page in the app. That way nobody leaves the app by accident.
+  - **TV mode:** `data-device` = `tv` through the "Input mode" setting (Automatic/Computer/TV) or user agent detection with "Automatic". Font `clamp(16px, 100vw / 80, 48px)`, screen margin 0–5 % (default 3 %) through `--overscan-x`/`-y` in `--page-gutter`.
+  - **Storing the user settings:** locally immediately (`jellymorph.user.<serverId>:<userId>`), on the server in DisplayPreferences `settings`/`jellymorph` with flat `CustomPrefs` keys (`jellymorph.theme` …, schema version 1), batched over 1 s. The server wins on start, **unless** a local change has not reached it yet (flag `pending`) or was made while loading. Reason: without this exception a change got lost when the page was reloaded within the wait (found in the E2E test). Additionally, `pagehide` sends an unsaved state with `keepalive`. Saving is based on the DTO read last, without a new GET; foreign keys are kept.
+  - **Live preview:** `ThemePreview` renders `Hero` and a row of the theme shown with real data in a 1280 px wide, scaled, `inert` container with its own `data-theme`/`data-color-scheme`. Classic calculates in `cqi` in `Hero` and `Row`. The preview pictures of the theme tiles are made with `npm run previews` (Playwright in demo mode).
+  - **Theme switch:** preload the chunk, then `document.startViewTransition` + `flushSync` (260 ms), otherwise an overlay cross-fade, with reduced motion immediately. The loader remembers the status and value of every promise, so `use()` does not suspend when switching back.
+  - **Motion (Framer Motion) not installed yet:** Classic gets by with CSS transitions. The library follows with the first theme that needs spring animations (a deviation only in timing, not in the choice).
+  - **Trailer preview in the hero** (moved from phase 3): `useTrailerPreview` starts the local trailer muted after 3 s of calm at no more than 3 Mbit/s and without reporting. Only with trailer autoplay switched on, full motion, without data saver and not on touch devices. Stops on scrolling (> 120 px), a hidden tab, a title change and when the focus leaves the hero.
+  - **"Next episode automatically"** is now in the settings (playback section), together with audio/subtitle language and subtitle mode. They are written into the `UserConfiguration` (as a whole, optimistically with rollback). The language list comes from `/Localization/Cultures`, translated through `Intl.DisplayNames`.
+  - Theme contract: `SettingsPage` is now a slot, `ToastProps.action` for "Try again", `THEME_SLOTS` with a compile check for the contract test. If the theme shown is already active, the picker shows "This theme is active." instead of a disabled button.
+  - Demo server: DisplayPreferences, `UserConfiguration` and `/Localization/Cultures` stored in `localStorage`; a new fault switch `preferences`. Long titles in the generated logo are fitted into the area.
+- **2026-10-08 – Phase 5, implementation decisions** (details: docs/architecture.md §15.1):
+  - Base images: `node:24-alpine` as the build stage on the build machine's platform (static result, arm64 needs no emulated Node build) and `nginxinc/nginx-unprivileged:1.31-alpine` (mainline like the `alpine` tag of the spec, but with a version number, so Dependabot can propose updates).
+  - **Own entrypoint** instead of the base image's scripts: it checks every variable and **stops the container on invalid values** with a message naming the variable (e.g. a typo in `DEFAULT_THEME`). The app would silently ignore them; a container that runs unnoticed with defaults is only noticed much later. All runtime files live in `/tmp/jellymorph`, nginx only writes to `/tmp`: runs with `--read-only`, `--cap-drop ALL` and any UID.
+  - **Proxy** (`JELLYFIN_PROXY_TARGET`) with a variable in `proxy_pass` and `resolver` from `/etc/resolv.conf`: the container also starts when Jellyfin is not running yet, and it follows a new container address. Path and query are passed on unchanged from `$request_uri`. Limitation: Kubernetes needs the full DNS name (nginx does not know search domains).
+  - **CSP per mode** (demo/proxy: only the own origin; `LOCK_SERVER`: exactly one origin; otherwise `https: http:`). Verified by the CI running the complete E2E suite against the container in demo mode; the fixture `e2e/fixtures.ts` fails every test on a CSP violation.
+  - **PWA without a service worker** (deviation from architecture.md §15, plan from phase 0): manifest and icons are enough for "Install app" in the browser menu (Chrome from 108/112). Without offline features a service worker would only bring risk to media requests and would compete with MSW for the scope in demo mode. Chrome's automatic install prompt is therefore dropped. `APP_TITLE` also sets the name in the manifest.
+  - **Workflows:** on a push to `main` and on tags `v*`, `release.yml` first calls the whole CI (`workflow_call`) and only publishes after that: `main` → `edge`, `v1.2.3` → `1.2.3`, `1.2`, `1` (not for 0.x), `latest` (not for pre-releases). `ci.yml` therefore only runs directly for other branches and pull requests; `main` is not checked twice. GitHub releases get notes from the Conventional Commits (`scripts/changelog.ts`, headings in German at the time, in English since 2026-10-15). The user still sets the tags.
+  - The CI's Docker job builds amd64 and arm64 and checks the amd64 image with `scripts/test-container.ts` (headers, caching, fallback, invalid values, proxy including WebSocket against a Node stand-in server, E2E under the CSP). Errors also appear as annotations, because job logs cannot be read without signing in.
+  - Dependabot weekly: npm (tooling as one group), Docker (without Node major versions, they follow `.node-version`), Actions (one group).
+  - The package on ghcr.io is public (inherits the repository's visibility); an anonymous pull of `edge` with amd64 and arm64 was checked after the first release run.
 - **2026-10-08 – Phase 6, Neon Grid:**
-  - **Eigene Komponenten** für alles, was das Theme prägt: AppShell (HUD-Leiste mit Systemzeit und Operator-Menü über perspektivischem Raster), LoginPage und ProfileSelect (Boot-Sequenz, dann Zugangsterminal), HomePage („Sektoren“, Genre-Tags), Hero, Row, MediaCard, ItemDetailPage und SeriesPage (Dossier mit HUD-Datenfeldern, Episoden-Log), SearchPage (Terminal mit Block-Cursor, der dem Caret folgt), PlayerOverlay (HUD mit Anzeigen für Systemzeit, Kapitel und Spuren, segmentierte Zeitleiste), ResumePrompt, Toast und die Zustände. Bibliothek, Favoriten und Einstellungen sind die Classic-Seiten in Neon-Farben und -Schriften (Überschriften bekommen global Großschrift und Glow).
-  - **Schriften** (OFL, `@fontsource`): Orbitron (Überschriften), Rajdhani (Text, mit `font-size-adjust` wegen der kleinen x-Höhe), Share Tech Mono (Daten, Terminal). Nur Latin und Latin-Ext.
-  - **Farben:** fast schwarz, Magenta `#ff3bdc`, Cyan `#3ff2ff`, Gelb `#ffd23f` für Aktionen (bewusst nicht das Gelb bekannter Spielemarken). Kontraste prüft der Token-Test.
-  - **Effekte** nur mit transform, opacity und filter: Glitch beim Fokus von Karten und auf der Überschrift beim Seitenwechsel, chromatische Aberration per SVG-Filter auf Bildern im Fokus, Scanlines nur über Bildern, Text-Scramble für Titel (die echte Schrift behält Platz und Barrierefreiheit, die Zeichen sind eine dekorative Ebene darüber), Raster mit Fahrt-Animation. Reduzierte Bewegung schaltet alles ab, TVs bekommen die ruhige Variante (kein SVG-Filter, kein Jitter, kein Blur).
-  - **Boot-Sequenz** einmal pro Browser-Sitzung (neuer gemeinsamer Hook `useSessionFlag`, weil Themes keinen Storage nutzen dürfen), überspringbar mit jeder Taste, Klick oder dem Button; bei reduzierter Bewegung gar nicht.
-  - **UI-Sounds:** per Web Audio erzeugt (keine Dateien), standardmäßig aus. Neue Benutzer-Einstellung `uiSounds` (DisplayPreferences `jellymorph.uiSounds`, Schema bleibt Version 1, alte Stände haben den Wert einfach nicht). Der Schalter erscheint nur für Themes mit `features.uiSounds`.
-  - **Vertrag:** `ThemeModule.texts` (eigene Texte als Namespace `theme-<id>`) und `ThemeManifest.features`. `PlayerTimeline` und `PlayerMenu` von Classic nehmen ein `classes`-Objekt, damit Themes die geprüfte Bedienlogik mit eigenem Aussehen nutzen. `AppLink` reicht Anker-Attribute durch; `useRouteKey()` liefert einen Schlüssel für Seitenübergänge.
-  - **Tests:** E2E `e2e/neon-grid.spec.ts` (Wechsel, Boot einmal pro Sitzung, Terminal-Suche, Dossier, HUD-Player, Pfeiltasten, Fokus = Hover, axe, Animationseigenschaften, reduzierte Bewegung). Die CSSOM-Prüfung der Animationen ist jetzt der Helfer `layoutAnimations`. Screenshots `30-…41-neon-*`, Vorschaubild per `npm run previews` mit Theme-Auswahl.
+  - **Own components** for everything that shapes the theme: AppShell (HUD bar with system time and operator menu over a perspective grid), LoginPage and ProfileSelect (boot sequence, then an access terminal), HomePage ("sectors", genre tags), Hero, Row, MediaCard, ItemDetailPage and SeriesPage (dossier with HUD data fields, episode log), SearchPage (terminal with a block cursor that follows the caret), PlayerOverlay (HUD with readouts for system time, chapters and tracks, segmented timeline), ResumePrompt, Toast and the states. Library, favorites and settings are the Classic pages in neon colors and fonts (headings globally get uppercase and glow).
+  - **Fonts** (OFL, `@fontsource`): Orbitron (headings), Rajdhani (text, with `font-size-adjust` because of the small x-height), Share Tech Mono (data, terminal). Latin and Latin Extended only.
+  - **Colors:** almost black, magenta `#ff3bdc`, cyan `#3ff2ff`, yellow `#ffd23f` for actions (deliberately not the yellow of known gaming brands). The token test checks contrasts.
+  - **Effects** only with transform, opacity and filter: glitch on focus of cards and on the heading on page change, chromatic aberration through an SVG filter on focused pictures, scanlines only over pictures, text scramble for titles (the real text keeps its space and accessibility, the characters are a decorative layer above it), grid with a travel animation. Reduced motion switches everything off, TVs get the calm variant (no SVG filter, no jitter, no blur).
+  - **Boot sequence** once per browser session (new shared hook `useSessionFlag`, because themes may not use storage), skippable with any key, click or the button; not at all with reduced motion.
+  - **UI sounds:** created through Web Audio (no files), off by default. New user setting `uiSounds` (DisplayPreferences `jellymorph.uiSounds`, schema stays version 1, old states simply lack the value). The switch only appears for themes with `features.uiSounds`.
+  - **Contract:** `ThemeModule.texts` (own texts as the namespace `theme-<id>`) and `ThemeManifest.features`. Classic's `PlayerTimeline` and `PlayerMenu` take a `classes` object, so themes can use the tested interaction logic with their own look. `AppLink` passes anchor attributes through; `useRouteKey()` returns a key for page transitions.
+  - **Tests:** E2E `e2e/neon-grid.spec.ts` (switch, boot once per session, terminal search, dossier, HUD player, arrow keys, focus = hover, axe, animation properties, reduced motion). The CSSOM check of the animations is now the helper `layoutAnimations`. Screenshots `30-…41-neon-*`, preview picture through `npm run previews` with theme selection.
 - **2026-10-09 – Phase 7, Crimson:**
-  - **Eigene Komponenten:** AppShell (Leiste oben, über dem Hero transparent, ab 8 px Scrollen deckend; Profilmenü mit eckigem Avatar), ProfileSelect („Wer schaut?“ mit großen quadratischen Kacheln, Sprachwahl), HomePage (ein Hero, Reihen ragen in seinen unteren Rand, Bibliotheks-Kacheln nach den ersten zwei Reihen, Genres am Ende), Hero, Row (Querformat, Randpfeile, Seitenanzeige, ←/→), MediaCard mit Vorschaukarte, ItemDetailPage und SeriesPage als Overlay, SearchPage, PlayerOverlay. Anmeldung, Bibliothek, Favoriten, Einstellungen, Zustände, Toast und Fortsetzen-Abfrage sind Classic in Crimson-Farben.
-  - **Farben und Schrift:** fast schwarz `#0f0f10`, Akzent `#d31d34` (ΔE76 ≈ 21 zum Rot des Vorbilds), Inter (OFL, schon von Classic geladen). App-Titel weiß statt einer roten Wortmarke.
-  - **Details als Overlay** über der Seite, von der sie kommen (architecture.md §7.9): Descendant-Routen mit `state.backgroundLocation`, die Seite bleibt montiert und `inert`, Zurück stellt sie unverändert wieder her. Direkt aufgerufen sind Details eine normale Seite. Nur `/item/:id` kann Overlay sein; Overlay-Links im Overlay ersetzen den Verlaufseintrag, damit Schließen immer zur Seite führt. Gefundener Fehler auf dem Weg: Der Staffelwechsel (`?season=`) verlor den History-State und machte aus dem Overlay eine Seite, behoben für alle Themes. Episoden stehen direkt im Overlay (Staffel als natives `select`, ganze Zeile spielt die Folge, nächste Folge hervorgehoben).
-  - **Vorschaukarte:** öffnet 400 ms nach Hover oder Tastatur-/Fernbedienungsfokus, nicht auf Touch-Geräten und nicht im Overlay. Sie liegt als Portal in Dokumentkoordinaten über der Karte: Reihen schneiden sie nicht ab, und sie gehört zur Inhaltsebene der Pfeilnavigation. Abspielen, Favorit, gesehen, „Mehr“ (öffnet die Details), Freigabe, Jahr, Laufzeit, Bewertung, Genres. Esc schließt sie, Fokus bleibt auf der Karte. Weil sie die Karte verdeckt, trägt sie den weißen Fokusrahmen, solange die Karte fokussiert ist (WCAG 2.4.11), und genauso beim Hover.
-  - **Hero:** ein Titel, Ken-Burns-Drift (26 s, TV 40 s) bis der stumme Trailer nach 3 s übernimmt (gemeinsamer `useTrailerPreview`); Logo wird dann kleiner, Beschreibung blendet aus. Das Bild endet 4 px vor der Unterkante, sonst scheint es an der kantengeglätteten Bruchpixel-Kante als heller Strich durch.
-  - **Player:** Zurück-Pfeil oben, rote Zeitleiste mit Restzeit, Titel mittig in der Steuerleiste; nach 6 s Pause ohne Eingabe weichen die Bedienelemente einem „Du siehst gerade“ mit Beschreibung über abgedunkeltem Bild. Zeitleiste und Menüs sind die Classic-Bausteine mit Crimson-Klassen.
-  - **Vertrag:** `ThemeOptions.cardShape` (`'mixed' | 'landscape'`) für die übernommenen Classic-Seiten. `AppLink` hat `overlay` und `ref`.
-  - **Tests:** `e2e/crimson.spec.ts` (12 Tests: Wechsel, Overlay mit Zurück/Esc/Scroll/Fokus, Ersetzen aus „Mehr wie dieses“, Seite bei Direktaufruf, Vorschaukarte per Maus und Tastatur, Staffelwechsel, Profile, Player mit Pausenansicht, Pfeiltasten, Fokus = Hover, axe, Animationseigenschaften, reduzierte Bewegung), `navigation/overlay.test.ts`. Screenshots `50-…63-crimson-*`.
+  - **Own components:** AppShell (bar at the top, transparent over the hero, opaque from 8 px of scrolling; profile menu with a square avatar), ProfileSelect ("Who's watching?" with large square tiles, language choice), HomePage (one hero, rows reach into its lower edge, library tiles after the first two rows, genres at the end), Hero, Row (landscape, edge arrows, page indicator, ←/→), MediaCard with a preview card, ItemDetailPage and SeriesPage as an overlay, SearchPage, PlayerOverlay. Sign-in, library, favorites, settings, states, toast and resume question are Classic in Crimson colors.
+  - **Colors and font:** almost black `#0f0f10`, accent `#d31d34` (ΔE76 ≈ 21 to the model's red), Inter (OFL, already loaded by Classic). App title in white instead of a red word mark.
+  - **Details as an overlay** above the page they come from (architecture.md §7.9): descendant routes with `state.backgroundLocation`, the page stays mounted and `inert`, Back restores it unchanged. Opened directly, details are a normal page. Only `/item/:id` can be an overlay; overlay links in the overlay replace the history entry, so closing always leads to the page. A bug found along the way: the season switch (`?season=`) lost the history state and turned the overlay into a page; fixed for every theme. Episodes are directly in the overlay (season as a native `select`, the whole row plays the episode, next episode highlighted).
+  - **Preview card:** opens 400 ms after hover or keyboard/remote focus, not on touch devices and not in the overlay. It lies as a portal in document coordinates above the card: rows do not clip it, and it belongs to the content layer of the arrow navigation. Play, favorite, played, "More" (opens the details), rating, year, runtime, community rating, genres. Esc closes it, the focus stays on the card. Because it covers the card, it carries the white focus outline while the card is focused (WCAG 2.4.11), and likewise on hover.
+  - **Hero:** one title, Ken Burns drift (26 s, TV 40 s) until the muted trailer takes over after 3 s (shared `useTrailerPreview`); the logo then gets smaller, the overview fades out. The picture ends 4 px before the bottom edge; otherwise it shines through as a light line at the anti-aliased fractional pixel edge.
+  - **Player:** back arrow at the top, red timeline with remaining time, title centered in the control bar; after 6 s of pause without input the controls give way to a "You're watching" with the overview over a darkened picture. Timeline and menus are the Classic building blocks with Crimson classes.
+  - **Contract:** `ThemeOptions.cardShape` (`'mixed' | 'landscape'`) for the Classic pages taken over. `AppLink` has `overlay` and `ref`.
+  - **Tests:** `e2e/crimson.spec.ts` (12 tests: switch, overlay with Back/Esc/scroll/focus, replacing from "More like this", page when opened directly, preview card by mouse and keyboard, season switch, profiles, player with the pause view, arrow keys, focus = hover, axe, animation properties, reduced motion), `navigation/overlay.test.ts`. Screenshots `50-…63-crimson-*`.
 - **2026-10-09 – Phase 8, Glass:**
-  - **Motion jetzt installiert** (`motion` 13.5, wie in §3 vorgesehen und in Phase 4 angekündigt), nur im Glass-Chunk: Basis-Bundle unverändert 183 KB, Glass 50 KB JS. Version 14 war beim Einbau eine Woche alt (neue Hauptversion), deshalb 13.x.
-  - **Eigene Komponenten:** AppShell (drei schwebende Glasstücke: Marke links, zentrierte Pille mit Suche und Abschnitten, Profil rechts; aktiver Abschnitt als massive Pille; auf dem Handy eine schwebende Tab-Leiste unten), Hero (Vollbild-Karussell, 8 s je Titel, Überblendung mit langsamem Ausklingen des Bilds, Textwechsel mit Feder, Fortschritt in der Seitenanzeige, Pause-Knopf nach WCAG 2.2.2, Stopp bei Hover, Fokus, Trailer und reduzierter Bewegung), Row (Regale mit Platz für angehobene Karten, gläserne Pfeile nur unter dem Zeiger), MediaCard (Fokuseffekt `useLift`: anheben, unter der Maus zur Zeigerposition neigen, Lichtreflex; Titel darunter weicht aus), HomePage (Bibliotheks-Kacheln mit Glasstreifen, Genre-Chips), ItemDetailPage und SeriesPage (Vollbild-Bühne mit Verlauf, Titel-Logo statt Text, Glas-Knöpfe; darunter Besetzung als runde Porträts, Ähnliches, Info-Panel; Staffeln als Segment-Pille, Episoden als Regal, die nächste Folge wird angesprungen; jede Episode hat einen Info-Knopf zur eigenen Seite), SearchPage, PlayerOverlay (Glaspanel mit Titel, Zeitleiste zwischen gesehener und verbleibender Zeit, Wiedergabe mittig). Anmeldung, Bibliothek, Favoriten, Einstellungen und Zustände sind Classic in Glass-Farben.
-  - **Hell und Dunkel:** Text über Bildern (Hero, Bühne, Player) ist in beiden Schemata hell auf dunklem Verlauf. Leisten mit Text haben eine dichtere Glasstufe (`--gl-bar`), damit der Kontrast auch über weißen oder schwarzen Bildern reicht. Auf Fernsehern kein Blur (teuer für die Grafikchips), dafür dichteres Glas. Fokusringe in `rem`, also im TV-Modus 1,5-mal so dick; massive Knöpfe bekommen einen dunklen Abstand vor dem Ring.
-  - **Farben:** Akzent `#4256cf`/`#2456c8` (ΔE76 ≥ 16 bzw. ≥ 12 zu bekannten Systemblautönen), Hauptaktionen weiß bzw. fast schwarz.
-  - **Tests:** `e2e/glass.spec.ts` (11 Tests: Wechsel, Karussell dreht und hält per Pause-Knopf, Karte hebt sich und neigt sich nur unter der Maus, Detailseite, Staffel-Tabs und Episoden, Player, helles Schema mit axe, Pfeiltasten, Fokus = Hover nach dem Einschwingen der Federn, axe, Animationseigenschaften, reduzierte Bewegung). Der Helfer `waitForAnimations` ignoriert jetzt auch langsame Hintergrundbewegungen ab 5 s, sonst wartet er im Glass-Hero ewig. Der Pfeiltasten-Test von Neon Grid drückt jetzt, bis der Fokus ankommt (wackelte unter Last). Screenshots `70-…80-glass-*` in beiden Schemata.
-  - **README:** Bis zum ersten Release-Tag gibt es nur `edge`; das steht jetzt dort.
-- **2026-10-13 – Images ohne Docker Hub** (architecture.md §15.1): Der Release-Lauf zum Tag `v0.8.0` und der Lauf danach scheiterten im Docker-Job, weil Docker Hub nicht antwortete und GitHub-Runner ins anonyme Pull-Limit laufen. Node, Dockerfile-Frontend, BuildKit und QEMU kommen jetzt über `mirror.gcr.io`, nginx-unprivileged über `ghcr.io/nginx/nginx-unprivileged` (dasselbe Herstellerimage wie `nginxinc/nginx-unprivileged` aus §7, nur eine andere Registry). README bekam einen Kopf mit Logo und Status-Badges (CI auf `main`, Release, Image, Lizenz).
+  - **Motion now installed** (`motion` 13.5, as planned in §3 and announced in phase 4), only in the Glass chunk: base bundle unchanged at 183 KB, Glass 50 KB JS. Version 14 was one week old at the time (a new major version), hence 13.x.
+  - **Own components:** AppShell (three floating pieces of glass: brand on the left, a centered pill with search and sections, profile on the right; the active section as a solid pill; on phones a floating tab bar at the bottom), Hero (full-screen carousel, 8 s per title, cross-fade with a slow fade-out of the picture, text change with a spring, progress in the page indicator, pause button according to WCAG 2.2.2, stops on hover, focus, trailer and reduced motion), Row (shelves with room for lifted cards, glass arrows only under the pointer), MediaCard (focus effect `useLift`: lift, tilt towards the pointer under the mouse, light reflection; the title below makes way), HomePage (library tiles with a glass strip, genre chips), ItemDetailPage and SeriesPage (full-screen stage with a gradient, title logo instead of text, glass buttons; below it the cast as round portraits, related titles, an info panel; seasons as a segmented pill, episodes as a shelf, the next episode is scrolled to; every episode has an info button to its own page), SearchPage, PlayerOverlay (glass panel with title, timeline between watched and remaining time, playback in the middle). Sign-in, library, favorites, settings and states are Classic in Glass colors.
+  - **Light and dark:** text over pictures (hero, stage, player) is light on a dark gradient in both schemes. Bars with text have a denser glass level (`--gl-bar`), so the contrast is enough over white or black pictures too. No blur on TVs (expensive for their graphics chips), denser glass instead. Focus rings in `rem`, so 1.5 times as thick in TV mode; solid buttons get a dark gap before the ring.
+  - **Colors:** accent `#4256cf`/`#2456c8` (ΔE76 ≥ 16 and ≥ 12 to known system blues), main actions white or almost black.
+  - **Tests:** `e2e/glass.spec.ts` (11 tests: switch, the carousel rotates and stops with the pause button, the card lifts and only tilts under the mouse, detail page, season tabs and episodes, player, light scheme with axe, arrow keys, focus = hover after the springs settle, axe, animation properties, reduced motion). The helper `waitForAnimations` now also ignores slow background motion from 5 s, otherwise it waits forever in the Glass hero. Neon Grid's arrow key test now presses until the focus arrives (was flaky under load). Screenshots `70-…80-glass-*` in both schemes.
+  - **README:** until the first release tag there is only `edge`; the README now says so.
+- **2026-10-13 – Images without Docker Hub** (architecture.md §15.1): the release run for the tag `v0.8.0` and the run after it failed in the Docker job, because Docker Hub did not answer and GitHub runners run into the anonymous pull limit. Node, the Dockerfile frontend, BuildKit and QEMU now come through `mirror.gcr.io`, nginx-unprivileged through `ghcr.io/nginx/nginx-unprivileged` (the same vendor image as `nginxinc/nginx-unprivileged` from §7, just another registry). The README got a header with logo and status badges (CI on `main`, release, image, license).
 - **2026-10-13 – Phase 9, Horizon:**
-  - **Eigene Komponenten:** AppShell (deckende, klebende Leiste mit Textlinks, weißer Balken bei Hover und Fokus, blauer für die aktuelle Seite; Suche und Profil mit Namen rechts; auf dem Handy eine Leiste unten), Hero (breites Karussell unter der Leiste: Bild rechts mit Verlauf, Text links; die Titel gleiten seitlich, große Pfeile an beiden Rändern, Punkte und Pause-Knopf darunter, 10 s je Titel, Titel außerhalb des Bilds sind `inert`), Row (16:9-Karten, „Alle anzeigen“ rechts, runde Pfeile), MediaCard (klappt 250 ms nach Hover oder Fokus nach unten auf: Bild bleibt an seinem Platz, darunter Titel, Abspielen, Favorit, Details, Fakten und Beschreibung; Portal wie bei Crimson, eigener Fokusrahmen), HomePage, ItemDetailPage und SeriesPage (Kopf mit Bild rechts, darunter Tabs „Episoden“ (nur Serien), „Ähnliches“, „Details“ nach dem WAI-ARIA-Tab-Muster; Episoden als Liste mit Standbild zum Abspielen und Titel-Link zur Episodenseite, Staffel per `select`; Episodenseiten zeigen die Details ohne Tabs), SearchPage, PlayerOverlay (Titel oben links, Werkzeuge oben rechts, Zurück/Abspielen/Vor groß in der Bildmitte auf dunklen Scheiben, unten eine blaue Zeitleiste zwischen gesehener und verbleibender Zeit). Anmeldung, Bibliothek (Querformat über `cardShape`), Favoriten, Einstellungen und Zustände sind Classic in Horizon-Farben.
-  - **Farben und Schrift:** Grund `#13192a` (ΔE76 ≈ 8 zum Grund des Vorbilds), Akzent `#2a63e6` (ΔE76 ≥ 32), Figtree (OFL, `@fontsource-variable/figtree`, neue Schrift-Abhängigkeit wie bei Neon Grid).
-  - **Tests:** `e2e/horizon.spec.ts` (10 Tests: Wechsel, Pfeile und Punkte im Hero samt `inert`, Karte klappt nach unten auf (Geometrie geprüft) per Maus und Tastatur mit Esc, Tabs per Pfeiltasten, Staffelwahl und Episoden-Link, Player, Pfeiltasten, Fokus = Hover, axe, Animationseigenschaften, reduzierte Bewegung). Screenshots `81-…91-horizon-*`.
+  - **Own components:** AppShell (opaque, sticky bar with text links, a white bar on hover and focus, a blue one for the current page; search and profile with the name on the right; on phones a bar at the bottom), Hero (wide carousel below the bar: picture on the right with a gradient, text on the left; the titles slide sideways, large arrows at both edges, dots and a pause button below, 10 s per title, titles outside the picture are `inert`), Row (16:9 cards, "See all" on the right, round arrows), MediaCard (unfolds downwards 250 ms after hover or focus: the picture stays in place, below it title, play, favorite, details, facts and overview; a portal as in Crimson, its own focus outline), HomePage, ItemDetailPage and SeriesPage (header with the picture on the right, below it the tabs "Episodes" (series only), "Related", "Details" following the WAI-ARIA tab pattern; episodes as a list with a still to play and a title link to the episode page, season through `select`; episode pages show the details without tabs), SearchPage, PlayerOverlay (title at the top left, tools at the top right, back/play/forward large in the middle of the picture on dark discs, at the bottom a blue timeline between watched and remaining time). Sign-in, library (landscape through `cardShape`), favorites, settings and states are Classic in Horizon colors.
+  - **Colors and font:** background `#13192a` (ΔE76 ≈ 8 to the model's background), accent `#2a63e6` (ΔE76 ≥ 32), Figtree (OFL, `@fontsource-variable/figtree`, a new font dependency like Neon Grid's).
+  - **Tests:** `e2e/horizon.spec.ts` (10 tests: switch, arrows and dots in the hero including `inert`, the card unfolds downwards (geometry checked) by mouse and keyboard with Esc, tabs with arrow keys, season choice and episode link, player, arrow keys, focus = hover, axe, animation properties, reduced motion). Screenshots `81-…91-horizon-*`.
 - **2026-10-13 – Phase 10, Constellation:**
-  - **Eigene Komponenten:** AppShell (schmale Icon-Leiste links, auf Desktop und TV; klappt bei Hover, Tastatur- oder Fernbedienungsfokus und offenem Profilmenü über die Seite auf: dunkler Schatten blendet ein, Beschriftungen erscheinen neben den Icons, aktuelle Seite mit leuchtender Marke; Profil unten; auf dem Handy eine kleine Leiste oben und die Hauptbereiche unten), Hero (abgerundete Banner im Karussell, Nachbarn ragen an den Rändern ins Bild und zeigen nur ihr Bild; der ganze Banner öffnet den Titel, Glührahmen bei Fokus; Pfeile über den Nachbarn nur für Zeiger und Tab, Punkte und Pause-Knopf darunter, 8 s je Titel), Kachelreihe direkt unter dem Hero für Bibliotheken und Sammlungen (16:9, Name in der Mitte, Glührahmen und leichte Vergrößerung bei Fokus), Row und MediaCard (abgerundete 16:9-Karten mit weichem Schatten, bei Fokus 5 % größer mit weißem Rahmen und Glühen), HomePage (Hero, Kacheln, Reihen, Genres als Pillen; die Sammlungsreihe steckt in den Kacheln), ItemDetailPage und SeriesPage (Bild über die ganze Fensterbreite hinter der Leiste, unten in den Sternenhimmel ausgeblendet; darunter Abschnitte statt Tabs: „Episoden“ als seitliche Reihe mit Staffelwahl, die nächste Folge wird in den sichtbaren Teil gerollt, „Vorschläge“, „Details“ mit Beschreibung, Fakten und Besetzung), SearchPage (großes durchscheinendes Suchfeld), PlayerOverlay (Zurück-Pfeil oben links, Titel mittig, unten türkise Zeitleiste mit Restzeit, darunter Wiedergabe links und Werkzeuge rechts). Anmeldung, Bibliothek (Querformat), Favoriten, Einstellungen und Zustände sind Classic in Constellation-Farben.
-  - **Hintergrund:** Dunkelblauer Verlauf mit zwei schwachen Nebelflecken, fest beim Scrollen. Sternenfeld aus kleinen `radial-gradient`s in Kacheln unterschiedlicher Größe (kein sichtbares Muster, keine Bilddatei, kein DOM); das ruhige Feld liegt hinter jeder Seite, ein paar hellere Sterne der AppShell funkeln langsam (nur Deckkraft, nicht bei reduzierter Bewegung und auf Fernsehern).
-  - **Farben und Schrift:** Grund `#0b1533` (ΔE76 ≈ 14 bzw. 17 zu den Grundtönen des Vorbilds), Akzent `#2bb6c9` (ΔE76 ≈ 80 zum Markenblau), Nunito Sans (OFL, `@fontsource-variable/nunito-sans`, neue Schrift-Abhängigkeit wie bei Neon Grid und Horizon).
-  - **Navigation:** Die Leiste ist fest positioniert, also eine eigene Ebene der Pfeilnavigation: ← am linken Rand führt hinein, → wieder heraus. Gefunden und behoben: Ohne `data-nav-ignore` sprang ← von der ersten Karte zum unsichtbaren Hero-Pfeil statt in die Leiste.
-  - **Tests:** `e2e/constellation.spec.ts` (12 Tests: Wechsel samt Schrift und Sternenfeld, Leiste klappt per Maus und Tastatur auf und wieder zu und behält dabei ihre schmale Messbreite, Banner per Pfeilen und Punkten samt `inert` und Öffnen, Kacheln mit Glühen öffnen Bibliothek und Sammlung, Filmseite mit Abschnitten, Episodenreihe mit nächster Folge im sichtbaren Teil und Staffelwahl, Player-Aufbau, Pfeiltasten, Fokus = Hover, axe, Animationseigenschaften, reduzierte Bewegung). Screenshots `92-…99-constellation-*` inklusive TV mit aufgeklappter Leiste.
-- **2026-10-14 – Phase 11, Feinschliff:**
-  - **Barrierefreiheit:** neue Prüfung `e2e/accessibility.spec.ts`: jede Seite in jedem Theme mit axe (Bibliothek, Sammlung, Genre, Person, Favoriten, Suche, Einstellungen, Player pausiert und mit offenem Menü), Classic und Glass auch hell. Dazu Lighthouse je Theme. Gefunden und behoben: WCAG 2.5.3 (sichtbare Beschriftung im Namen) beim Profilknopf von Neon Grid („OPERATOR“ fehlte im Namen) und bei den Bannern von Constellation (Name war nur der Titel). Die Avatar-Initialen kommen jetzt per CSS (`attr()`), damit sie als Dekoration nicht zur Beschriftung zählen.
-  - **Performance** (Messwerte in architecture.md §13.2): LCP 0,8–1,3 s, TBT 0 ms, Lighthouse 99–100 in allen Themes. Behoben: Die Hero-Platzhalter von Horizon und Constellation waren um die Zeile mit den Punkten zu niedrig (CLS 0,05 → ≤ 0,001); die Leiste von Constellation steht jetzt oben statt mittig, damit nachgeladene Bibliotheken nichts verschieben. Lighthouse läuft per `npx` (wie in §13.2 geplant) und hängt sich an ein von Playwright gestartetes Chromium, weil es hier kein eigenes starten kann.
-  - **Gefundene Fehler:** Horizon: Die aufgeklappte Karte war bei kleineren Fenstern (1280 px) zu schmal, Details-Knopf und Bewertung ragten heraus (Panel jetzt `minmax(0, 1fr)`, Knöpfe kompakter). Demo-Server: Genres ließen sich nicht per ID laden, die Genre-Seite zeigte „Nicht gefunden“ (am echten Server noch zu prüfen). Die TV-Screenshots der Detailseiten zeigten keinen Fokusring, weil der Test auf ein h1 wartete, das auch die Startseite hat, und ↓ noch während des Ladens drückte (Test korrigiert, die App war in Ordnung).
-  - **README** mit Bildern aller Themes (`npm run readme-shots`, `e2e/readme.spec.ts`, JPEG 1280×800 unter `docs/screenshots/`, zusammen unter 1 MB), Funktionsliste und Version 1.0; neuer `CHANGELOG.md`. docs/themes.md hat eine Übersicht der mitgelieferten Themes.
-- **2026-10-14 – Phase 12, Praxis-Feinschliff** (Anlass: Screenshot des Nutzers vom echten Server, lange Beschreibung mit wörtlichen `<br>`, sehr lange Spurlisten, Navigation mit neun Bibliotheken lief über den Rand):
-  - **Texte vom Server:** `plainText()` (`src/domain/text.ts`) macht aus HTML in Beschreibungen Klartext mit Zeilenumbrüchen: `<br>` und Absätze werden Umbrüche, andere Tags fallen weg, Entitäten werden einmal dekodiert. Gerendert wird weiter nur Text, nie HTML vom Server. Vorschauen (Hero, Karten) zeigen die Umbrüche als Leerzeichen, Detailseiten als Absätze (`white-space: pre-line`).
-  - **Gemeinsame Bausteine** in `default/components/Expandable.tsx`: `ExpandableText` (4 Zeilen, „Mehr anzeigen“ nur, wenn wirklich gekürzt, gemessen per ResizeObserver) und `TrackList` (Spuren untereinander, ab dem vierten Eintrag „+ n weitere“; ist nur einer zu viel, wird er einfach gezeigt). Themes geben nur Klassen mit. Eingebaut in die Detailseiten aller sechs Themes.
-  - **`OverflowNav`** (`default/components/OverflowNav.tsx`): Bibliotheken, die nicht in die Leiste passen, wandern in ein Menü „Mehr“; Startseite, Suche und Favoriten bleiben immer stehen. Gemessen wird live (Fensterbreite, TV-Schrift, Sprache); weggefaltete Einträge bleiben unsichtbar in der Liste, damit sie neu gemessen werden können. Die Leisten scrollen nicht mehr heimlich seitwärts. Eingebaut in Classic, Neon Grid, Crimson, Glass und Horizon; Glass misst den Platz um die zentrierte Pille (`available`). Constellation braucht es nicht (senkrechte Leiste). Neon Grid zeigt „Mehr“ schon bei 1280 px, weil seine HUD-Leiste dort nicht für alle Einträge reicht; vorher wurden die letzten Einträge stillschweigend abgeschnitten.
-  - **Demo:** „Kupferherz“ hat jetzt eine lange Beschreibung mit `<br>` und Entitäten sowie sieben Ton- und sechs Untertitelspuren (nach der Generierung gesetzt, alle anderen Demo-Daten bleiben gleich).
-  - **Test am echten Server** (Jellyfin 12.2.0 des Nutzers, angemeldet hat er sich selbst im Browser-Pane, Adresse nur in `.env.local`): Startseite, Bibliotheken, Bilder (`srcset` lädt passende Größen), Suche, Serien, Genre-Seiten (`/Items/{id}` liefert Genres), Einstellungen am Server (DisplayPreferences) in Ordnung. Wiedergabe direkt (MP4 H.264/AAC, `static=true`) und per HLS-Transcoding (DTS-HD), Wechsel auf eingebrannte PGS-Untertitel an derselben Stelle, Fortschritts- und Stopp-Meldungen (204); ohne gespeicherte Position, weil unter 5 %. Sprungleiste mit `nameLessThan` stimmt (Kleinschreibung der Sortiernamen bestätigt).
-  - **Daraus behoben:** Die Sprungleiste setzt die Zeile des Buchstabens jetzt oben hin (vorher landete sie am unteren Rand; `focusIndex(…, 'start')`, `scroll-margin-top` gegen die klebende Leiste). Jellyfin schreibt den Namen in die erzeugten Bibliotheksbilder; die Themes legen ihn nicht mehr ein zweites Mal darüber (für Screenreader bleibt er), in Constellation lag er sonst genau auf dem Text des Bilds. Die Demo-Bibliotheksbilder tragen deshalb jetzt ihren Namen wie bei Jellyfin. Studios und Regie werden wie die Spuren gekürzt (`ShortList`, bei einer Serie standen 28 Sender in einer Zeile). Der Knopf „Mehr“ bleibt hervorgehoben, solange sein Menü offen ist.
-  - **Tests:** `e2e/long-content.spec.ts` (je Theme: Beschreibung gekürzt und aufklappbar, kein `<br>` im Text, Spuren gekürzt und aufklappbar; je Theme mit Leiste: zu breite Einträge falten sich in „Mehr“, keine seitliche Überbreite, Esc schließt das Menü, Fokus zurück, Links führen zur Bibliothek), `src/domain/text.test.ts`.
-- **2026-10-14 – Phase 13, Admin-Funktionen** (Details: architecture.md §14 für die CSP):
-  - **Ein gemeinsames Menü für alle Themes:** `ItemAdmin` (`default/components/admin/`) mit Menü und allen Dialogen; Themes geben nur ihren Knopf über `renderTrigger` mit (Classic und Neon Grid mit Text, die anderen rund mit `aria-label`). Sichtbar nur für Administratoren (`useIsAdmin()`), „Löschen“ nur mit `CanDelete` am Eintrag (Jellyfin verlangt dafür `EnableContentDeletion`, Admin allein reicht nicht). Identifizieren nur bei Filmen und Serien, Untertitel nur bei Videos. Die Dialoge sind native `<dialog>`-Elemente in einem eigenen Chunk (13 KB gzip), den nur Administratoren beim Öffnen des Menüs laden; die API-Clients dafür stecken mit darin (`useItemAdmin`), nur `useIsAdmin` und der Bibliotheks-Scan liegen in kleinen eigenen Modulen (`useAdminAccess`, `api/refresh.ts`).
-  - **Menü in der obersten Ebene (Popover-API, `popover="manual"`):** Im Kopf von Horizon schnitt `overflow: hidden` das Menü ab, in Constellation lagen die Karten darunter darüber. Ein Portal in `<body>` löste das, brach aber zwei Dinge: React reicht Ereignisse aus Portalen an die Komponenten-Eltern weiter (Esc im Menü hätte Crimsons Detail-Overlay geschlossen), und außerhalb des `aria-modal`-Overlays ist das Menü für Screenreader unsichtbar. Das Popover bleibt im DOM neben seinem Knopf und erscheint trotzdem über allem. Browser ohne Popover-API (Chrome < 114, Safari < 17) zeigen es wie vorher an Ort und Stelle. Esc, Backspace und die Zurück-Tasten der Fernbedienung fängt das Menü (wie die Dialoge) im Capture-Schritt am `window` ab; vorher schloss Esc einen Dialog **und** ging eine Seite zurück, wenn der Fokus den Dialog verlassen hatte (am echten Server gefunden).
-  - **Metadaten speichern wie jellyfin-web:** `UpdateItem` leert jedes skalare Feld, das fehlt (Titel, Beschreibung, Daten, Bewertungen), Listen bleiben bei `null` erhalten. Der Editor schickt deshalb das ganze geladene DTO zurück und ersetzt nur die bearbeiteten Felder (Unit-Test). Beschreibungen werden roh bearbeitet (mit `<br>`), wie Jellyfin sie speichert.
-  - **Bild-Upload von Hand:** `SetItemImage` erwartet den Body als Base64-Text mit Bild-Content-Type, das SDK typisiert ihn als Binärdatei. Der Aufruf geht deshalb über die Axios-Instanz des SDK (dritter handgeschriebener Aufruf nach `ActiveEncodings` und den Medien-URLs).
-  - **Aktualisieren mit den drei Modi von jellyfin-web** (im Quelltext geprüft): „nach neuen und geänderten Dateien suchen“ = `Default`, „fehlende Metadaten ergänzen“ = `FullRefresh` ohne Ersetzen, „alle ersetzen“ = `FullRefresh` mit Ersetzen; Bilder lassen sich nur beim vollen Abruf ersetzen. „Bibliothek scannen“ ist der Modus `scan` auf dem Bibliotheksordner.
-  - **CSP `img-src https:` in jedem Modus:** Jellyfin liefert für Bildvorschläge und Identifizieren nur die Adressen der Anbieter (z. B. TMDB) und hat dafür keinen Bild-Proxy. Andere Quellen (Skripte, Verbindungen, Medien) bleiben wie gehabt.
-  - **Server-Verwaltung:** Eintrag im Profilmenü aller Themes, öffnet `<Server>/web/#/dashboard` in einem neuen Tab (im Proxy-Modus `/jellyfin/web/`, gleiche Origin; geprüft am echten Server). jellyfin-web hat eine eigene Sitzung, dort meldet man sich einmal selbst an. Im Demo-Modus gibt es den Eintrag nicht.
-  - **Externe IDs:** Jellyfin liefert für einen Film auch die ID seiner Sammlung unter demselben Anbieternamen („TheMovieDb“ zweimal); doppelte Namen bekommen deshalb den Medientyp dazu („TheMovieDb (Sammlung)“). Untertitelsprachen kommen aus der Kulturliste des Servers (Jellyfin 12 nennt Deutsch `deu`, ältere Server `ger`), vorgewählt ist die Sprache der Oberfläche.
-  - **Demo-Server:** alle Admin-Endpunkte mit Änderungen im Speicher bis zum Neuladen (erfundene Anbieter „Demo-Archiv“, „Kinoregister“, „Plakatwand“, Bildvorschläge als Farbvarianten der erzeugten Bilder, gleiche Origin wegen der CSP). Bild-Tags tragen eine Versionsnummer, damit geänderte Bilder nicht aus dem Browser-Cache kommen.
-  - **Am echten Server geprüft** (nur lesend, nichts gespeichert): Menü, Metadaten-Editor mit echten Daten, Bilder mit Vorschlägen von Fanart und TMDB, Identifizieren mit TMDB-Treffern, Untertitel-Dialog, Scan-Knopf, Dashboard-Link über den Proxy. Daraus behoben: Der Dialog-Inhalt scrollte nicht (eine `1fr`-Zeile ohne feste Höhe nimmt die Inhaltshöhe; jetzt Flex-Spalte), Poster wurden quer beschnitten, die Untertitelsprache war nicht vorgewählt, die doppelte TMDB-Beschriftung, Esc ging zusätzlich zurück.
-  - **Nebenbei behoben:** Glass auf dem Handy: Das Logo verlor seinen Namen für Screenreader (der Text war per `display: none` versteckt; die axe-Prüfung aller Seiten läuft nur am Desktop, die neue Admin-Prüfung auch mobil). Wenn Intl für eine Sprache keinen Namen kennt (`aa`), bleibt der Name vom Server stehen. Crimson: Der Fokus kehrte nach dem Schließen der Details selten zu einem anderen Link mit derselben Adresse zurück (Hero statt Karte; ließ den Release-Lauf scheitern, unter Last etwa 1 von 60, auch schon in Phase 12). Ursache: Das Overlay las den Auslöser erst beim Einhängen aus `document.activeElement` und suchte sonst per Adresse. Jetzt merkt sich `AppLink` beim Klick den Link (`rememberOverlayOpener` in `navigation/overlay.ts`); 160 Wiederholungen unter Last ohne Fehler.
-  - **Tests:** `e2e/admin.spec.ts` (Desktop und mobil: Menü je Titelart und per Tastatur, Metadaten samt Pflichtfeld und erhaltenen Feldern, Identifizieren, Bilder wählen/hochladen/löschen, Untertitel laden/hochladen/löschen, Aktualisieren, Löschen mit Rücksprung, Esc ohne Fokus, Esc im Menü schließt nicht Crimsons Overlay, Scrollen im Dialog, Bibliothek scannen, alle sechs Themes mit axe und der Prüfung, dass nichts das Menü verdeckt, Nicht-Admins sehen nichts), `src/api/admin.test.ts`. Screenshots `a1-…a9-admin-*`.
-- **2026-10-15 – Phase 14, Gestaltung anpassen** (Details: architecture.md §10.1 und §15.2):
-  - **Vorgabe für alle in Jellyfin verteilt** (Nutzerentscheidung 2026-10-15, Empfehlung): Jellyfin hat keinen Speicher, den alle lesen und nur Administratoren schreiben können, und Jellymorph hat kein Backend. Die Vorgabe wird deshalb in ein eigenes DisplayPreferences-Dokument `jellymorph-defaults` jedes Benutzers kopiert (Administratoren dürfen fremde Einstellungen schreiben, im Quelltext geprüft: `RequestHelpers.GetUserId`). Eine Versionsangabe (ISO-Zeit) sagt, welche Kopie neuer ist; öffnet ein Administrator die App, ergänzt sie fehlende oder ältere Kopien im Hintergrund. Verworfen: eine Datei `layout.json` im Container-Ordner (umständlich) und das Custom-CSS-Feld von jellyfin-web als Ablage (fremdes Feld). Die eigenen Einstellungen der Benutzer liegen in einem anderen Dokument und werden nie angefasst.
-  - **Ein Modell für vier Listen** (`src/domain/layout.ts`): Startseite, Navigation, Knöpfe und Angaben der Detailseiten; je Liste die eigene Anordnung, sonst die Vorgabe, sonst das Theme. Gespeichert werden Reihenfolge (oder `null`) und ausgeblendete Einträge, so friert Ausblenden die Reihenfolge nicht ein. Neue Einträge (eine neue Bibliothek) stehen hinter ihrem Vorgänger aus der Vorgabe. Das Titelbild bleibt oben, „Abspielen“ immer sichtbar, „Bearbeiten“ sehen nur Administratoren in der Liste.
-  - **Themes zeichnen, was sie bekommen:** `HomePageProps.sections` enthält jetzt auch Titelbild und Bibliotheks-Kacheln an ihrem Platz, Detailseiten bekommen `layout` mit Knöpfen und Angaben, `NavModel.items` ist angeordnet. Jedes Theme hält seine bisherige Anordnung als `options.layout` (Classic: `default/layout.ts`). Constellation hängt die Sammlungen an die Kacheln, solange sie direkt darauf folgen, sonst sind sie eine eigene Reihe. Crimson zieht die Reihen nur in den Hero, wenn es einen gibt. Classic und Neon Grid haben die Navigation vorher nach Gruppen umsortiert; jetzt gilt die Reihenfolge des Modells.
-  - **Ziehen ohne Bibliothek:** `SortableList` (Classic) mit Zeigerereignissen am Griff und Pfeilknöpfen für Tastatur und Fernbedienung (`aria-disabled` statt `disabled` am Listenende, damit der Fokus nicht verloren geht), Ansage über eine Live-Region. Gefunden beim Test: Die Vorschau verschiebt den DOM-Knoten der gezogenen Zeile, und das gibt die Pointer-Capture frei; die Bewegung wird deshalb am `window` verfolgt.
-  - **Eigenes CSS aus `/custom`:** Der Entrypoint findet `custom.css` und `<theme>.css` und schreibt `customCss` in `config.js`; die App hängt sie als `<link>` ans Ende von `<head>` (Theme-Datei nur, solange das Theme aktiv ist). nginx liefert dort nur CSS, Schriften und Bilder aus, ohne Cache. Keine CSP-Ausnahme nötig. Öffentlich sind die Tokens und die `data-`-Attribute an `<html>`, nicht die erzeugten Klassennamen. Entwicklung und Tests: `CUSTOM_DIR` (Playwright: `e2e/fixtures/custom`, im Container-Test gemappt).
-  - **Demo-Server:** `GET /Users` für Administratoren, und wie bei Jellyfin dürfen nur Administratoren DisplayPreferences anderer Benutzer lesen und schreiben (403 sonst).
-  - **Tests:** `e2e/layout.spec.ts` (Startseite ausblenden, verschieben, bleibt nach Neuladen, zurücksetzen; Navigation; Knöpfe und Angaben; Ziehen mit der Maus; gilt in jedem Theme; axe; Vorgabe für alle mit Wirkung bei einem anderen Benutzer, dessen eigene Anordnung vorgeht), `e2e/customization.spec.ts`, `src/domain/layout.test.ts`, Container-Test für `/custom`. Screenshots `b1-…b3-*`.
-- **2026-10-07 – MSW 3 über das Vite-Plugin `msw/vite` im Modus `worker-only`.** Es liefert `mockServiceWorker.js` im Dev-Server aus und legt es beim Build in `dist/`. Die Datei liegt also nicht im Repo und ist immer passend zur installierten MSW-Version. Gestartet wird über die stabile API `setupWorker`, nicht über das experimentelle `virtual:msw`.
+  - **Own components:** AppShell (narrow icon rail on the left, on desktop and TV; expands over the page on hover, keyboard or remote focus and with an open profile menu: a dark shadow fades in, labels appear next to the icons, the current page with a glowing mark; profile at the bottom; on phones a small bar at the top and the main areas at the bottom), Hero (rounded banners in a carousel, the neighbors reach into the picture at the edges and only show their picture; the whole banner opens the title, glow frame on focus; arrows over the neighbors only for pointer and Tab, dots and a pause button below, 8 s per title), a row of tiles directly below the hero for libraries and collections (16:9, name in the middle, glow frame and slight enlargement on focus), Row and MediaCard (rounded 16:9 cards with a soft shadow, 5 % larger on focus with a white frame and glow), HomePage (hero, tiles, rows, genres as pills; the collections row is in the tiles), ItemDetailPage and SeriesPage (picture across the whole window width behind the bar, fading into the starry sky at the bottom; below it sections instead of tabs: "Episodes" as a sideways row with season choice, the next episode is scrolled into the visible part, "Suggestions", "Details" with overview, facts and cast), SearchPage (large translucent search field), PlayerOverlay (back arrow at the top left, title centered, at the bottom a turquoise timeline with remaining time, below it playback on the left and tools on the right). Sign-in, library (landscape), favorites, settings and states are Classic in Constellation colors.
+  - **Background:** dark blue gradient with two faint nebula spots, fixed while scrolling. Star field made of small `radial-gradient`s in tiles of different sizes (no visible pattern, no image file, no DOM); the calm field lies behind every page, a few brighter stars of the AppShell twinkle slowly (opacity only, not with reduced motion and not on TVs).
+  - **Colors and font:** background `#0b1533` (ΔE76 ≈ 14 and 17 to the model's base tones), accent `#2bb6c9` (ΔE76 ≈ 80 to the brand blue), Nunito Sans (OFL, `@fontsource-variable/nunito-sans`, a new font dependency like Neon Grid's and Horizon's).
+  - **Navigation:** the rail is fixed, so it is a layer of its own for the arrow navigation: ← at the left edge leads in, → out again. Found and fixed: without `data-nav-ignore`, ← jumped from the first card to the invisible hero arrow instead of into the rail.
+  - **Tests:** `e2e/constellation.spec.ts` (12 tests: switch including font and star field, the rail expands by mouse and keyboard and collapses again while keeping its narrow measured width, banners with arrows and dots including `inert` and opening, tiles with glow open library and collection, movie page with sections, episode row with the next episode in the visible part and season choice, player structure, arrow keys, focus = hover, axe, animation properties, reduced motion). Screenshots `92-…99-constellation-*` including TV with the expanded rail.
+- **2026-10-14 – Phase 11, polish:**
+  - **Accessibility:** new check `e2e/accessibility.spec.ts`: every page in every theme with axe (library, collection, genre, person, favorites, search, settings, player paused and with an open menu), Classic and Glass also light. Plus Lighthouse per theme. Found and fixed: WCAG 2.5.3 (visible label in the name) on Neon Grid's profile button ("OPERATOR" was missing from the name) and on Constellation's banners (the name was only the title). The avatar initials now come through CSS (`attr()`), so as decoration they do not count as a label.
+  - **Performance** (measurements in architecture.md §13.2): LCP 0.8–1.3 s, TBT 0 ms, Lighthouse 99–100 in every theme. Fixed: the hero placeholders of Horizon and Constellation were too short by the line with the dots (CLS 0.05 → ≤ 0.001); Constellation's rail now sits at the top instead of the middle, so libraries loaded later move nothing. Lighthouse runs through `npx` (as planned in §13.2) and attaches to a Chromium started by Playwright, because it cannot start its own here.
+  - **Bugs found:** Horizon: the unfolded card was too narrow in smaller windows (1280 px), the details button and rating stuck out (panel now `minmax(0, 1fr)`, buttons more compact). Demo server: genres could not be loaded by ID, the genre page showed "Not found" (still to be checked on a real server). The TV screenshots of the detail pages showed no focus ring, because the test waited for an h1 that the home page also has and pressed ↓ while still loading (test corrected, the app was fine).
+  - **README** with pictures of every theme (`npm run readme-shots`, `e2e/readme.spec.ts`, JPEG 1280×800 in `docs/screenshots/`, together below 1 MB), a feature list and version 1.0; new `CHANGELOG.md`. docs/themes.md has an overview of the bundled themes.
+- **2026-10-14 – Phase 12, real-world polish** (occasion: the user's screenshot from the real server, a long overview with literal `<br>`, very long track lists, navigation with nine libraries ran over the edge):
+  - **Texts from the server:** `plainText()` (`src/domain/text.ts`) turns HTML in overviews into plain text with line breaks: `<br>` and paragraphs become line breaks, other tags are dropped, entities are decoded once. Still only text is rendered, never HTML from the server. Previews (hero, cards) show the line breaks as spaces, detail pages as paragraphs (`white-space: pre-line`).
+  - **Shared building blocks** in `default/components/Expandable.tsx`: `ExpandableText` (4 lines, "Show more" only when really shortened, measured with a ResizeObserver) and `TrackList` (tracks one below the other, from the fourth entry "+ n more"; if only one is too many, it is simply shown). Themes only pass classes. Built into the detail pages of all six themes.
+  - **`OverflowNav`** (`default/components/OverflowNav.tsx`): libraries that do not fit into the bar move into a "More" menu; home, search and favorites always stay. Measured live (window width, TV font, language); folded entries stay invisible in the list so they can be measured again. The bars no longer secretly scroll sideways. Built into Classic, Neon Grid, Crimson, Glass and Horizon; Glass measures the space around the centered pill (`available`). Constellation does not need it (vertical rail). Neon Grid already shows "More" at 1280 px, because its HUD bar is not wide enough for every entry there; before, the last entries were silently clipped.
+  - **Demo:** "Kupferherz" now has a long overview with `<br>` and entities and seven audio and six subtitle tracks (set after generation, all other demo data stays the same).
+  - **Test on the real server** (the user's Jellyfin 12.2.0; the user signed in themselves in the browser pane, the address only in `.env.local`): home, libraries, pictures (`srcset` loads fitting sizes), search, series, genre pages (`/Items/{id}` returns genres), settings on the server (DisplayPreferences) all fine. Playback direct (MP4 H.264/AAC, `static=true`) and through HLS transcoding (DTS-HD), switching to burned-in PGS subtitles at the same spot, progress and stop reports (204); no stored position, because below 5 %. The jump bar with `nameLessThan` is right (lowercase sort names confirmed).
+  - **Fixed as a result:** the jump bar now puts the letter's row at the top (before, it landed at the bottom edge; `focusIndex(…, 'start')`, `scroll-margin-top` against the sticky bar). Jellyfin writes the name into the generated library pictures; the themes no longer lay it over them a second time (it stays for screen readers); in Constellation it otherwise sat exactly on the text of the picture. The demo library pictures therefore now carry their name as in Jellyfin. Studios and directors are shortened like the tracks (`ShortList`; for one series 28 networks stood in one line). The "More" button stays highlighted while its menu is open.
+  - **Tests:** `e2e/long-content.spec.ts` (per theme: overview shortened and expandable, no `<br>` in the text, tracks shortened and expandable; per theme with a bar: entries that are too wide fold into "More", no sideways overflow, Esc closes the menu, focus returns, links lead to the library), `src/domain/text.test.ts`.
+- **2026-10-14 – Phase 13, admin functions** (details: architecture.md §14 for the CSP):
+  - **One shared menu for every theme:** `ItemAdmin` (`default/components/admin/`) with the menu and all dialogs; themes only provide their button through `renderTrigger` (Classic and Neon Grid with text, the others round with `aria-label`). Visible only to administrators (`useIsAdmin()`), "Delete" only with `CanDelete` on the item (Jellyfin requires `EnableContentDeletion` for it, admin alone is not enough). Identify only for movies and series, subtitles only for videos. The dialogs are native `<dialog>` elements in a chunk of their own (13 KB gzip) that only administrators load when opening the menu; the API clients for them are in it too (`useItemAdmin`), only `useIsAdmin` and the library scan live in small modules of their own (`useAdminAccess`, `api/refresh.ts`).
+  - **Menu in the top layer (Popover API, `popover="manual"`):** in Horizon's header, `overflow: hidden` clipped the menu; in Constellation the cards below lay above it. A portal into `<body>` solved that but broke two things: React passes events from portals on to the component parents (Esc in the menu would have closed Crimson's detail overlay), and outside the `aria-modal` overlay the menu is invisible to screen readers. The popover stays in the DOM next to its button and still appears above everything. Browsers without the Popover API (Chrome < 114, Safari < 17) show it in place as before. The menu (like the dialogs) catches Esc, Backspace and the remote's back keys in the capture phase on `window`; before, Esc closed a dialog **and** went back a page when the focus had left the dialog (found on the real server).
+  - **Saving metadata like jellyfin-web:** `UpdateItem` clears every scalar field that is missing (title, overview, dates, ratings); lists are kept with `null`. The editor therefore sends back the whole loaded DTO and only replaces the edited fields (unit test). Overviews are edited raw (with `<br>`), as Jellyfin stores them.
+  - **Picture upload by hand:** `SetItemImage` expects the body as Base64 text with an image content type; the SDK types it as a binary file. The call therefore goes through the SDK's Axios instance (the third hand-written call after `ActiveEncodings` and the media URLs).
+  - **Refresh with the three modes of jellyfin-web** (checked in the source): "scan for new and updated files" = `Default`, "search for missing metadata" = `FullRefresh` without replacing, "replace all metadata" = `FullRefresh` with replacing; pictures can only be replaced with the full fetch. "Scan library" is the mode `scan` on the library folder.
+  - **CSP `img-src https:` in every mode:** for picture suggestions and identify, Jellyfin only returns the providers' addresses (e.g. TMDB) and has no image proxy for them. Other sources (scripts, connections, media) stay as they were.
+  - **Server administration:** an entry in the profile menu of every theme, opens `<server>/web/#/dashboard` in a new tab (in proxy mode `/jellyfin/web/`, same origin; checked on the real server). jellyfin-web has its own session; you sign in there once yourself. The entry does not exist in demo mode.
+  - **External IDs:** for a movie, Jellyfin also returns the ID of its collection under the same provider name ("TheMovieDb" twice); duplicate names therefore get the media type added ("TheMovieDb (Collection)"). Subtitle languages come from the server's culture list (Jellyfin 12 calls German `deu`, older servers `ger`); the interface language is preselected.
+  - **Demo server:** every admin endpoint, with changes kept in memory until the reload (made-up providers "Demo-Archiv", "Kinoregister", "Plakatwand", picture suggestions as color variants of the generated pictures, same origin because of the CSP). Picture tags carry a version number, so changed pictures do not come from the browser cache.
+  - **Checked on the real server** (read-only, nothing saved): menu, metadata editor with real data, pictures with suggestions from Fanart and TMDB, identify with TMDB matches, subtitle dialog, scan button, dashboard link through the proxy. Fixed as a result: the dialog content did not scroll (a `1fr` row without a fixed height takes the content height; now a flex column), posters were cropped sideways, the subtitle language was not preselected, the duplicate TMDB label, Esc additionally went back.
+  - **Fixed along the way:** Glass on phones: the logo lost its name for screen readers (the text was hidden with `display: none`; the axe check of all pages only runs on desktop, the new admin check also on mobile). When Intl knows no name for a language (`aa`), the name from the server stays. Crimson: after closing the details, the focus occasionally returned to another link with the same address (hero instead of the card; made the release run fail, about 1 in 60 under load, already in phase 12). Cause: the overlay only read the trigger from `document.activeElement` when mounting and otherwise searched by address. Now `AppLink` remembers the link on click (`rememberOverlayOpener` in `navigation/overlay.ts`); 160 repetitions under load without a failure.
+  - **Tests:** `e2e/admin.spec.ts` (desktop and mobile: menu per kind of title and by keyboard, metadata including a required field and kept fields, identify, pictures choose/upload/delete, subtitles download/upload/delete, refresh, delete with the jump back, Esc without focus, Esc in the menu does not close Crimson's overlay, scrolling in the dialog, scan library, all six themes with axe and the check that nothing covers the menu, non-admins see nothing), `src/api/admin.test.ts`. Screenshots `a1-…a9-admin-*`.
+- **2026-10-15 – Phase 14, make it your own** (details: architecture.md §10.1 and §15.2):
+  - **Default for everybody distributed in Jellyfin** (user decision 2026-10-15, the recommendation): Jellyfin has no storage that everybody reads and only administrators write, and Jellymorph has no backend. The default is therefore copied into a DisplayPreferences document of its own, `jellymorph-defaults`, of every user (administrators may write other users' settings, checked in the source: `RequestHelpers.GetUserId`). A version stamp (ISO time) says which copy is newer; when an administrator opens the app, it adds missing or older copies in the background. Rejected: a file `layout.json` in the container folder (cumbersome) and jellyfin-web's custom CSS field as storage (a foreign field). The users' own settings live in another document and are never touched.
+  - **One model for four lists** (`src/domain/layout.ts`): home page, navigation, buttons and details of the detail pages; per list the own arrangement, otherwise the default, otherwise the theme. Stored are the order (or `null`) and the hidden entries, so hiding does not freeze the order. New entries (a new library) are placed behind their predecessor from the default. The title picture stays at the top, "Play" always visible, only administrators see "Edit" in the list.
+  - **Themes draw what they get:** `HomePageProps.sections` now also contains the title picture and the library tiles in their place, detail pages get `layout` with buttons and details, `NavModel.items` is arranged. Every theme keeps its previous arrangement as `options.layout` (Classic: `default/layout.ts`). Constellation attaches the collections to the tiles as long as they follow directly, otherwise they are a row of their own. Crimson only pulls the rows into the hero when there is one. Classic and Neon Grid used to reorder the navigation by groups; now the model's order applies.
+  - **Dragging without a library:** `SortableList` (Classic) with pointer events on the handle and arrow buttons for keyboard and remote control (`aria-disabled` instead of `disabled` at the end of the list, so the focus is not lost), announcements through a live region. Found while testing: the preview moves the DOM node of the dragged row, and that releases the pointer capture; the movement is therefore tracked on `window`.
+  - **Own CSS from `/custom`:** the entrypoint finds `custom.css` and `<theme>.css` and writes `customCss` into `config.js`; the app appends them as `<link>` at the end of `<head>` (the theme file only while the theme is active). nginx serves only CSS, fonts and pictures there, without caching. No CSP exception needed. Public are the tokens and the `data-` attributes on `<html>`, not the generated class names. Development and tests: `CUSTOM_DIR` (Playwright: `e2e/fixtures/custom`, mounted in the container test).
+  - **Demo server:** `GET /Users` for administrators, and as in Jellyfin only administrators may read and write other users' DisplayPreferences (403 otherwise).
+  - **Tests:** `e2e/layout.spec.ts` (hide a home area, move it, it stays after a reload, reset; navigation; buttons and details; dragging with the mouse; applies in every theme; axe; the default for everybody with its effect on another user, whose own arrangement takes precedence), `e2e/customization.spec.ts`, `src/domain/layout.test.ts`, container test for `/custom`. Screenshots `b1-…b3-*`.
+- **2026-10-15 – GitHub in English and a new app icon** (user decisions, between phase 14 and 15):
+  - README, CHANGELOG, docs/architecture.md, docs/themes.md, this file and the headings of the generated release notes (`scripts/lib/changelog.ts`: "Breaking changes", "New", "Fixed", "Faster") are in English. The app itself stays bilingual with German as the default. The README pictures still show the German interface. Repository description and topics are set by the user on GitHub (no `gh` here).
+  - **App icon "faceted play"** (chosen from three drafts): a play symbol cut into three facets on a rounded square, in a purple of our own: square `#2a1466`, facets `#d9c9ff` (light), `#b597ff` (mid), `#8f63ff` (deep). Same shape in `public/favicon.svg`, `src/ui/Logo.tsx`, the boot splash in `index.html` and the PNG icons (`scripts/render-icons.ts`, background `#2a1466`). Themes tint the mark with `--logo-shape` and `--logo-dot`; the facets are mixed from those two in oklab, or set exactly with `--logo-facet-mid` and `--logo-facet-deep`. The deep facet spans the whole triangle, so no background shows at the seams.
+- **2026-10-07 – MSW 3 through the Vite plugin `msw/vite` in `worker-only` mode.** It serves `mockServiceWorker.js` in the dev server and puts it into `dist/` on build. The file is therefore not in the repo and always matches the installed MSW version. It is started through the stable `setupWorker` API, not the experimental `virtual:msw`.
 
-- **2026-10-07 – SDK 1.0.0 trotz Mindestversion 10.10.** `@jellyfin/sdk` 1.0.0 ist gegen die OpenAPI von Jellyfin 12.0 generiert (Klassen umbenannt, z. B. `ItemsApi` → `LibraryApi`, `PlaystateApi` → `SessionApi`). Ein Abgleich aller Endpunkt-Pfade mit SDK 0.11.0 (= Jellyfin 10.10) zeigt: Jeder Pfad, den der Client braucht, existiert unverändert in 10.10. `MINIMUM_VERSION` des SDK ist weiterhin 10.10.0. Details: docs/architecture.md §1.2.
-- **2026-10-07 – Zwei handgeschriebene Aufrufe über die SDK-Axios-Instanz.** `DELETE /Videos/ActiveEncodings` (Transcode beim Spurwechsel beenden) fehlt im generierten Client von SDK 1.0.0. Stream-, Untertitel- und Trickplay-URLs für `<video>`/`<img>` werden mit `api.getUri()` und dem Query-Parameter `ApiKey` gebaut, weil Medienelemente keine Header senden können. Details: §5.6 und §9.7.
-- **2026-10-07 – TypeScript ~6.0 statt 7.0.** typescript-eslint 8.71 unterstützt nur TypeScript < 6.1.
-- **2026-10-07 – Eigener DeviceProfile-Generator.** `getBrowserDeviceProfile()` aus dem SDK erzeugt nur Untertitelprofile.
-- **2026-10-07 – Themes hängen von Domänentypen ab, nicht von SDK-Typen.** Hooks bilden `BaseItemDto` auf schlanke Typen (`MediaItem` …) ab. ESLint verbietet in `src/themes/**` Importe aus `@/api`, dem SDK, axios und TanStack Query (§3.3).
-- **2026-10-07 – Ergänzungen zum Theme-Vertrag:** `ResumePrompt` und `Toast` als zusätzliche Komponenten, optionale Props für `LoadingState`, `ThemeModule.options` (u. a. `detailPresentation: 'page' | 'modal'` für Crimson), `contractVersion` (§7.1).
+- **2026-10-07 – SDK 1.0.0 despite the minimum version 10.10.** `@jellyfin/sdk` 1.0.0 is generated against the OpenAPI of Jellyfin 12.0 (classes renamed, e.g. `ItemsApi` → `LibraryApi`, `PlaystateApi` → `SessionApi`). A comparison of all endpoint paths with SDK 0.11.0 (= Jellyfin 10.10) shows: every path the client needs exists unchanged in 10.10. The SDK's `MINIMUM_VERSION` is still 10.10.0. Details: docs/architecture.md §1.2.
+- **2026-10-07 – Two hand-written calls through the SDK's Axios instance.** `DELETE /Videos/ActiveEncodings` (ending a transcode on a track switch) is missing from the generated client of SDK 1.0.0. Stream, subtitle and trickplay URLs for `<video>`/`<img>` are built with `api.getUri()` and the query parameter `ApiKey`, because media elements cannot send headers. Details: §5.6 and §9.7.
+- **2026-10-07 – TypeScript ~6.0 instead of 7.0.** typescript-eslint 8.71 only supports TypeScript < 6.1.
+- **2026-10-07 – Own DeviceProfile generator.** `getBrowserDeviceProfile()` from the SDK only creates subtitle profiles.
+- **2026-10-07 – Themes depend on domain types, not on SDK types.** Hooks map `BaseItemDto` to lean types (`MediaItem` …). ESLint forbids imports from `@/api`, the SDK, axios and TanStack Query in `src/themes/**` (§3.3).
+- **2026-10-07 – Additions to the theme contract:** `ResumePrompt` and `Toast` as additional components, optional props for `LoadingState`, `ThemeModule.options` (e.g. `detailPresentation: 'page' | 'modal'` for Crimson), `contractVersion` (§7.1).
