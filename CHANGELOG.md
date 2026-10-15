@@ -2,13 +2,6 @@
 
 All notable changes to Jellymorph. Versions follow [Semantic Versioning](https://semver.org/). The release notes on GitHub are also generated automatically from the commits.
 
-## Unreleased
-
-### Changed
-
-- New app icon: a play symbol cut into three purple facets on a dark violet square. Every theme tints the mark in its own colors.
-- The README, this changelog, the documentation and the release notes are now in English. The app itself stays in German and English.
-
 ## 1.2.0 – 2026-10-15
 
 Make it your own: everybody arranges the home page, the navigation and the detail pages the way they like, and operators give Jellymorph their own colors and fonts.
@@ -22,6 +15,8 @@ Make it your own: everybody arranges the home page, the navigation and the detai
 ### Changed
 
 - Every theme keeps its previous arrangement as its default. The one exception: in Crimson, Glass and Horizon the libraries now always follow the same rows instead of "the first two rows" (also when "Continue watching" is empty).
+- New app icon: a play symbol cut into three purple facets on a dark violet square. Every theme tints the mark in its own colors.
+- The README, this changelog, the documentation and the release notes are now in English. The app itself stays in German and English.
 
 ## 1.1.0 – 2026-10-14
 
