@@ -6,9 +6,25 @@
 }
 
 .shape {
-  fill: var(--logo-shape, currentColor);
+  fill: var(--logo-shape, #2a1466);
 }
 
-.dot {
-  fill: var(--logo-dot, #fff);
+/* The facets are three shades between the mark color and the background, so a theme's two
+   colors are enough; a theme may set the exact shades instead. */
+.facetLight {
+  fill: var(--logo-dot, #d9c9ff);
+}
+
+.facetMid {
+  fill: var(
+    --logo-facet-mid,
+    color-mix(in oklab, var(--logo-dot, #d9c9ff) 74%, var(--logo-shape, #2a1466))
+  );
+}
+
+.facetDeep {
+  fill: var(
+    --logo-facet-deep,
+    color-mix(in oklab, var(--logo-dot, #d9c9ff) 50%, var(--logo-shape, #2a1466))
+  );
 }

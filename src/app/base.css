@@ -69,7 +69,6 @@ p {
   display: grid;
   place-items: center;
   background: #0d0f13;
-  color: #3563e6;
 }
 
 .boot-splash svg {

@@ -17,14 +17,16 @@ interface Variant {
   background: string | null;
 }
 
-const BACKGROUND = '#0d0f13';
+// The square of the mark: maskable and iOS icons fill the whole area with it.
+const BACKGROUND = '#2a1466';
 const VARIANTS: Variant[] = [
   { file: 'icon-192.png', size: 192, scale: 1, background: null },
   { file: 'icon-512.png', size: 512, scale: 1, background: null },
-  // Maskable icons get cropped to a circle of 80 % diameter; the logo stays inside it.
-  { file: 'icon-maskable-512.png', size: 512, scale: 0.56, background: BACKGROUND },
+  // Maskable icons get cropped to a circle of 80 % diameter. The square of the mark has the
+  // background color, so only the play symbol counts; it stays well inside the circle.
+  { file: 'icon-maskable-512.png', size: 512, scale: 0.84, background: BACKGROUND },
   // iOS fills transparent areas with black and rounds the corners itself.
-  { file: 'apple-touch-icon.png', size: 180, scale: 0.68, background: BACKGROUND },
+  { file: 'apple-touch-icon.png', size: 180, scale: 0.9, background: BACKGROUND },
 ];
 
 const root = join(import.meta.dirname, '..');

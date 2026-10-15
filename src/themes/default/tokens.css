@@ -35,8 +35,11 @@
   --ease-emphasized: cubic-bezier(0.3, 0, 0, 1);
   --focus-ring: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-focus);
 
-  --logo-shape: var(--color-accent);
-  --logo-dot: #ffffff;
+  /* The brand colors of the app icon (public/favicon.svg). */
+  --logo-shape: #2a1466;
+  --logo-dot: #d9c9ff;
+  --logo-facet-mid: #b597ff;
+  --logo-facet-deep: #8f63ff;
   --backdrop-glow: rgb(53 99 230 / 22%);
   --backdrop-glow-2: rgb(122 92 255 / 14%);
 }
