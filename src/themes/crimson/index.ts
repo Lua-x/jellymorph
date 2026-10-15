@@ -2,6 +2,7 @@ import '@fontsource-variable/inter';
 import './tokens.css';
 import './global.css';
 import { THEME_CONTRACT_VERSION, type ThemeModule } from '../contract';
+import { classicLayout } from '../default/layout';
 import { AppShell } from './components/AppShell';
 import { Hero } from './components/Hero';
 import { HomePage } from './components/HomePage';
@@ -35,6 +36,33 @@ export const theme: ThemeModule = {
     MediaCard,
   },
   options: {
+    layout: {
+      ...classicLayout,
+      detailActions: ['play', 'favorite', 'played', 'trailer', 'edit'],
+      facts: [
+        'year',
+        'runtime',
+        'officialRating',
+        'videoQuality',
+        'communityRating',
+        'tagline',
+        'cast',
+        'genres',
+        'directors',
+        'audio',
+        'subtitles',
+      ],
+      home: [
+        'hero',
+        'resume',
+        'nextUp',
+        'libraries',
+        'latest',
+        'favorites',
+        'collections',
+        'genres',
+      ],
+    },
     detailPresentation: 'modal',
     heroItemCount: 1,
     cardShape: 'landscape',

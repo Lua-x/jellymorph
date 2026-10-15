@@ -1,12 +1,13 @@
 import type { TFunction } from 'i18next';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Genre, HomeSection, Library, QueryResult } from '@/domain/types';
+import type { Genre, HomeRow, Library, QueryResult } from '@/domain/types';
 import { paths } from '@/navigation/paths';
 import { AppLink } from '@/ui/AppLink';
 import { JellyImage } from '@/ui/JellyImage';
 import { ThemeSlot } from '../../ThemeSlot';
-import type { CardVariant, HomePageProps } from '../../contract';
+import type { HomePageProps } from '../../contract';
+import { homeIsEmpty, rowVariant, splitHero } from '../../default/components/home';
 import { Icon } from '../../default/components/icons';
 import styles from './HomePage.module.css';
 import { EmptyState, ErrorState } from './States';
@@ -19,14 +20,10 @@ const KIND_ICONS = {
   mixed: 'folder',
 } as const;
 
-function sectionTitle(t: TFunction<'content'>, section: HomeSection): string {
+function sectionTitle(t: TFunction<'content'>, section: HomeRow): string {
   if (section.kind === 'latest')
     return t('home.sections.latest', { library: section.library?.name ?? '' });
   return t(`home.sections.${section.kind}`);
-}
-
-function sectionVariant(kind: HomeSection['kind']): CardVariant {
-  return kind === 'resume' || kind === 'nextUp' ? 'landscape' : 'poster';
 }
 
 /** Libraries as numbered "sectors" with a glowing frame. */
@@ -111,39 +108,44 @@ function GenreTags({ genres }: { genres: QueryResult<Genre[]> }) {
   );
 }
 
-export function HomePage({ hero, libraries, sections }: HomePageProps) {
+export function HomePage(props: HomePageProps) {
+  const { hero, libraries, sections } = props;
   const { t } = useTranslation('content');
   const { t: tCommon } = useTranslation();
-  const nothing =
-    sections.length === 0 &&
-    libraries.status === 'success' &&
-    libraries.data.length === 0 &&
-    hero.status !== 'pending';
+  const { heroShown, below } = splitHero(sections);
 
   return (
     <div className={styles.page}>
       <h1 className="visually-hidden">{tCommon('nav.home')}</h1>
-      <ThemeSlot name="Hero" props={{ items: hero, context: 'page' }} />
+      {heroShown && <ThemeSlot name="Hero" props={{ items: hero, context: 'page' }} />}
       <div className={styles.rows}>
-        <Sectors libraries={libraries} />
-        {nothing && <EmptyState title={t('home.empty.title')} message={t('home.empty.message')} />}
-        {sections.map((section) =>
-          section.kind === 'genres' ? (
-            <GenreTags key={section.id} genres={section.genres} />
-          ) : (
-            <ThemeSlot
-              key={section.id}
-              name="Row"
-              props={{
-                title: sectionTitle(t, section),
-                items: section.items,
-                variant: sectionVariant(section.kind),
-                seeAll: section.seeAll,
-                context: 'page',
-              }}
-            />
-          ),
+        {homeIsEmpty(props) && (
+          <EmptyState title={t('home.empty.title')} message={t('home.empty.message')} />
         )}
+        {below.map((section) => {
+          switch (section.kind) {
+            case 'hero':
+              return null;
+            case 'libraries':
+              return <Sectors key={section.id} libraries={libraries} />;
+            case 'genres':
+              return <GenreTags key={section.id} genres={section.genres} />;
+            default:
+              return (
+                <ThemeSlot
+                  key={section.id}
+                  name="Row"
+                  props={{
+                    title: sectionTitle(t, section),
+                    items: section.items,
+                    variant: rowVariant(section.kind),
+                    seeAll: section.seeAll,
+                    context: 'page',
+                  }}
+                />
+              );
+          }
+        })}
       </div>
     </div>
   );

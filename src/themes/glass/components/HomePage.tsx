@@ -1,23 +1,24 @@
 import type { TFunction } from 'i18next';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Genre, HomeSection, Library, QueryResult } from '@/domain/types';
+import type { Genre, HomeRow, Library, QueryResult } from '@/domain/types';
 import { paths } from '@/navigation/paths';
 import { AppLink } from '@/ui/AppLink';
 import { JellyImage } from '@/ui/JellyImage';
 import { ThemeSlot } from '../../ThemeSlot';
 import type { CardVariant, HomePageProps } from '../../contract';
+import { homeIsEmpty, splitHero } from '../../default/components/home';
 import { EmptyState, ErrorState } from '../../default/components/States';
 import styles from './HomePage.module.css';
 
-function sectionTitle(t: TFunction<'content'>, section: HomeSection): string {
+function sectionTitle(t: TFunction<'content'>, section: HomeRow): string {
   if (section.kind === 'latest')
     return t('home.sections.latest', { library: section.library?.name ?? '' });
   return t(`home.sections.${section.kind}`);
 }
 
 /** Started and upcoming episodes read best as wide stills; everything else as posters. */
-function variantOf(section: HomeSection): CardVariant {
+function variantOf(section: HomeRow): CardVariant {
   if (section.kind === 'resume' || section.kind === 'nextUp') return 'landscape';
   return 'poster';
 }
@@ -79,41 +80,45 @@ function GenreChips({ genres }: { genres: QueryResult<Genre[]> }) {
   );
 }
 
-/** Full-screen hero, then calm shelves; libraries after the first shelf, genres at the end. */
-export function HomePage({ hero, libraries, sections }: HomePageProps) {
+/** Full-screen hero, then calm shelves; by default libraries after the first shelf, genres last. */
+export function HomePage(props: HomePageProps) {
+  const { hero, libraries, sections } = props;
   const { t } = useTranslation('content');
   const { t: tCommon } = useTranslation();
-  const nothing =
-    sections.length === 0 &&
-    libraries.status === 'success' &&
-    libraries.data.length === 0 &&
-    hero.status !== 'pending';
-  const rows = sections.filter((section) => section.kind !== 'genres');
-  const genres = sections.find((section) => section.kind === 'genres');
-  const renderRow = (section: (typeof rows)[number]) => (
-    <ThemeSlot
-      key={section.id}
-      name="Row"
-      props={{
-        title: sectionTitle(t, section),
-        items: section.items,
-        variant: variantOf(section),
-        seeAll: section.seeAll,
-        context: 'page',
-      }}
-    />
-  );
+  const { heroShown, below } = splitHero(sections);
 
   return (
     <div className={styles.page}>
       <h1 className="visually-hidden">{tCommon('nav.home')}</h1>
-      <ThemeSlot name="Hero" props={{ items: hero, context: 'page' }} />
+      {heroShown && <ThemeSlot name="Hero" props={{ items: hero, context: 'page' }} />}
       <div className={styles.rows}>
-        {nothing && <EmptyState title={t('home.empty.title')} message={t('home.empty.message')} />}
-        {rows.slice(0, 1).map(renderRow)}
-        <LibraryTiles libraries={libraries} />
-        {rows.slice(1).map(renderRow)}
-        {genres?.kind === 'genres' && <GenreChips genres={genres.genres} />}
+        {homeIsEmpty(props) && (
+          <EmptyState title={t('home.empty.title')} message={t('home.empty.message')} />
+        )}
+        {below.map((section) => {
+          switch (section.kind) {
+            case 'hero':
+              return null;
+            case 'libraries':
+              return <LibraryTiles key={section.id} libraries={libraries} />;
+            case 'genres':
+              return <GenreChips key={section.id} genres={section.genres} />;
+            default:
+              return (
+                <ThemeSlot
+                  key={section.id}
+                  name="Row"
+                  props={{
+                    title: sectionTitle(t, section),
+                    items: section.items,
+                    variant: variantOf(section),
+                    seeAll: section.seeAll,
+                    context: 'page',
+                  }}
+                />
+              );
+          }
+        })}
       </div>
     </div>
   );

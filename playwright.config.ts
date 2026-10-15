@@ -35,7 +35,8 @@ export default defineConfig({
         command: `npm run build && npm run preview -- --port ${PORT} --strictPort`,
         port: PORT,
         reuseExistingServer: !process.env.CI,
-        env: { DEMO_MODE: 'true' },
+        // Own style sheets as the container would find them in /custom (e2e/customization.spec).
+        env: { DEMO_MODE: 'true', CUSTOM_DIR: 'e2e/fixtures/custom' },
         timeout: 180_000,
       },
 });

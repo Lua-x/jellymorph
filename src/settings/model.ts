@@ -3,6 +3,7 @@
  * commands. Wording comes from the "settings" translations; values are plain identifiers.
  */
 import type { ThemeId } from '@/config/theme-ids';
+import type { LayoutListId } from '@/domain/layout';
 import type { LanguageOption, PlaybackPreferences, QueryResult } from '@/domain/types';
 import type { Language } from '@/i18n';
 import type { DeviceKind } from '@/navigation/device';
@@ -21,6 +22,50 @@ export interface ThemeChoice {
   colorSchemes: readonly ColorScheme[];
   /** The theme has interface sounds (offer the switch). */
   uiSounds: boolean;
+}
+
+/** Whose arrangement the editor changes: the user's own, or the default for everybody (admins). */
+export type LayoutScope = 'own' | 'everybody';
+
+export interface LayoutEditorEntry {
+  id: string;
+  label: string;
+  hidden: boolean;
+  /** Keeps its place (the hero). */
+  pinned: boolean;
+  /** Cannot be hidden ("Play"). */
+  required: boolean;
+}
+
+export interface LayoutEditorList {
+  id: LayoutListId;
+  entries: readonly LayoutEditorEntry[];
+  /** This list has its own arrangement in the scope (otherwise it follows the next level). */
+  customized: boolean;
+  move: (from: number, to: number) => void;
+  setHidden: (id: string, hidden: boolean) => void;
+  reset: () => void;
+}
+
+export interface LayoutDistribution {
+  state: 'idle' | 'saving' | 'saved' | 'error';
+  written: number;
+  failed: number;
+  total: number;
+}
+
+/** Arrangement of home page, navigation, detail buttons and facts (phase 14). */
+export interface LayoutEditorModel {
+  scope: LayoutScope;
+  /** Administrators can also edit the default for everybody. */
+  canEditDefault: boolean;
+  setScope: (scope: LayoutScope) => void;
+  lists: readonly LayoutEditorList[];
+  /** The default for everybody is edited as a draft and saved for all users at once. */
+  draftChanged: boolean;
+  saveDefault: () => void;
+  discardDefault: () => void;
+  distribution: LayoutDistribution;
 }
 
 export interface AccountModel {
@@ -71,6 +116,8 @@ export interface SettingsModel {
   playback: QueryResult<PlaybackPreferences>;
   setPlayback: (patch: Partial<PlaybackPreferences>) => void;
   audioLanguages: QueryResult<LanguageOption[]>;
+
+  layout: LayoutEditorModel;
 
   /** Saving state of the synced values. */
   sync: SyncState;

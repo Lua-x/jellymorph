@@ -6,6 +6,7 @@ import type { SettingsPageProps } from '../../contract';
 import { ThemePreview } from '../../ThemePreview';
 import { Button } from './Button';
 import { Icon } from './icons';
+import { LayoutEditor } from './LayoutEditor';
 import styles from './SettingsPage.module.css';
 import { Spinner } from './Spinner';
 
@@ -354,6 +355,27 @@ export function SettingsPage({ settings }: SettingsPageProps) {
             onChange={settings.setUiSounds}
           />
         )}
+      </Section>
+
+      <Section title={t('sections.layout')}>
+        <p className={styles.intro}>{t('layout.intro')}</p>
+        {settings.layout.canEditDefault && (
+          <Field
+            label={t('layout.scope')}
+            hint={settings.layout.scope === 'own' ? t('layout.ownHint') : t('layout.everybodyHint')}
+          >
+            <Segmented
+              label={t('layout.scope')}
+              value={settings.layout.scope}
+              options={(['own', 'everybody'] as const).map((value) => ({
+                value,
+                label: t(`layout.${value}`),
+              }))}
+              onChange={settings.layout.setScope}
+            />
+          </Field>
+        )}
+        <LayoutEditor layout={settings.layout} />
       </Section>
 
       <Section title={t('sections.playback')}>

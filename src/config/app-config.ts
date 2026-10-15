@@ -13,6 +13,16 @@ export interface AppConfig {
   appTitle: string;
   /** Run against the built-in mock server instead of a real Jellyfin server (DEMO_MODE). */
   demoMode: boolean;
+  /**
+   * Own style sheets in the mounted folder /custom (phase 14), found by the container at start:
+   * custom.css for every theme, <theme>.css for one theme.
+   */
+  customCss: CustomCss;
+}
+
+export interface CustomCss {
+  all: boolean;
+  themes: readonly ThemeId[];
 }
 
 export const DEFAULT_APP_CONFIG: AppConfig = {
@@ -22,6 +32,7 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
   defaultTheme: 'default',
   appTitle: 'Jellymorph',
   demoMode: false,
+  customCss: { all: false, themes: [] },
 };
 
 export interface ParsedAppConfig {
@@ -66,6 +77,17 @@ function readPath(value: unknown, name: string, warnings: string[]): string | nu
   return path === '' ? null : path;
 }
 
+function readCustomCss(value: unknown, warnings: string[]): CustomCss {
+  if (value === undefined || value === null) return DEFAULT_APP_CONFIG.customCss;
+  if (typeof value !== 'object') {
+    warnings.push('customCss must be an object; ignoring it.');
+    return DEFAULT_APP_CONFIG.customCss;
+  }
+  const record = value as Record<string, unknown>;
+  const themes = Array.isArray(record.themes) ? record.themes.filter(isThemeId) : [];
+  return { all: record.all === true, themes: [...new Set(themes)] };
+}
+
 /** Validates the untrusted runtime configuration. Never throws; invalid values fall back to defaults. */
 export function parseAppConfig(raw: unknown): ParsedAppConfig {
   const warnings: string[] = [];
@@ -103,6 +125,7 @@ export function parseAppConfig(raw: unknown): ParsedAppConfig {
       defaultTheme,
       appTitle,
       demoMode: readBoolean(source.demoMode, 'demoMode', warnings) ?? false,
+      customCss: readCustomCss(source.customCss, warnings),
     },
     warnings,
   };

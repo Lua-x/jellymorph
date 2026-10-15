@@ -12,6 +12,11 @@
   margin-top: clamp(-6rem, -6cqi, -2rem);
 }
 
+/* Without the hero (hidden in the arrangement) the rows start below the bar like any page. */
+.standalone {
+  margin-top: 0;
+}
+
 .section {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

@@ -220,10 +220,14 @@ export interface Genre {
 export type HomeSectionKind = 'resume' | 'nextUp' | 'latest' | 'favorites' | 'collections';
 
 /**
- * A row on the home page. Each section loads independently; empty sections are left out by the
- * hook. Wording ("Continue watching", "New in Movies") is up to the theme.
+ * An area of the home page, in the order the user sees them (phase 14: arranged in the
+ * settings). Rows load independently; empty rows are left out by the hook. The hero and the
+ * library tiles carry no data of their own (HomePageProps has it), only their place. Wording
+ * ("Continue watching", "New in Movies") is up to the theme.
  */
 export type HomeSection =
+  | { id: 'hero'; kind: 'hero' }
+  | { id: 'libraries'; kind: 'libraries' }
   | {
       id: string;
       kind: HomeSectionKind;
@@ -234,6 +238,9 @@ export type HomeSection =
       seeAll: string | null;
     }
   | { id: string; kind: 'genres'; genres: QueryResult<Genre[]> };
+
+/** A home area that is a row of titles (everything but hero, library tiles and genres). */
+export type HomeRow = Extract<HomeSection, { kind: HomeSectionKind }>;
 
 export type SearchGroupKind = 'movies' | 'shows' | 'episodes' | 'collections' | 'people';
 

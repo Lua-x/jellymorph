@@ -1,0 +1,7 @@
+/*
+ * Test fixture for own styles (e2e/customization.spec.ts), served like the mounted folder
+ * /custom of the container. It sets markers only and changes nothing visible.
+ */
+:root {
+  --jm-custom-all: loaded;
+}

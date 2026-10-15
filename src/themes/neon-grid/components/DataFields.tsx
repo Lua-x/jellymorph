@@ -1,3 +1,4 @@
+import type { FactId } from '@/domain/layout';
 import type { MediaItem } from '@/domain/types';
 import styles from './DataFields.module.css';
 import { useItemFields, type DataField } from './itemFields';
@@ -21,6 +22,15 @@ export function FieldGrid({ fields, compact = false }: { fields: DataField[]; co
 }
 
 /** The standard fields of an item (year, runtime or seasons, rating, score). */
-export function DataFields({ item, compact = false }: { item: MediaItem; compact?: boolean }) {
-  return <FieldGrid fields={useItemFields(item)} compact={compact} />;
+export function DataFields({
+  item,
+  compact = false,
+  facts,
+}: {
+  item: MediaItem;
+  compact?: boolean;
+  /** Which facts show and in which order (detail pages, phase 14). */
+  facts?: readonly FactId[];
+}) {
+  return <FieldGrid fields={useItemFields(item, facts)} compact={compact} />;
 }

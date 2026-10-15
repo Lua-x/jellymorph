@@ -169,6 +169,7 @@ export function SeriesPage({
   episodes,
   nextUp,
   similar,
+  layout,
 }: SeriesPageProps) {
   const { t } = useTranslation('content');
   const actions = useMediaActions();
@@ -178,7 +179,7 @@ export function SeriesPage({
 
   return (
     <article className={styles.page}>
-      <DossierHeader item={series}>
+      <DossierHeader item={series} layout={layout}>
         {nextUp.status === 'success' && (
           <NeonButton
             size="lg"

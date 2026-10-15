@@ -11,6 +11,7 @@
  */
 import type { ComponentType, ReactNode } from 'react';
 import type { ThemeId } from '@/config/theme-ids';
+import type { LayoutDefaults } from '@/domain/layout';
 import type { Language } from '@/i18n';
 import type {
   AppError,
@@ -25,6 +26,7 @@ import type {
   Season,
 } from '@/domain/types';
 import type { LoginFlow, ProfileSelectModel } from '@/hooks/auth/types';
+import type { DetailLayout } from '@/hooks/useLayout';
 import type { LibraryBrowser } from '@/hooks/useLibraryBrowser';
 import type { NavModel } from '@/navigation/nav-model';
 import type { PlayerModel } from '@/player/model';
@@ -68,6 +70,11 @@ export interface ThemeOptions {
    * uses wide cards everywhere (Classic pages used as fallback honor it too).
    */
   cardShape: 'mixed' | 'landscape';
+  /**
+   * The theme's own arrangement of the home page, the detail buttons and the facts (phase 14).
+   * Users and administrators can change it in the settings; themes then get the result as props.
+   */
+  layout: LayoutDefaults;
 }
 
 export interface ThemeModule {
@@ -172,6 +179,8 @@ export interface ItemDetailPageProps {
   similar: QueryResult<MediaItem[]>;
   presentation: Presentation;
   onClose: () => void;
+  /** Buttons and facts in the arranged order, without the hidden ones (phase 14). */
+  layout: DetailLayout;
 }
 
 export interface SeriesPageProps {
@@ -185,6 +194,7 @@ export interface SeriesPageProps {
   similar: QueryResult<MediaItem[]>;
   presentation: Presentation;
   onClose: () => void;
+  layout: DetailLayout;
 }
 
 export interface SearchPageProps {

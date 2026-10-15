@@ -1,6 +1,8 @@
-import { useId, type ReactNode } from 'react';
+import { Fragment, useId, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { DetailActionId, FactId } from '@/domain/layout';
 import type { CastMember, ItemDetail, MediaItem } from '@/domain/types';
+import type { DetailLayout } from '@/hooks/useLayout';
 import { isPlayable, useMediaActions } from '@/hooks/useMediaActions';
 import { paths } from '@/navigation/paths';
 import { AppLink } from '@/ui/AppLink';
@@ -62,15 +64,117 @@ export function PlayActions({ item }: { item: Pick<MediaItem, 'id' | 'kind' | 'u
   );
 }
 
-/** Backdrop, poster, title/logo, metadata, overview, actions and technical details. */
-export function DetailHeader({ item, children }: { item: ItemDetail; children?: ReactNode }) {
+/**
+ * Backdrop, poster, title/logo, metadata, overview, actions and technical details. Buttons and
+ * facts follow `layout` (phase 14): the theme's order, or the user's or administrator's.
+ */
+export function DetailHeader({
+  item,
+  layout,
+  children,
+}: {
+  item: ItemDetail;
+  layout: DetailLayout;
+  /** More main actions next to "Play" (a series' next episode). */
+  children?: ReactNode;
+}) {
   const { t } = useTranslation('content');
   const actions = useMediaActions();
+  const show = (fact: FactId) => layout.facts.includes(fact);
   const backdrop = item.backdrops[0] ?? item.images.backdrop;
   const isEpisode = item.kind === 'episode' && item.episode;
   const directors = item.cast
     .filter((member) => member.kind === 'director')
     .map((member) => member.name);
+
+  const buttons: Record<DetailActionId, ReactNode> = {
+    play: (
+      <>
+        <PlayActions item={item} />
+        {children}
+      </>
+    ),
+    trailer: item.localTrailerCount > 0 && (
+      <Button
+        variant="secondary"
+        size="lg"
+        icon={<Icon name="videos" />}
+        onFocus={actions.preparePlayback}
+        onPointerEnter={actions.preparePlayback}
+        onClick={() => {
+          actions.playTrailer(item);
+        }}
+      >
+        {t('actions.trailer')}
+      </Button>
+    ),
+    favorite: (
+      <Button
+        variant="secondary"
+        size="lg"
+        icon={<Icon name="heart" filled={item.userData.favorite} />}
+        aria-pressed={item.userData.favorite}
+        onClick={() => {
+          actions.toggleFavorite(item);
+        }}
+      >
+        {item.userData.favorite ? t('actions.unfavorite') : t('actions.favorite')}
+      </Button>
+    ),
+    played: (
+      <Button
+        variant="secondary"
+        size="lg"
+        icon={<Icon name="check" />}
+        aria-pressed={item.userData.played}
+        onClick={() => {
+          actions.togglePlayed(item);
+        }}
+      >
+        {item.userData.played ? t('actions.markUnplayed') : t('actions.markPlayed')}
+      </Button>
+    ),
+    edit: <ItemAdmin item={item} />,
+  };
+  // Facts of the list under the buttons; the line under the title shows the others.
+  const facts: Partial<Record<FactId, ReactNode>> = {
+    directors: directors.length > 0 && (
+      <div>
+        <dt>{t('detail.director', { count: directors.length })}</dt>
+        <dd>
+          <ShortList entries={directors} />
+        </dd>
+      </div>
+    ),
+    audio: item.audioTracks.length > 0 && (
+      <div>
+        <dt>{t('detail.audio')}</dt>
+        <dd>
+          <TrackList tracks={item.audioTracks} />
+        </dd>
+      </div>
+    ),
+    subtitles: (item.audioTracks.length > 0 || item.subtitleTracks.length > 0) && (
+      <div>
+        <dt>{t('detail.subtitles')}</dt>
+        <dd>
+          {item.subtitleTracks.length > 0 ? (
+            <TrackList tracks={item.subtitleTracks} />
+          ) : (
+            t('detail.none')
+          )}
+        </dd>
+      </div>
+    ),
+    studios: item.studios.length > 0 && (
+      <div>
+        <dt>{t('detail.studios')}</dt>
+        <dd>
+          <ShortList entries={item.studios} />
+        </dd>
+      </div>
+    ),
+  };
 
   return (
     <div className={styles.header}>
@@ -111,90 +215,23 @@ export function DetailHeader({ item, children }: { item: ItemDetail; children?: 
           ) : (
             <h1 className={styles.title}>{item.name}</h1>
           )}
-          <MetaLine item={item} extra={item.videoLabel} />
-          {item.genres.length > 0 && <p className={styles.genres}>{item.genres.join(' · ')}</p>}
-          {item.tagline && <p className={styles.tagline}>{item.tagline}</p>}
+          <MetaLine item={item} extra={item.videoLabel} facts={layout.facts} />
+          {show('genres') && item.genres.length > 0 && (
+            <p className={styles.genres}>{item.genres.join(' · ')}</p>
+          )}
+          {show('tagline') && item.tagline && <p className={styles.tagline}>{item.tagline}</p>}
           {item.overview && (
             <ExpandableText text={item.overview} classes={{ text: styles.overview }} />
           )}
           <div className={styles.actions}>
-            <PlayActions item={item} />
-            {children}
-            {item.localTrailerCount > 0 && (
-              <Button
-                variant="secondary"
-                size="lg"
-                icon={<Icon name="videos" />}
-                onFocus={actions.preparePlayback}
-                onPointerEnter={actions.preparePlayback}
-                onClick={() => {
-                  actions.playTrailer(item);
-                }}
-              >
-                {t('actions.trailer')}
-              </Button>
-            )}
-            <Button
-              variant="secondary"
-              size="lg"
-              icon={<Icon name="heart" filled={item.userData.favorite} />}
-              aria-pressed={item.userData.favorite}
-              onClick={() => {
-                actions.toggleFavorite(item);
-              }}
-            >
-              {item.userData.favorite ? t('actions.unfavorite') : t('actions.favorite')}
-            </Button>
-            <Button
-              variant="secondary"
-              size="lg"
-              icon={<Icon name="check" />}
-              aria-pressed={item.userData.played}
-              onClick={() => {
-                actions.togglePlayed(item);
-              }}
-            >
-              {item.userData.played ? t('actions.markUnplayed') : t('actions.markPlayed')}
-            </Button>
-            <ItemAdmin item={item} />
+            {layout.actions.map((id) => (
+              <Fragment key={id}>{buttons[id]}</Fragment>
+            ))}
           </div>
           <dl className={styles.facts}>
-            {directors.length > 0 && (
-              <div>
-                <dt>{t('detail.director', { count: directors.length })}</dt>
-                <dd>
-                  <ShortList entries={directors} />
-                </dd>
-              </div>
-            )}
-            {item.audioTracks.length > 0 && (
-              <div>
-                <dt>{t('detail.audio')}</dt>
-                <dd>
-                  <TrackList tracks={item.audioTracks} />
-                </dd>
-              </div>
-            )}
-            {(item.audioTracks.length > 0 || item.subtitleTracks.length > 0) && (
-              <div>
-                <dt>{t('detail.subtitles')}</dt>
-                <dd>
-                  {item.subtitleTracks.length > 0 ? (
-                    <TrackList tracks={item.subtitleTracks} />
-                  ) : (
-                    t('detail.none')
-                  )}
-                </dd>
-              </div>
-            )}
-            {item.studios.length > 0 && (
-              <div>
-                <dt>{t('detail.studios')}</dt>
-                <dd>
-                  <ShortList entries={item.studios} />
-                </dd>
-              </div>
-            )}
+            {layout.facts.map((id) => (
+              <Fragment key={id}>{facts[id]}</Fragment>
+            ))}
           </dl>
         </div>
       </div>

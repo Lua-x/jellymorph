@@ -1,0 +1,4 @@
+/* Only loaded while Crimson is active (e2e/customization.spec.ts). */
+[data-theme='crimson'] {
+  --jm-custom-theme: crimson;
+}

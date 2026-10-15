@@ -7,7 +7,7 @@ import { DetailHeader } from './DetailHeader';
 import { DetailTabs, DetailsPanel, RelatedPanel } from './DetailTabs';
 
 /** A film or an episode: the header, then tabs "More like this" and "Details". */
-export function ItemDetailPage({ detail, similar }: ItemDetailPageProps) {
+export function ItemDetailPage({ detail, similar, layout }: ItemDetailPageProps) {
   const { t } = useTranslation('theme-horizon');
   const headingId = useId();
   if (detail.status === 'pending') return <LoadingState />;
@@ -17,10 +17,10 @@ export function ItemDetailPage({ detail, similar }: ItemDetailPageProps) {
   const episode = item.kind === 'episode';
   return (
     <article className={styles.page} aria-labelledby={headingId}>
-      <DetailHeader item={item} headingId={headingId} />
+      <DetailHeader item={item} headingId={headingId} layout={layout} />
       {episode ? (
         <div className={styles.panel}>
-          <DetailsPanel item={item} />
+          <DetailsPanel item={item} facts={layout.facts} />
         </div>
       ) : (
         <DetailTabs
@@ -30,7 +30,11 @@ export function ItemDetailPage({ detail, similar }: ItemDetailPageProps) {
               label: t('detail.related'),
               content: <RelatedPanel items={similar} />,
             },
-            { id: 'details', label: t('detail.details'), content: <DetailsPanel item={item} /> },
+            {
+              id: 'details',
+              label: t('detail.details'),
+              content: <DetailsPanel item={item} facts={layout.facts} />,
+            },
           ]}
         />
       )}

@@ -4,7 +4,8 @@
     "appearance": "Darstellung",
     "playback": "Wiedergabe",
     "general": "Sprache und Bedienung",
-    "account": "Konto"
+    "account": "Konto",
+    "layout": "Anordnung"
   },
   "theme": {
     "label": "Theme",
@@ -96,5 +97,68 @@
     "error": "Nicht am Server gespeichert",
     "retry": "Erneut versuchen",
     "failed": "Deine Einstellungen konnten nicht am Server gespeichert werden."
+  },
+  "layout": {
+    "intro": "Lege fest, was Startseite, Navigation und Detailseiten zeigen und in welcher Reihenfolge. Zieh einen Eintrag an seinen Platz oder nimm die Pfeile. Was du nicht anordnest, folgt dem Theme.",
+    "scope": "Anordnung für",
+    "own": "Mich",
+    "everybody": "Alle (Vorgabe)",
+    "ownHint": "Deine Anordnung gilt auf allen deinen Geräten.",
+    "everybodyHint": "Die Vorgabe gilt für alle, die eine Liste nicht selbst angeordnet haben. Beim Speichern kommt sie in die Jellyfin-Einstellungen jedes Benutzers; neue Benutzer bekommen sie, sobald ein Administrator Jellymorph öffnet.",
+    "lists": {
+      "home": "Startseite",
+      "nav": "Navigation",
+      "detailActions": "Knöpfe auf Detailseiten",
+      "facts": "Angaben auf Detailseiten"
+    },
+    "own_customized": "Eigene Anordnung",
+    "own_default": "Folgt der Vorgabe",
+    "everybody_customized": "Vorgabe gesetzt",
+    "everybody_default": "Folgt dem Theme",
+    "reset": "Zurücksetzen",
+    "resetNamed": "„{{list}}“ zurücksetzen",
+    "drag": "„{{name}}“ verschieben",
+    "moveUp": "„{{name}}“ nach oben",
+    "moveDown": "„{{name}}“ nach unten",
+    "show": "„{{name}}“ anzeigen",
+    "hiddenState": "ausgeblendet",
+    "pinned": "Bleibt oben",
+    "required": "Immer sichtbar",
+    "moved": "„{{name}}“ steht jetzt an Stelle {{position}} von {{total}}.",
+    "shown": "„{{name}}“ wird angezeigt.",
+    "hidden": "„{{name}}“ ist ausgeblendet.",
+    "unsaved": "Die Vorgabe hat ungespeicherte Änderungen.",
+    "save": "Für alle speichern",
+    "discard": "Verwerfen",
+    "saving": "Wird gespeichert … {{done}} von {{total}} Benutzern",
+    "saved_one": "Vorgabe für {{count}} Benutzer gespeichert.",
+    "saved_other": "Vorgabe für {{count}} Benutzer gespeichert.",
+    "partly": "Vorgabe für {{written}} von {{total}} Benutzern gespeichert; bei {{failed}} hat es nicht geklappt. Beim nächsten Öffnen wird es erneut versucht.",
+    "failed": "Die Vorgabe konnte nicht gespeichert werden. Prüfe die Verbindung zum Server.",
+    "entries": {
+      "hero": "Großes Titelbild",
+      "libraries": "Bibliotheken"
+    },
+    "actions": {
+      "play": "Abspielen",
+      "trailer": "Trailer",
+      "favorite": "Favorit",
+      "played": "Als gesehen markieren",
+      "edit": "Bearbeiten (nur Administratoren)"
+    },
+    "facts": {
+      "year": "Jahr",
+      "runtime": "Laufzeit bzw. Staffeln",
+      "officialRating": "Altersfreigabe",
+      "communityRating": "Bewertung",
+      "videoQuality": "Bildqualität",
+      "genres": "Genres",
+      "tagline": "Slogan",
+      "directors": "Regie",
+      "cast": "Besetzung",
+      "audio": "Tonspuren",
+      "subtitles": "Untertitel",
+      "studios": "Studios"
+    }
   }
 }

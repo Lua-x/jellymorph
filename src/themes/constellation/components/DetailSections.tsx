@@ -1,3 +1,4 @@
+import type { FactId } from '@/domain/layout';
 import { useId, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ItemDetail, MediaItem, QueryResult, Season } from '@/domain/types';
@@ -199,8 +200,8 @@ export function SuggestionsSection({ items }: { items: QueryResult<MediaItem[]> 
   );
 }
 
-/** The whole description, facts in a list and the cast with links to their titles. */
-export function DetailsSection({ item }: { item: ItemDetail }) {
+/** The whole description, facts in a list and the cast with links, as arranged in `facts`. */
+export function DetailsSection({ item, facts }: { item: ItemDetail; facts: readonly FactId[] }) {
   const { t, i18n } = useTranslation('content');
   const { t: tTheme } = useTranslation('theme-constellation');
   const directors = item.cast.filter((member) => member.kind === 'director');
@@ -212,26 +213,34 @@ export function DetailsSection({ item }: { item: ItemDetail }) {
     : item.year !== null
       ? String(item.year)
       : null;
-  const rows: [string, ReactNode][] = [
-    [tTheme('detail.genres'), item.genres.join(', ') || null],
-    [tTheme('detail.released'), released],
-    [tTheme('detail.runtime'), item.kind === 'series' ? null : runtimeText(t, item.runtimeMinutes)],
-    [tTheme('detail.rated'), item.officialRating],
-    [
+  const rows: Partial<Record<FactId, [string, ReactNode]>> = {
+    genres: [tTheme('detail.genres'), item.genres.join(', ') || null],
+    year: [tTheme('detail.released'), released],
+    runtime: [
+      tTheme('detail.runtime'),
+      item.kind === 'series' ? null : runtimeText(t, item.runtimeMinutes),
+    ],
+    officialRating: [tTheme('detail.rated'), item.officialRating],
+    directors: [
       t('detail.director', { count: directors.length }),
       directors.length > 0 ? <ShortList entries={directors.map((person) => person.name)} /> : null,
     ],
-    [t('detail.studios'), item.studios.length > 0 ? <ShortList entries={item.studios} /> : null],
-    [
+    studios: [
+      t('detail.studios'),
+      item.studios.length > 0 ? <ShortList entries={item.studios} /> : null,
+    ],
+    audio: [
       t('detail.audio'),
       item.audioTracks.length > 0 ? <TrackList tracks={item.audioTracks} /> : null,
     ],
-    [
+    subtitles: [
       t('detail.subtitles'),
       item.subtitleTracks.length > 0 ? <TrackList tracks={item.subtitleTracks} /> : null,
     ],
-  ];
-  const shown = rows.filter(([, value]) => value !== null && value !== '');
+  };
+  const shown = facts
+    .map((id) => rows[id])
+    .filter((row): row is [string, ReactNode] => !!row && row[1] !== null && row[1] !== '');
   return (
     <Section title={tTheme('detail.details')}>
       <div className={styles.details}>
@@ -247,7 +256,7 @@ export function DetailsSection({ item }: { item: ItemDetail }) {
             </div>
           ))}
         </dl>
-        {actors.length > 0 && (
+        {facts.includes('cast') && actors.length > 0 && (
           <div className={styles.cast}>
             <h3 className={styles.subheading}>{t('detail.cast')}</h3>
             <ul>

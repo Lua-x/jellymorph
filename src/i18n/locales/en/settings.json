@@ -4,7 +4,8 @@
     "appearance": "Appearance",
     "playback": "Playback",
     "general": "Language and controls",
-    "account": "Account"
+    "account": "Account",
+    "layout": "Arrangement"
   },
   "theme": {
     "label": "Theme",
@@ -96,5 +97,68 @@
     "error": "Not saved on the server",
     "retry": "Try again",
     "failed": "Your settings could not be saved on the server."
+  },
+  "layout": {
+    "intro": "Choose what the home page, the navigation and detail pages show, and in which order. Drag an entry into place or use the arrows. What you leave alone follows the theme.",
+    "scope": "Arrangement for",
+    "own": "Me",
+    "everybody": "Everybody (default)",
+    "ownHint": "Your arrangement applies on all your devices.",
+    "everybodyHint": "The default applies to everybody who has not arranged a list themselves. Saving copies it into the Jellyfin settings of every user; new users receive it as soon as an administrator opens Jellymorph.",
+    "lists": {
+      "home": "Home page",
+      "nav": "Navigation",
+      "detailActions": "Buttons on detail pages",
+      "facts": "Details on detail pages"
+    },
+    "own_customized": "Own arrangement",
+    "own_default": "Follows the default",
+    "everybody_customized": "Default set",
+    "everybody_default": "Follows the theme",
+    "reset": "Reset",
+    "resetNamed": "Reset “{{list}}”",
+    "drag": "Move “{{name}}”",
+    "moveUp": "Move “{{name}}” up",
+    "moveDown": "Move “{{name}}” down",
+    "show": "Show “{{name}}”",
+    "hiddenState": "hidden",
+    "pinned": "Stays on top",
+    "required": "Always shown",
+    "moved": "“{{name}}” is now at position {{position}} of {{total}}.",
+    "shown": "“{{name}}” is shown.",
+    "hidden": "“{{name}}” is hidden.",
+    "unsaved": "The default has unsaved changes.",
+    "save": "Save for everybody",
+    "discard": "Discard",
+    "saving": "Saving … {{done}} of {{total}} users",
+    "saved_one": "Default saved for {{count}} user.",
+    "saved_other": "Default saved for {{count}} users.",
+    "partly": "Default saved for {{written}} of {{total}} users; {{failed}} failed. It will be tried again the next time an administrator opens Jellymorph.",
+    "failed": "The default could not be saved. Check the connection to the server.",
+    "entries": {
+      "hero": "Large title picture",
+      "libraries": "Libraries"
+    },
+    "actions": {
+      "play": "Play",
+      "trailer": "Trailer",
+      "favorite": "Favorite",
+      "played": "Mark as watched",
+      "edit": "Edit (administrators only)"
+    },
+    "facts": {
+      "year": "Year",
+      "runtime": "Runtime or seasons",
+      "officialRating": "Age rating",
+      "communityRating": "Rating",
+      "videoQuality": "Picture quality",
+      "genres": "Genres",
+      "tagline": "Tagline",
+      "directors": "Directors",
+      "cast": "Cast",
+      "audio": "Audio tracks",
+      "subtitles": "Subtitles",
+      "studios": "Studios"
+    }
   }
 }

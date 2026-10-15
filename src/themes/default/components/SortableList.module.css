@@ -1,0 +1,132 @@
+/* A list to arrange in the settings (phase 14). Built from the theme tokens only. */
+
+.list {
+  display: grid;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* No text selection while a row is being dragged. */
+.list[data-dragging] {
+  user-select: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  padding: 0.25rem 0.375rem 0.25rem 0.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-bg);
+  transition:
+    transform var(--duration-fast) var(--ease-standard),
+    opacity var(--duration-fast) var(--ease-standard);
+}
+
+.dragging {
+  position: relative;
+  z-index: 1;
+  border-color: var(--color-focus);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-overlay);
+  transform: scale(1.02);
+}
+
+.hidden .label {
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, currentcolor 50%, transparent);
+}
+
+.handle {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2rem;
+  height: 2.5rem;
+  border-radius: calc(var(--radius-control) * 0.75);
+  color: var(--color-text-muted);
+  font-size: 1.125rem;
+  cursor: grab;
+  touch-action: none;
+}
+
+.handle:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+}
+
+.dragging .handle {
+  cursor: grabbing;
+}
+
+.fixed {
+  cursor: default;
+}
+
+.fixed:hover {
+  background: none;
+}
+
+.label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 0.9375rem;
+}
+
+.note {
+  flex: none;
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+}
+
+.tools {
+  display: flex;
+  flex: none;
+  gap: 0.125rem;
+}
+
+.tool {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 1.125rem;
+  cursor: pointer;
+}
+
+.tool:is(:hover, :focus-visible) {
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+}
+
+.tool:focus-visible {
+  outline: 0.125rem solid var(--color-focus);
+  outline-offset: 0;
+}
+
+.tool[aria-pressed='false'] {
+  color: var(--color-text-muted);
+}
+
+.tool[aria-disabled='true'] {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.tool[aria-disabled='true']:hover {
+  background: transparent;
+}
+
+:global([data-motion='reduced']) .row {
+  transition: none;
+}

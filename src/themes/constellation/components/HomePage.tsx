@@ -1,16 +1,17 @@
 import type { TFunction } from 'i18next';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Genre, HomeSection, QueryResult } from '@/domain/types';
+import type { Genre, HomeRow, QueryResult } from '@/domain/types';
 import { paths } from '@/navigation/paths';
 import { AppLink } from '@/ui/AppLink';
 import { ThemeSlot } from '../../ThemeSlot';
 import type { HomePageProps } from '../../contract';
+import { homeIsEmpty, splitHero } from '../../default/components/home';
 import { EmptyState } from '../../default/components/States';
 import styles from './HomePage.module.css';
 import { Tiles } from './Tiles';
 
-function sectionTitle(t: TFunction<'content'>, section: HomeSection): string {
+function sectionTitle(t: TFunction<'content'>, section: HomeRow): string {
   if (section.kind === 'latest')
     return t('home.sections.latest', { library: section.library?.name ?? '' });
   return t(`home.sections.${section.kind}`);
@@ -39,49 +40,58 @@ function GenreList({ genres }: { genres: QueryResult<Genre[]> }) {
 }
 
 /**
- * The banner carousel, right under it the large tiles for libraries and collections, then the
- * rows of rounded cards; genres at the end.
+ * The banner carousel, then the arranged areas. By default the large tiles for libraries and
+ * collections come right under it: the collections join the library tiles whenever they follow
+ * them directly, anywhere else they are a row of their own.
  */
-export function HomePage({ hero, libraries, sections }: HomePageProps) {
+export function HomePage(props: HomePageProps) {
+  const { hero, libraries, sections } = props;
   const { t } = useTranslation('content');
   const { t: tCommon } = useTranslation();
-  const nothing =
-    sections.length === 0 &&
-    libraries.status === 'success' &&
-    libraries.data.length === 0 &&
-    hero.status !== 'pending';
-  const collections = sections.find((section) => section.kind === 'collections');
-  const rows = sections.filter(
-    (section) => section.kind !== 'genres' && section.kind !== 'collections',
-  );
-  const genres = sections.find((section) => section.kind === 'genres');
+  const { heroShown, below } = splitHero(sections);
+  const tilesAt = below.findIndex((section) => section.kind === 'libraries');
+  const next = tilesAt >= 0 ? below[tilesAt + 1] : undefined;
+  const joined = next?.kind === 'collections' ? next : null;
 
   return (
     <div className={styles.page}>
       <h1 className="visually-hidden">{tCommon('nav.home')}</h1>
-      <ThemeSlot name="Hero" props={{ items: hero, context: 'page' }} />
+      {heroShown && <ThemeSlot name="Hero" props={{ items: hero, context: 'page' }} />}
       <div className={styles.rows}>
-        {nothing && <EmptyState title={t('home.empty.title')} message={t('home.empty.message')} />}
-        <Tiles
-          libraries={libraries}
-          collections={collections && collections.kind !== 'genres' ? collections.items : null}
-        />
-        {rows.map((section) =>
-          section.kind === 'genres' ? null : (
-            <ThemeSlot
-              key={section.id}
-              name="Row"
-              props={{
-                title: sectionTitle(t, section),
-                items: section.items,
-                variant: 'landscape',
-                seeAll: section.seeAll,
-                context: 'page',
-              }}
-            />
-          ),
+        {homeIsEmpty(props) && (
+          <EmptyState title={t('home.empty.title')} message={t('home.empty.message')} />
         )}
-        {genres?.kind === 'genres' && <GenreList genres={genres.genres} />}
+        {below.map((section) => {
+          if (section === joined) return null;
+          switch (section.kind) {
+            case 'hero':
+              return null;
+            case 'libraries':
+              return (
+                <Tiles
+                  key={section.id}
+                  libraries={libraries}
+                  collections={joined ? joined.items : null}
+                />
+              );
+            case 'genres':
+              return <GenreList key={section.id} genres={section.genres} />;
+            default:
+              return (
+                <ThemeSlot
+                  key={section.id}
+                  name="Row"
+                  props={{
+                    title: sectionTitle(t, section),
+                    items: section.items,
+                    variant: 'landscape',
+                    seeAll: section.seeAll,
+                    context: 'page',
+                  }}
+                />
+              );
+          }
+        })}
       </div>
     </div>
   );

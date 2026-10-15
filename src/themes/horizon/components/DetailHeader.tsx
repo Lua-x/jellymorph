@@ -1,6 +1,8 @@
-import type { ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { DetailActionId, FactId } from '@/domain/layout';
 import type { ItemDetail, MediaItem } from '@/domain/types';
+import type { DetailLayout } from '@/hooks/useLayout';
 import { isPlayable, useMediaActions } from '@/hooks/useMediaActions';
 import { paths } from '@/navigation/paths';
 import { AppLink } from '@/ui/AppLink';
@@ -54,28 +56,99 @@ function PlayButtons({ item }: { item: Pick<MediaItem, 'id' | 'kind' | 'userData
 /**
  * The top of a details page: the picture fills the right side and fades into the page on the
  * left, where title (or title logo), facts, description and actions stand. `actions` replaces
- * the play buttons, e.g. with the next episode of a series.
+ * the play buttons, e.g. with the next episode of a series. Buttons and facts follow `layout`
+ * (phase 14).
  */
 export function DetailHeader({
   item,
   headingId,
+  layout,
   actions: mainActions,
 }: {
   item: ItemDetail;
   headingId: string;
+  layout: DetailLayout;
   actions?: ReactNode;
 }) {
   const { t, i18n } = useTranslation('content');
   const actions = useMediaActions();
   const backdrop = item.backdrops[0] ?? item.images.backdrop ?? item.images.thumb;
   const rating = ratingText(i18n.language, item.communityRating);
-  const facts = [
-    item.kind === 'episode' ? episodeCode(t, item) : null,
-    yearText(t, item),
+  const code = item.kind === 'episode' ? episodeCode(t, item) : null;
+  const year = yearText(t, item);
+  const runtime =
     item.kind === 'series' && item.childCount
       ? t('meta.seasons', { count: item.childCount })
-      : runtimeText(t, item.runtimeMinutes),
-  ].filter((fact): fact is string => Boolean(fact));
+      : runtimeText(t, item.runtimeMinutes);
+  const line: Partial<Record<FactId, ReactNode>> = {
+    communityRating: rating && (
+      <span className={styles.score}>
+        <Icon name="star" filled />
+        <span className="visually-hidden">{t('meta.rating')}</span>
+        {rating}
+      </span>
+    ),
+    year: year && <span>{year}</span>,
+    runtime: runtime && <span>{runtime}</span>,
+    officialRating: item.officialRating && (
+      <span className={styles.badge}>{item.officialRating}</span>
+    ),
+    videoQuality: item.videoLabel && <span className={styles.badge}>{item.videoLabel}</span>,
+  };
+  const buttons: Record<DetailActionId, ReactNode> = {
+    play: mainActions ?? <PlayButtons item={item} />,
+    trailer: item.localTrailerCount > 0 && (
+      <HorizonButton
+        variant="round"
+        size="lg"
+        aria-label={t('actions.trailer')}
+        icon={<Icon name="videos" />}
+        onFocus={actions.preparePlayback}
+        onPointerEnter={actions.preparePlayback}
+        onClick={() => {
+          actions.playTrailer(item);
+        }}
+      />
+    ),
+    favorite: (
+      <HorizonButton
+        variant="round"
+        size="lg"
+        aria-label={item.userData.favorite ? t('actions.unfavorite') : t('actions.favorite')}
+        aria-pressed={item.userData.favorite}
+        icon={<Icon name={item.userData.favorite ? 'check' : 'plus'} />}
+        onClick={() => {
+          actions.toggleFavorite(item);
+        }}
+      />
+    ),
+    played: (
+      <HorizonButton
+        variant="round"
+        size="lg"
+        aria-label={item.userData.played ? t('actions.markUnplayed') : t('actions.markPlayed')}
+        aria-pressed={item.userData.played}
+        icon={<Icon name="eye" />}
+        onClick={() => {
+          actions.togglePlayed(item);
+        }}
+      />
+    ),
+    edit: (
+      <ItemAdmin
+        item={item}
+        renderTrigger={({ label, buttonProps }) => (
+          <HorizonButton
+            variant="round"
+            size="lg"
+            aria-label={label}
+            icon={<Icon name="edit" />}
+            {...buttonProps}
+          />
+        )}
+      />
+    ),
+  };
 
   return (
     <section className={styles.header}>
@@ -106,72 +179,21 @@ export function DetailHeader({
           </h1>
         )}
         <p className={styles.facts}>
-          {rating && (
-            <span className={styles.score}>
-              <Icon name="star" filled />
-              <span className="visually-hidden">{t('meta.rating')}</span>
-              {rating}
-            </span>
-          )}
-          {facts.map((fact) => (
-            <span key={fact}>{fact}</span>
+          {code && <span>{code}</span>}
+          {layout.facts.map((id) => (
+            <Fragment key={id}>{line[id]}</Fragment>
           ))}
-          {item.officialRating && <span className={styles.badge}>{item.officialRating}</span>}
-          {item.videoLabel && <span className={styles.badge}>{item.videoLabel}</span>}
         </p>
         {item.overview && (
           <ExpandableText text={item.overview} classes={{ text: styles.overview }} />
         )}
-        {item.genres.length > 0 && (
+        {layout.facts.includes('genres') && item.genres.length > 0 && (
           <p className={styles.genres}>{item.genres.slice(0, 4).join(' · ')}</p>
         )}
         <div className={styles.actions}>
-          {mainActions ?? <PlayButtons item={item} />}
-          {item.localTrailerCount > 0 && (
-            <HorizonButton
-              variant="round"
-              size="lg"
-              aria-label={t('actions.trailer')}
-              icon={<Icon name="videos" />}
-              onFocus={actions.preparePlayback}
-              onPointerEnter={actions.preparePlayback}
-              onClick={() => {
-                actions.playTrailer(item);
-              }}
-            />
-          )}
-          <HorizonButton
-            variant="round"
-            size="lg"
-            aria-label={item.userData.favorite ? t('actions.unfavorite') : t('actions.favorite')}
-            aria-pressed={item.userData.favorite}
-            icon={<Icon name={item.userData.favorite ? 'check' : 'plus'} />}
-            onClick={() => {
-              actions.toggleFavorite(item);
-            }}
-          />
-          <HorizonButton
-            variant="round"
-            size="lg"
-            aria-label={item.userData.played ? t('actions.markUnplayed') : t('actions.markPlayed')}
-            aria-pressed={item.userData.played}
-            icon={<Icon name="eye" />}
-            onClick={() => {
-              actions.togglePlayed(item);
-            }}
-          />
-          <ItemAdmin
-            item={item}
-            renderTrigger={({ label, buttonProps }) => (
-              <HorizonButton
-                variant="round"
-                size="lg"
-                aria-label={label}
-                icon={<Icon name="edit" />}
-                {...buttonProps}
-              />
-            )}
-          />
+          {layout.actions.map((id) => (
+            <Fragment key={id}>{buttons[id]}</Fragment>
+          ))}
         </div>
       </div>
     </section>

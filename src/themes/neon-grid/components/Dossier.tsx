@@ -1,6 +1,8 @@
-import { useId, type ReactNode } from 'react';
+import { Fragment, useId, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { DetailActionId, FactId } from '@/domain/layout';
 import type { CastMember, ItemDetail, MediaItem } from '@/domain/types';
+import type { DetailLayout } from '@/hooks/useLayout';
 import { isPlayable, useMediaActions } from '@/hooks/useMediaActions';
 import { paths } from '@/navigation/paths';
 import { AppLink } from '@/ui/AppLink';
@@ -10,7 +12,7 @@ import { ItemAdmin } from '../../default/components/admin/ItemAdmin';
 import { Icon } from '../../default/components/icons';
 import { DataFields, FieldGrid } from './DataFields';
 import styles from './Dossier.module.css';
-import type { DataField } from './itemFields';
+import { arrangeFields, type DataField } from './itemFields';
 import { NeonButton } from './NeonButton';
 import { ScrambleText } from './ScrambleText';
 import { ExpandableText, ShortList, TrackList } from '../../default/components/Expandable';
@@ -62,15 +64,22 @@ export function PlayActions({ item }: { item: Pick<MediaItem, 'id' | 'kind' | 'u
 }
 
 /** Technical and credit fields shown below the summary. */
-function useDetailFields(item: ItemDetail): DataField[] {
+function useDetailFields(item: ItemDetail, facts: readonly FactId[]): DataField[] {
   const { t } = useTranslation('content');
   const { t: tNeon } = useTranslation('theme-neon-grid');
   const directors = item.cast.filter((member) => member.kind === 'director').map((m) => m.name);
   const fields: (DataField | null)[] = [
     item.genres.length > 0
-      ? { key: 'genres', label: tNeon('data.genres'), value: item.genres.join(' · ') }
+      ? {
+          key: 'genres',
+          fact: 'genres',
+          label: tNeon('data.genres'),
+          value: item.genres.join(' · '),
+        }
       : null,
-    item.videoLabel ? { key: 'video', label: tNeon('data.video'), value: item.videoLabel } : null,
+    item.videoLabel
+      ? { key: 'video', fact: 'videoQuality', label: tNeon('data.video'), value: item.videoLabel }
+      : null,
     item.seriesStatus
       ? {
           key: 'status',
@@ -82,6 +91,7 @@ function useDetailFields(item: ItemDetail): DataField[] {
     directors.length > 0
       ? {
           key: 'director',
+          fact: 'directors',
           label: t('detail.director', { count: directors.length }),
           value: <ShortList entries={directors} />,
         }
@@ -89,6 +99,7 @@ function useDetailFields(item: ItemDetail): DataField[] {
     item.audioTracks.length > 0
       ? {
           key: 'audio',
+          fact: 'audio',
           label: t('detail.audio'),
           value: <TrackList tracks={item.audioTracks} />,
         }
@@ -96,6 +107,7 @@ function useDetailFields(item: ItemDetail): DataField[] {
     item.audioTracks.length > 0 || item.subtitleTracks.length > 0
       ? {
           key: 'subtitles',
+          fact: 'subtitles',
           label: t('detail.subtitles'),
           value:
             item.subtitleTracks.length > 0 ? (
@@ -108,23 +120,94 @@ function useDetailFields(item: ItemDetail): DataField[] {
     item.studios.length > 0
       ? {
           key: 'studios',
+          fact: 'studios',
           label: t('detail.studios'),
           value: <ShortList entries={item.studios} />,
         }
       : null,
   ];
-  return fields.filter((field): field is DataField => field !== null);
+  return arrangeFields(
+    fields.filter((field): field is DataField => field !== null),
+    facts,
+  );
 }
 
 /**
  * Detail header as a dossier: backdrop with scanlines, the poster in a HUD frame, the title,
- * data fields, summary and actions. `children` adds actions (e.g. the next episode).
+ * data fields, summary and actions. `children` adds actions (e.g. the next episode). Buttons and
+ * facts follow `layout` (phase 14).
  */
-export function DossierHeader({ item, children }: { item: ItemDetail; children?: ReactNode }) {
+export function DossierHeader({
+  item,
+  layout,
+  children,
+}: {
+  item: ItemDetail;
+  layout: DetailLayout;
+  children?: ReactNode;
+}) {
   const { t } = useTranslation('content');
   const actions = useMediaActions();
   const backdrop = item.backdrops[0] ?? item.images.backdrop;
-  const extra = useDetailFields(item);
+  const extra = useDetailFields(item, layout.facts);
+  const buttons: Record<DetailActionId, ReactNode> = {
+    play: (
+      <>
+        <PlayActions item={item} />
+        {children}
+      </>
+    ),
+    trailer: item.localTrailerCount > 0 && (
+      <NeonButton
+        variant="secondary"
+        size="lg"
+        icon={<Icon name="videos" />}
+        onFocus={actions.preparePlayback}
+        onPointerEnter={actions.preparePlayback}
+        onClick={() => {
+          actions.playTrailer(item);
+        }}
+      >
+        {t('actions.trailer')}
+      </NeonButton>
+    ),
+    favorite: (
+      <NeonButton
+        variant="ghost"
+        size="lg"
+        icon={<Icon name="heart" filled={item.userData.favorite} />}
+        aria-pressed={item.userData.favorite}
+        onClick={() => {
+          actions.toggleFavorite(item);
+        }}
+      >
+        {item.userData.favorite ? t('actions.unfavorite') : t('actions.favorite')}
+      </NeonButton>
+    ),
+    played: (
+      <NeonButton
+        variant="ghost"
+        size="lg"
+        icon={<Icon name="check" />}
+        aria-pressed={item.userData.played}
+        onClick={() => {
+          actions.togglePlayed(item);
+        }}
+      >
+        {item.userData.played ? t('actions.markUnplayed') : t('actions.markPlayed')}
+      </NeonButton>
+    ),
+    edit: (
+      <ItemAdmin
+        item={item}
+        renderTrigger={({ label, buttonProps }) => (
+          <NeonButton variant="ghost" size="lg" icon={<Icon name="edit" />} {...buttonProps}>
+            {label}
+          </NeonButton>
+        )}
+      />
+    ),
+  };
 
   return (
     <div className={styles.header}>
@@ -170,58 +253,17 @@ export function DossierHeader({ item, children }: { item: ItemDetail; children?:
               <ScrambleText text={item.name} />
             </h1>
           )}
-          <DataFields item={item} compact />
-          {item.tagline && <p className={styles.tagline}>{item.tagline}</p>}
+          <DataFields item={item} compact facts={layout.facts} />
+          {layout.facts.includes('tagline') && item.tagline && (
+            <p className={styles.tagline}>{item.tagline}</p>
+          )}
           {item.overview && (
             <ExpandableText text={item.overview} classes={{ text: styles.overview }} />
           )}
           <div className={styles.actions}>
-            <PlayActions item={item} />
-            {children}
-            {item.localTrailerCount > 0 && (
-              <NeonButton
-                variant="secondary"
-                size="lg"
-                icon={<Icon name="videos" />}
-                onFocus={actions.preparePlayback}
-                onPointerEnter={actions.preparePlayback}
-                onClick={() => {
-                  actions.playTrailer(item);
-                }}
-              >
-                {t('actions.trailer')}
-              </NeonButton>
-            )}
-            <NeonButton
-              variant="ghost"
-              size="lg"
-              icon={<Icon name="heart" filled={item.userData.favorite} />}
-              aria-pressed={item.userData.favorite}
-              onClick={() => {
-                actions.toggleFavorite(item);
-              }}
-            >
-              {item.userData.favorite ? t('actions.unfavorite') : t('actions.favorite')}
-            </NeonButton>
-            <NeonButton
-              variant="ghost"
-              size="lg"
-              icon={<Icon name="check" />}
-              aria-pressed={item.userData.played}
-              onClick={() => {
-                actions.togglePlayed(item);
-              }}
-            >
-              {item.userData.played ? t('actions.markUnplayed') : t('actions.markPlayed')}
-            </NeonButton>
-            <ItemAdmin
-              item={item}
-              renderTrigger={({ label, buttonProps }) => (
-                <NeonButton variant="ghost" size="lg" icon={<Icon name="edit" />} {...buttonProps}>
-                  {label}
-                </NeonButton>
-              )}
-            />
+            {layout.actions.map((id) => (
+              <Fragment key={id}>{buttons[id]}</Fragment>
+            ))}
           </div>
         </div>
       </div>

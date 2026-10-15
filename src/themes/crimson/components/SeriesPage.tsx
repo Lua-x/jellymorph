@@ -95,6 +95,7 @@ export function SeriesPage({
   similar,
   presentation,
   onClose,
+  layout,
 }: SeriesPageProps) {
   const { t } = useTranslation('content');
   const actions = useMediaActions();
@@ -112,6 +113,7 @@ export function SeriesPage({
       ready={nextUp.status !== 'pending'}
     >
       <DetailHeader
+        layout={layout}
         item={series}
         headingId={headingId}
         actions={

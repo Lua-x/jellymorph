@@ -7,17 +7,17 @@ import { ThemeSlot } from '@/themes/ThemeSlot';
 
 export function HomeRoute() {
   const { t } = useTranslation();
-  const { heroItemCount } = useThemeOptions();
+  const { heroItemCount, layout } = useThemeOptions();
   useDocumentTitle(t('nav.home'));
+  const sections = useHomeSections(layout.home);
+  const hero = useFeatured(
+    heroItemCount,
+    sections.some((section) => section.kind === 'hero'),
+  );
   return (
     <ThemeSlot
       name="HomePage"
-      props={{
-        user: useCurrentUser(),
-        hero: useFeatured(heroItemCount),
-        libraries: useLibraries(),
-        sections: useHomeSections(),
-      }}
+      props={{ user: useCurrentUser(), hero, libraries: useLibraries(), sections }}
     />
   );
 }

@@ -9,6 +9,7 @@ import '@fontsource/share-tech-mono/index.css';
 import './tokens.css';
 import './global.css';
 import { THEME_CONTRACT_VERSION, type ThemeModule } from '../contract';
+import { classicLayout } from '../default/layout';
 import { AppShell } from './components/AppShell';
 import { Hero } from './components/Hero';
 import { HomePage } from './components/HomePage';
@@ -51,6 +52,22 @@ export const theme: ThemeModule = {
     ErrorState,
   },
   options: {
+    layout: {
+      ...classicLayout,
+      facts: [
+        'year',
+        'runtime',
+        'officialRating',
+        'communityRating',
+        'tagline',
+        'genres',
+        'videoQuality',
+        'directors',
+        'audio',
+        'subtitles',
+        'studios',
+      ],
+    },
     heroItemCount: 6,
   },
   texts: { de, en },

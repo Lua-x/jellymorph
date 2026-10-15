@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useLayoutDefaultsUpkeep } from '@/hooks/useLayout';
 import { useNavModel } from '@/hooks/useNavModel';
 import { useServerEvents } from '@/hooks/useServerEvents';
 import { useRouteKey } from '@/navigation/useRouteKey';
@@ -26,5 +27,6 @@ export function ShellLayout() {
   const nav = useNavModel();
   useFocusMainOnNavigation();
   useServerEvents();
+  useLayoutDefaultsUpkeep();
   return <ThemeSlot name="AppShell" props={{ nav, children: <ShellRoutes /> }} />;
 }

@@ -798,6 +798,7 @@ Umsetzung (Phase 4): `useTrailerPreview(itemId)` in `player/useTrailerPreview.ts
 | Audio-/Untertitelsprache, Untertitelmodus | `UserConfiguration.AudioLanguagePreference`, `SubtitleLanguagePreference`, `SubtitleMode` | ja, auch mit anderen Jellyfin-Clients **[Frage 6]** |
 | Max. Streaming-Qualität                   | – (nur lokal)                                                                             | nein: hängt von Gerät und Netz ab **[Frage 7]**     |
 | Bedienmodus (Auto/Desktop/TV), Overscan   | – (nur lokal)                                                                             | nein                                                |
+| Anordnung (Phase 14, §10.1)               | DisplayPreferences (`jellymorph.layout`); Vorgabe für alle in `jellymorph-defaults`       | ja                                                  |
 
 - **Lokal:** zustand mit `persist` in `localStorage`, Schlüssel je `serverId:userId`. Schreibt sofort.
 - **Server:** `DisplayPreferences` mit `displayPreferencesId: 'settings'`, `client: 'jellymorph'`. Eigene Werte als flache Schlüssel in `CustomPrefs` mit Schema-Version. Lesen–Ändern–Schreiben, gebündelt (1 s Debounce). Fehler beim Speichern führen zu einem Toast mit erneutem Versuch.
@@ -815,6 +816,14 @@ Umsetzung (Phase 4): `useTrailerPreview(itemId)` in `player/useTrailerPreview.ts
 - **Wiedergabe-Einstellungen** (`hooks/usePlaybackPreferences.ts`): `UserConfiguration` wird als Ganzes gelesen und geschrieben (`POST /Users/Configuration`), mit sofortiger Anzeige und Rücknahme bei Fehlern. Die Sprachliste kommt von `/Localization/Cultures`, die Namen übersetzt `Intl.DisplayNames` in die UI-Sprache.
 
 ---
+
+### 10.1 Anordnung (Phase 14)
+
+Vier Listen lassen sich ordnen und ausdünnen: Bereiche der Startseite, Einträge der Navigation, Knöpfe und Angaben der Detailseiten (`src/domain/layout.ts`). Je Liste gilt die erste vorhandene Stufe: die eigene Anordnung des Benutzers, die Vorgabe des Administrators, die Anordnung des Themes (`ThemeOptions.layout`). Gespeichert wird je Liste die Reihenfolge (oder `null` für „wie vorgegeben“) und die ausgeblendeten Einträge. Einträge, die eine gespeicherte Reihenfolge nicht kennt (eine neue Bibliothek), stehen hinter dem Eintrag, dem sie in der Vorgabe folgen. Das große Titelbild bleibt oben, „Abspielen“ bleibt sichtbar.
+
+- **Eigene Anordnung:** Teil der Benutzer-Einstellungen, als JSON im Schlüssel `jellymorph.layout`; Synchronisierung wie §10 (Schema-Version bleibt 1, alte Stände haben den Schlüssel nicht).
+- **Vorgabe für alle:** Jellyfin hat keinen Speicher, den alle lesen und nur Administratoren schreiben. Die App kopiert die Vorgabe deshalb in ein eigenes DisplayPreferences-Dokument `jellymorph-defaults` jedes Benutzers (Administratoren dürfen fremde Einstellungen schreiben, `RequestHelpers.GetUserId`); jeder liest nur seine Kopie. `jellymorph.layoutVersion` (ISO-Zeit) sagt, welche Kopie neuer ist. Öffnet ein Administrator Jellymorph, ergänzt die App fehlende oder ältere Kopien im Hintergrund (einmal pro Browser-Sitzung und Server), so bekommen später angelegte Benutzer die Vorgabe.
+- **Themes** bekommen das Ergebnis als Props: `HomePageProps.sections` in Reihenfolge, mit Einträgen für Titelbild und Bibliotheks-Kacheln; `ItemDetailPageProps.layout` bzw. `SeriesPageProps.layout` mit Knöpfen und Angaben; `NavModel.items`. Wo ein Theme Angaben an zwei Stellen zeigt (Glass, Horizon, Constellation), gilt die Anordnung an beiden.
 
 ## 11. Internationalisierung
 
@@ -933,6 +942,10 @@ Plan aus Phase 0, umgesetzt in Phase 5 (Abweichungen und Details in §15.1):
 **Veröffentlichung** (`release.yml`): Bei Push auf `main` und bei Tags `v*` läuft zuerst die komplette CI (`ci.yml` per `workflow_call`; `ci.yml` selbst reagiert auf Pushes in andere Zweige und auf Pull Requests, damit `main` nicht doppelt geprüft wird). Danach baut `docker/build-push-action` das Multi-Arch-Image und schiebt es nach `ghcr.io/lua-x/jellymorph`, Tags über `docker/metadata-action`: `main` → `edge`; `v1.2.3` → `1.2.3`, `1.2`, `1` (nicht bei 0.x) und `latest` (nicht bei Vorabversionen wie `v1.0.0-rc.1`). Labels und Annotationen (auch am Image-Index) verknüpfen das Paket mit dem Repository. Bei Tags folgt ein GitHub-Release; die Notizen erzeugt `scripts/changelog.ts` aus den Conventional Commits seit dem letzten Tag (inkompatible Änderungen, Neu, Behoben, Schneller). **Dependabot** prüft wöchentlich npm (Tooling gebündelt), Docker-Basis-Images (ohne Node-Hauptversionen) und Actions.
 
 ---
+
+### 15.2 Eigene Gestaltung (Phase 14)
+
+Ein gemappter Ordner `/custom` (darf schreibgeschützt sein) nimmt eigene Stylesheets, Schriften und Bilder auf. Der Entrypoint sucht beim Start `custom.css` (für alle Themes) und `<theme-id>.css` und schreibt das Ergebnis als `customCss` in `config.js`; die App hängt die Dateien als `<link>` ans Ende von `<head>`, die Theme-Datei nur, solange das Theme aktiv ist (`themes/custom-styles.ts`). nginx liefert aus `/custom/` nur CSS, Schriften (woff2, woff, ttf, otf) und Bilder aus, ohne Cache, mit den üblichen Sicherheits-Headern; alles andere ist 404. Weil es Dateien der eigenen Origin sind, braucht die CSP keine Ausnahme (kein eingefügtes CSS, `style-src 'self'` bleibt). Öffentliche Schnittstelle für eigenes CSS sind die Tokens (§7, docs/themes.md §4) und die Attribute `data-theme`, `data-color-scheme`, `data-device` und `data-motion` an `<html>`; die Klassen der Komponenten tragen generierte Namen und ändern sich mit jeder Version. Im Entwicklungs- und Testserver übernimmt `CUSTOM_DIR` die Rolle des Ordners (Playwright: `e2e/fixtures/custom`, auch im Container-Test gemappt).
 
 ## 16. Tests und CI
 

@@ -2,6 +2,7 @@ import '@fontsource-variable/figtree';
 import './tokens.css';
 import './global.css';
 import { THEME_CONTRACT_VERSION, type ThemeModule } from '../contract';
+import { classicLayout } from '../default/layout';
 import { AppShell } from './components/AppShell';
 import { Hero } from './components/Hero';
 import { HomePage } from './components/HomePage';
@@ -33,6 +34,32 @@ export const theme: ThemeModule = {
     MediaCard,
   },
   options: {
+    layout: {
+      ...classicLayout,
+      facts: [
+        'communityRating',
+        'year',
+        'runtime',
+        'officialRating',
+        'videoQuality',
+        'genres',
+        'directors',
+        'studios',
+        'audio',
+        'subtitles',
+        'cast',
+      ],
+      home: [
+        'hero',
+        'resume',
+        'libraries',
+        'nextUp',
+        'latest',
+        'favorites',
+        'collections',
+        'genres',
+      ],
+    },
     heroItemCount: 6,
     cardShape: 'landscape',
   },

@@ -9,14 +9,16 @@ import {
   fetchResume,
 } from '@/api/items';
 import { fetchCurrentUser, fetchLibraries } from '@/api/user';
+import { visibleIds, type HomeAreaKind } from '@/domain/layout';
 import type { HomeSection, Library, MediaItem, QueryResult } from '@/domain/types';
 import { paths } from '@/navigation/paths';
 import { queryKeys } from './query-keys';
 import { toQueryResult } from './query-result';
+import { useEffectiveLayout } from './useLayout';
 import { useActiveSession } from './useSession';
 
 /** Featured items for the hero. Random on the server, so kept stable for the whole visit. */
-export function useFeatured(count: number): QueryResult<MediaItem[]> {
+export function useFeatured(count: number, enabled = true): QueryResult<MediaItem[]> {
   const { api, key } = useActiveSession();
   return toQueryResult(
     useQuery({
@@ -24,8 +26,28 @@ export function useFeatured(count: number): QueryResult<MediaItem[]> {
       queryFn: ({ signal }) => fetchFeatured(api, count, signal),
       staleTime: Infinity,
       refetchOnWindowFocus: false,
+      enabled,
     }),
   );
+}
+
+/** Ids of the home areas in a theme's order; `latest` becomes one row per library. */
+export function homeAreaIds(
+  defaults: readonly HomeAreaKind[],
+  latestLibraries: readonly Library[],
+): string[] {
+  return defaults.flatMap((kind) =>
+    kind === 'latest' ? latestLibraries.map((library) => `latest-${library.id}`) : [kind],
+  );
+}
+
+/** Libraries that get a "New in …" row: not collections, not excluded by the user in Jellyfin. */
+export function latestLibrariesOf(
+  libraries: readonly Library[],
+  latestExcludes: readonly string[],
+): Library[] {
+  const excludes = new Set(latestExcludes);
+  return libraries.filter((library) => library.kind !== 'collections' && !excludes.has(library.id));
 }
 
 function isEmpty(result: QueryResult<unknown[]>): boolean {
@@ -33,10 +55,12 @@ function isEmpty(result: QueryResult<unknown[]>): boolean {
 }
 
 /**
- * All home rows in display order. Every row loads on its own; rows that turn out empty are
- * dropped, rows still loading stay so themes can show placeholders.
+ * All home areas in display order: the theme's order, or the arrangement of the user or the
+ * administrator. Every row loads on its own; rows that turn out empty are dropped, rows still
+ * loading stay so themes can show placeholders.
  */
-export function useHomeSections(): HomeSection[] {
+export function useHomeSections(defaults: readonly HomeAreaKind[]): HomeSection[] {
+  const layout = useEffectiveLayout();
   const { api, key } = useActiveSession();
   const user = useQuery({
     queryKey: queryKeys.currentUser(key),
@@ -71,10 +95,7 @@ export function useHomeSections(): HomeSection[] {
     staleTime: 30 * 60_000,
   });
 
-  const excludes = new Set(user.data?.latestExcludes ?? []);
-  const latestLibraries: Library[] = (libraries.data ?? []).filter(
-    (library) => library.kind !== 'collections' && !excludes.has(library.id),
-  );
+  const latestLibraries = latestLibrariesOf(libraries.data ?? [], user.data?.latestExcludes ?? []);
   const latest = useQueries({
     queries: latestLibraries.map((library) => ({
       queryKey: queryKeys.latest(key, library.id),
@@ -85,6 +106,8 @@ export function useHomeSections(): HomeSection[] {
   const collectionsLibrary = libraries.data?.find((library) => library.kind === 'collections');
 
   const sections: HomeSection[] = [
+    { id: 'hero', kind: 'hero' },
+    { id: 'libraries', kind: 'libraries' },
     { id: 'resume', kind: 'resume', library: null, items: toQueryResult(resume), seeAll: null },
     { id: 'nextUp', kind: 'nextUp', library: null, items: toQueryResult(nextUp), seeAll: null },
     ...latestLibraries.map((library, index): HomeSection => ({
@@ -110,9 +133,14 @@ export function useHomeSections(): HomeSection[] {
     },
     { id: 'genres', kind: 'genres', genres: toQueryResult(genres) },
   ];
-  return sections.filter((section) =>
-    section.kind === 'genres' ? !isEmpty(section.genres) : !isEmpty(section.items),
-  );
+  const byId = new Map(sections.map((section) => [section.id, section]));
+  return visibleIds(homeAreaIds(defaults, latestLibraries), layout.home)
+    .map((id) => byId.get(id))
+    .filter((section): section is HomeSection => {
+      if (!section) return false;
+      if (section.kind === 'hero' || section.kind === 'libraries') return true;
+      return section.kind === 'genres' ? !isEmpty(section.genres) : !isEmpty(section.items);
+    });
 }
 
 /** "Continue watching" on its own (e.g. for the theme live preview). */

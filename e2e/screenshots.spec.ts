@@ -253,6 +253,36 @@ test.describe('screenshots @shots', () => {
         await shoot(page, '18-settings', '-full', true);
       });
 
+      test('arrangement', async ({ page }) => {
+        test.setTimeout(90_000);
+        await signInAs(page, 'Alex');
+        await page.goto('/settings');
+        const heading = page.getByRole('heading', { level: 2, name: 'Anordnung' });
+        await heading.evaluate((element) => {
+          element.scrollIntoView({ block: 'start' });
+        });
+        const home = page.getByRole('list', { name: 'Startseite', exact: true });
+        const genresUp = home.getByRole('button', { name: '„Genres“ nach oben' });
+        for (let step = 0; step < 6; step += 1) await genresUp.click();
+        await home.getByRole('button', { name: '„Nächste Folgen“ anzeigen' }).click();
+        await heading.evaluate((element) => {
+          element.scrollIntoView({ block: 'start' });
+        });
+        await shoot(page, 'b1-arrangement');
+
+        await page.getByRole('radio', { name: 'Alle (Vorgabe)' }).click();
+        await page
+          .getByRole('list', { name: 'Navigation', exact: true })
+          .getByRole('button', { name: '„Anime“ anzeigen' })
+          .click();
+        await expect(page.getByText('Die Vorgabe hat ungespeicherte Änderungen.')).toBeVisible();
+        await shoot(page, 'b2-arrangement-default');
+
+        await page.goto('/');
+        await expect(page.getByRole('region', { name: 'Genres' })).toBeVisible();
+        await shoot(page, 'b3-home-arranged');
+      });
+
       test('server selection', async ({ page }) => {
         await page.route('**/config.js', (route) =>
           route.fulfill({

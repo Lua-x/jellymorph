@@ -73,6 +73,18 @@ server {
         return 404;
     }
 
+    # Own styles, fonts and pictures from the mounted folder /custom (phase 14). Only these file
+    # types; anything else there is a 404. Never cached, so edits apply on the next page load.
+    location ~ ^/custom/(?<custom_file>[A-Za-z0-9_./-]+\.(?:css|woff2|woff|ttf|otf|png|jpe?g|webp|avif|gif|svg))$ {
+        alias /custom/$custom_file;
+        include /tmp/jellymorph/headers.conf;
+        add_header Cache-Control "no-cache" always;
+    }
+
+    location /custom/ {
+        return 404;
+    }
+
     # Unhashed public files (icons) and the single-page app fallback for every route.
     location / {
         try_files $uri /index.html;

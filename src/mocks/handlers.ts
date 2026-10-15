@@ -36,6 +36,7 @@ function authResult(state: MockState, user: MockUser) {
 }
 
 const unauthorized = () => new HttpResponse(null, { status: 401 });
+const forbidden = () => new HttpResponse(null, { status: 403 });
 
 export type Authed = (
   resolver: (
@@ -180,16 +181,15 @@ export function createHandlers(state: MockState) {
       }),
     ),
 
+    // Like Jellyfin's RequestHelpers.GetUserId: only administrators may act for another user.
     http.get(
       '*/DisplayPreferences/:id',
       authed((user, request, params) => {
         const search = new URL(request.url).searchParams;
+        const userId = search.get('userId') ?? user.id;
+        if (userId !== user.id && !user.isAdministrator) return forbidden();
         return HttpResponse.json(
-          state.displayPreferences(
-            search.get('userId') ?? user.id,
-            params.id ?? '',
-            search.get('client') ?? '',
-          ),
+          state.displayPreferences(userId, params.id ?? '', search.get('client') ?? ''),
         );
       }),
     ),
@@ -199,15 +199,27 @@ export function createHandlers(state: MockState) {
       authed(async (user, request, params) => {
         if (state.hasFault('preferences')) return new HttpResponse(null, { status: 500 });
         const search = new URL(request.url).searchParams;
+        const userId = search.get('userId') ?? user.id;
+        if (userId !== user.id && !user.isAdministrator) return forbidden();
         const body = (await request.json()) as Record<string, unknown> | null;
         state.setDisplayPreferences(
-          search.get('userId') ?? user.id,
+          userId,
           params.id ?? '',
           search.get('client') ?? '',
           body ?? {},
         );
         return new HttpResponse(null, { status: 204 });
       }),
+    ),
+
+    // Every user, for administrators (distributing the default arrangement).
+    http.get(
+      '*/Users',
+      authed((user) =>
+        user.isAdministrator
+          ? HttpResponse.json(state.users.map((candidate) => userDto(state, candidate)))
+          : forbidden(),
+      ),
     ),
 
     http.get(

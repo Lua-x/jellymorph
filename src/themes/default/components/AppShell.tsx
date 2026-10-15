@@ -136,9 +136,8 @@ function UserMenu({ nav }: { nav: NavModel }) {
 export function AppShell({ nav, children }: AppShellProps) {
   const { t } = useTranslation();
   const mainRef = useRef<HTMLElement>(null);
-  const home = nav.items.filter((item) => item.id === 'home');
-  const tools = nav.items.filter((item) => item.group === 'main' && item.id !== 'home');
-  const libraries = nav.items.filter((item) => item.group === 'library');
+  // Already in the arranged order; the phone bar keeps the main entries only.
+  const mainLinks = nav.items.filter((item) => item.group === 'main');
   return (
     <div className={styles.shell}>
       <a
@@ -160,7 +159,7 @@ export function AppShell({ nav, children }: AppShellProps) {
           </AppLink>
           <nav className={styles.nav} aria-label={t('nav.mainNavigation')}>
             <OverflowNav
-              items={[...home, ...libraries, ...tools]}
+              items={nav.items}
               classes={{
                 list: styles.navList,
                 more: `${styles.navLink} ${styles.moreButton}`,
@@ -198,7 +197,7 @@ export function AppShell({ nav, children }: AppShellProps) {
       {/* Phones: the main destinations sit at the bottom, within thumb reach. */}
       <nav className={styles.bottomNav} aria-label={t('nav.mainNavigation')}>
         <ul>
-          {[...home, ...tools].map((item) => (
+          {mainLinks.map((item) => (
             <li key={item.id}>
               <AppLink
                 nav

@@ -151,6 +151,7 @@ export function SeriesPage({
   episodes,
   nextUp,
   similar,
+  layout,
 }: SeriesPageProps) {
   const { t } = useTranslation('content');
   const { t: tHorizon } = useTranslation('theme-horizon');
@@ -161,6 +162,7 @@ export function SeriesPage({
   return (
     <article className={styles.page} aria-labelledby={headingId}>
       <DetailHeader
+        layout={layout}
         item={series}
         headingId={headingId}
         actions={
@@ -215,7 +217,7 @@ export function SeriesPage({
           {
             id: 'details',
             label: tHorizon('detail.details'),
-            content: <DetailsPanel item={series} />,
+            content: <DetailsPanel item={series} facts={layout.facts} />,
           },
         ]}
       />

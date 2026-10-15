@@ -16,6 +16,7 @@ describe('parseAppConfig', () => {
       defaultTheme: 'crimson',
       appTitle: '  Kino  ',
       demoMode: false,
+      customCss: { all: true, themes: ['crimson', 'crimson'] },
     });
     expect(warnings).toEqual([]);
     expect(config).toEqual({
@@ -25,7 +26,14 @@ describe('parseAppConfig', () => {
       defaultTheme: 'crimson',
       appTitle: 'Kino',
       demoMode: false,
+      customCss: { all: true, themes: ['crimson'] },
     });
+  });
+
+  it('keeps only known themes for own style sheets', () => {
+    const { config } = parseAppConfig({ customCss: { all: 'yes', themes: ['glass', 'nope', 3] } });
+    expect(config.customCss).toEqual({ all: false, themes: ['glass'] });
+    expect(parseAppConfig({ customCss: 'everything' }).warnings).toHaveLength(1);
   });
 
   it('accepts string booleans as written by shell scripts', () => {

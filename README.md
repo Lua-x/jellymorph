@@ -17,7 +17,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="Lizenz: AGPL-3.0" /></a>
 </p>
 
-> **Version 1.1:** Sechs Themes, der volle Funktionsumfang und jetzt auch die Verwaltung einzelner Titel für Administratoren. Was sich geändert hat, steht im [Changelog](CHANGELOG.md).
+> **Version 1.2:** Sechs Themes, der volle Funktionsumfang, die Verwaltung einzelner Titel für Administratoren und jetzt eigene Anordnung und Gestaltung. Was sich geändert hat, steht im [Changelog](CHANGELOG.md).
 
 ## Themes
 
@@ -87,6 +87,8 @@ Die Bilder zeigen den Demo-Modus mit erfundenen Titeln und generierten Bildern.
 - **Details und Serien:** Besetzung, Ton- und Untertitelspuren, Trailer, Staffeln, Episoden mit Fortschritt, nächste Folge hervorgehoben. Live-Suche, nach Typ gruppiert.
 - **Player:** spielt direkt ab, wo der Browser es kann, sonst über HLS-Transcoding. Ton- und Untertitelwahl (Bilduntertitel werden eingebrannt), Qualität, Geschwindigkeit, Vollbild, Bild-in-Bild, Vorschaubilder auf der Zeitleiste, „Intro überspringen“, nächste Folge mit Countdown. Der Fortschritt landet in Jellyfin, „Weiterschauen“ stimmt also auf allen Geräten.
 - **Verwaltung (für Administratoren):** Auf jeder Detailseite das Menü „Bearbeiten“: identifizieren, Metadaten bearbeiten, Bilder wählen, hochladen oder löschen, Untertitel suchen, hochladen oder löschen, Metadaten aktualisieren, Eintrag löschen. Dazu „Bibliothek scannen“ und im Profilmenü ein Link zur Server-Verwaltung von Jellyfin (dort meldest du dich einmal mit deinem Jellyfin-Konto an). Andere Benutzer sehen davon nichts.
+- **Anordnung:** Reihenfolge und Sichtbarkeit der Bereiche der Startseite, der Navigation sowie der Knöpfe und Angaben auf Detailseiten, per Ziehen oder Pfeiltasten. Administratoren legen eine Vorgabe für alle fest; eigene Anordnungen gehen vor.
+- **Eigene Gestaltung:** eigene Farben, Schriften und CSS je Theme aus einem gemappten Ordner (siehe unten).
 - **Bedienung:** Maus, Touch, Tastatur und Fernbedienung. Auf Fernsehern ein TV-Modus mit größerer Schrift und einstellbarem Bildrand, in 1080p und 4K.
 - **Barrierefreiheit:** Kontraste nach WCAG AA, Fokus mindestens so deutlich wie Hover, reduzierte Bewegung auf Wunsch oder nach Systemeinstellung. Jede Seite jedes Themes wird automatisch mit axe geprüft.
 - **Sprachen:** Deutsch und Englisch.
@@ -163,6 +165,48 @@ Im Demo-Modus spielt jeder Titel denselben 60-Sekunden-Clip, mit Intro, Abspann,
 Theme, Farbschema, Sprache, Bewegung und Trailer-Autoplay speichert Jellymorph pro Benutzer auf dem Jellyfin-Server. Sie gelten also auf allen Geräten. Ton- und Untertitelsprache, Untertitelmodus und „Nächste Folge automatisch“ stehen in deinem Jellyfin-Konto und gelten auch für die anderen Jellyfin-Apps. Streaming-Qualität, Bedienmodus und Bildrand bleiben auf dem jeweiligen Gerät.
 
 Alles lässt sich mit Maus, Touch, Tastatur oder Fernbedienung bedienen: Pfeiltasten bewegen den Fokus, Enter wählt aus, Esc oder die Zurück-Taste gehen zurück. Auf Fernsehern schaltet Jellymorph automatisch in den TV-Modus mit größerer Schrift und einstellbarem Bildrand. In den Einstellungen lässt er sich auch fest einschalten.
+
+## Eigene Gestaltung
+
+### Anordnung
+
+Unter _Einstellungen → Anordnung_ legst du fest, welche Bereiche die Startseite zeigt (Titelbild, Bibliotheken, Weiterschauen, „Neu in …“ je Bibliothek, Favoriten, Sammlungen, Genres), welche Einträge die Navigation hat und welche Knöpfe und Angaben die Detailseiten zeigen, jeweils in deiner Reihenfolge. Zieh einen Eintrag am Griff an seinen Platz oder nimm die Pfeile (Tastatur, Fernbedienung); das Auge blendet ihn aus. Die Anordnung gilt auf allen deinen Geräten und in jedem Theme. Was du nicht anordnest, folgt der Vorgabe des Themes.
+
+Administratoren können umschalten auf _Alle (Vorgabe)_. Die Vorgabe gilt für alle, die eine Liste nicht selbst angeordnet haben. Beim Speichern kopiert Jellymorph sie in die Jellyfin-Einstellungen jedes Benutzers; Benutzer, die später dazukommen, bekommen sie, sobald ein Administrator Jellymorph öffnet.
+
+### Eigene Farben, Schriften und CSS
+
+Mappe einen Ordner nach `/custom` (schreibgeschützt genügt):
+
+```yaml
+volumes:
+  - ./custom:/custom:ro
+```
+
+- `custom.css` gilt für alle Themes, `<theme>.css` nur für eines: `default.css` (Classic), `neon-grid.css`, `crimson.css`, `glass.css`, `horizon.css`, `constellation.css`.
+- Schriften und Bilder legst du daneben (z. B. `custom/fonts/`) und verweist relativ darauf.
+- Jellymorph liefert aus dem Ordner nur CSS, Schriften (woff2, woff, ttf, otf) und Bilder aus. Änderungen an vorhandenen Dateien wirken beim nächsten Laden der Seite, neue Dateien nach einem Neustart des Containers.
+
+Am einfachsten überschreibst du die Design-Tokens, also die CSS-Variablen der Themes (Liste in [docs/themes.md](docs/themes.md#4-tokens-und-scoping)). Stabil sind außerdem die Attribute `data-theme`, `data-color-scheme` und `data-device` am `<html>`-Element; die Klassennamen der Bausteine werden beim Bauen erzeugt und ändern sich mit jeder Version.
+
+```css
+/* custom/custom.css: eine eigene Schrift für alle Themes */
+@font-face {
+  font-family: 'Meine Schrift';
+  src: url('fonts/meine-schrift.woff2') format('woff2');
+}
+
+[data-theme] {
+  --font-body: 'Meine Schrift', system-ui, sans-serif;
+}
+
+/* custom/crimson.css: ein anderer Akzent für Crimson */
+[data-theme='crimson'] {
+  --color-accent: #e0a100;
+}
+```
+
+Achte bei eigenen Farben auf genug Kontrast; die Prüfungen der Themes gelten nur für ihre eigenen Werte.
 
 ## Entwicklung mit einem echten Jellyfin-Server
 

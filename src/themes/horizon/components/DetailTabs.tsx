@@ -1,3 +1,4 @@
+import type { FactId } from '@/domain/layout';
 import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ItemDetail, MediaItem, QueryResult } from '@/domain/types';
@@ -99,8 +100,8 @@ export function RelatedPanel({ items }: { items: QueryResult<MediaItem[]> }) {
   );
 }
 
-/** Facts in two columns, then the cast with links to their titles. */
-export function DetailsPanel({ item }: { item: ItemDetail }) {
+/** Facts in two columns, then the cast with links to their titles, as arranged in `facts`. */
+export function DetailsPanel({ item, facts }: { item: ItemDetail; facts: readonly FactId[] }) {
   const { t, i18n } = useTranslation('content');
   const { t: tHorizon } = useTranslation('theme-horizon');
   const directors = item.cast.filter((member) => member.kind === 'director');
@@ -112,29 +113,34 @@ export function DetailsPanel({ item }: { item: ItemDetail }) {
     : item.year !== null
       ? String(item.year)
       : null;
-  const rows: [string, ReactNode][] = [
-    [tHorizon('detail.genres'), item.genres.join(', ') || null],
-    [tHorizon('detail.released'), released],
-    [
+  const rows: Partial<Record<FactId, [string, ReactNode]>> = {
+    genres: [tHorizon('detail.genres'), item.genres.join(', ') || null],
+    year: [tHorizon('detail.released'), released],
+    runtime: [
       tHorizon('detail.runtime'),
       item.kind === 'series' ? null : runtimeText(t, item.runtimeMinutes),
     ],
-    [tHorizon('detail.rated'), item.officialRating],
-    [
+    officialRating: [tHorizon('detail.rated'), item.officialRating],
+    directors: [
       t('detail.director', { count: directors.length }),
       directors.length > 0 ? <ShortList entries={directors.map((person) => person.name)} /> : null,
     ],
-    [t('detail.studios'), item.studios.length > 0 ? <ShortList entries={item.studios} /> : null],
-    [
+    studios: [
+      t('detail.studios'),
+      item.studios.length > 0 ? <ShortList entries={item.studios} /> : null,
+    ],
+    audio: [
       t('detail.audio'),
       item.audioTracks.length > 0 ? <TrackList tracks={item.audioTracks} /> : null,
     ],
-    [
+    subtitles: [
       t('detail.subtitles'),
       item.subtitleTracks.length > 0 ? <TrackList tracks={item.subtitleTracks} /> : null,
     ],
-  ];
-  const shown = rows.filter(([, value]) => value !== null && value !== '');
+  };
+  const shown = facts
+    .map((id) => rows[id])
+    .filter((row): row is [string, ReactNode] => !!row && row[1] !== null && row[1] !== '');
   return (
     <div className={styles.details}>
       <dl className={styles.facts}>
@@ -145,7 +151,7 @@ export function DetailsPanel({ item }: { item: ItemDetail }) {
           </div>
         ))}
       </dl>
-      {actors.length > 0 && (
+      {facts.includes('cast') && actors.length > 0 && (
         <div className={styles.cast}>
           <h3 className={styles.subheading}>{t('detail.cast')}</h3>
           <ul>

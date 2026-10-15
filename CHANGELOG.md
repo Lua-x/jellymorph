@@ -2,6 +2,20 @@
 
 Alle nennenswerten Änderungen an Jellymorph. Die Versionen folgen [Semantic Versioning](https://semver.org/lang/de/). Die Release-Notizen auf GitHub entstehen zusätzlich automatisch aus den Commits.
 
+## 1.2.0 – 2026-10-15
+
+Gestaltung anpassen: Jeder ordnet Startseite, Navigation und Detailseiten so, wie er es mag, und Betreiber geben Jellymorph eigene Farben und Schriften.
+
+### Neu
+
+- **Anordnung** in den Einstellungen, für alle Themes: Reihenfolge und Sichtbarkeit der Bereiche der Startseite (Titelbild, Bibliotheken, Weiterschauen, „Neu in …“, Favoriten, Sammlungen, Genres), der Navigation sowie der Knöpfe und Angaben auf Detailseiten. Einträge lassen sich am Griff ziehen oder mit den Pfeilen verschieben (Tastatur, Fernbedienung); jede Änderung wird für Screenreader angesagt. Die Anordnung gilt auf allen Geräten des Benutzers.
+- **Vorgabe für alle:** Administratoren legen eine Anordnung für alle fest. Sie gilt für jede Liste, die ein Benutzer nicht selbst angeordnet hat, und erreicht auch Benutzer, die später dazukommen.
+- **Eigene Farben, Schriften und CSS** aus einem gemappten Ordner `/custom`: `custom.css` für alle Themes, `<theme>.css` für eines, Schriften und Bilder daneben. Ohne Ausnahme in der Content Security Policy.
+
+### Geändert
+
+- Jedes Theme behält seine bisherige Anordnung als Vorgabe. Einzige Ausnahme: Bei Crimson, Glass und Horizon folgen die Bibliotheken jetzt immer auf dieselben Reihen statt auf „die ersten zwei Reihen“ (auch wenn „Weiterschauen“ leer ist).
+
 ## 1.1.0 – 2026-10-14
 
 Verwaltung direkt in Jellymorph: Administratoren pflegen ihre Titel, ohne zur Jellyfin-Oberfläche zu wechseln.

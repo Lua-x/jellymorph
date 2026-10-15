@@ -180,6 +180,7 @@ export function SeriesPage({
   episodes,
   nextUp,
   similar,
+  layout,
 }: SeriesPageProps) {
   const { t } = useTranslation('content');
   const actions = useMediaActions();
@@ -191,6 +192,7 @@ export function SeriesPage({
   return (
     <article className={styles.page} aria-labelledby={headingId}>
       <DetailStage
+        layout={layout}
         item={series}
         headingId={headingId}
         actions={
@@ -261,7 +263,7 @@ export function SeriesPage({
         </section>
         <CastShelf cast={series.cast} />
         <SimilarShelf items={similar} />
-        <InfoPanel item={series} />
+        <InfoPanel item={series} facts={layout.facts} />
       </div>
     </article>
   );

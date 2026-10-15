@@ -4,6 +4,7 @@ import { useMediaQuery } from '@/lib/use-media-query';
 import { useAppearance } from '@/settings/appearance';
 import { ThemeContext, type ThemeContextValue } from './context';
 import { resolveColorScheme } from './color-scheme';
+import { useCustomStyles } from './custom-styles';
 import type { ColorScheme, ThemeId } from './contract';
 import { loadDefaultTheme, loadThemeModule } from './loader';
 import { getThemeManifest } from './registry';
@@ -80,6 +81,8 @@ export function ThemeProvider({
   useLayoutEffect(() => {
     document.documentElement.dataset.motion = motion;
   }, [motion]);
+
+  useCustomStyles(manifest.id);
 
   const value = useMemo<ThemeContextValue>(
     () => ({ manifest, module, fallback, colorScheme: shown.colorScheme }),

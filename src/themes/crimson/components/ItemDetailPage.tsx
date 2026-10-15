@@ -32,7 +32,13 @@ export function MoreLikeThis({ items }: { items: QueryResult<MediaItem[]> }) {
   );
 }
 
-export function ItemDetailPage({ detail, similar, presentation, onClose }: ItemDetailPageProps) {
+export function ItemDetailPage({
+  detail,
+  similar,
+  presentation,
+  onClose,
+  layout,
+}: ItemDetailPageProps) {
   const { t } = useTranslation();
   const { t: tErrors } = useTranslation('errors');
   const headingId = useId();
@@ -65,7 +71,7 @@ export function ItemDetailPage({ detail, similar, presentation, onClose }: ItemD
       )}
       {detail.status === 'success' && (
         <>
-          <DetailHeader item={detail.data} headingId={headingId} />
+          <DetailHeader item={detail.data} headingId={headingId} layout={layout} />
           {detail.data.kind !== 'episode' && (
             <div className={styles.body}>
               <MoreLikeThis items={similar} />

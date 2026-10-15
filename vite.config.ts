@@ -1,5 +1,6 @@
 /// <reference types="vitest/config" />
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
+import { extname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import { msw } from 'msw/vite';
@@ -7,6 +8,31 @@ import { defineConfig, loadEnv, type Plugin, type PreviewServer, type ViteDevSer
 
 /** Path under which the dev server proxies a real Jellyfin server (same as in the container). */
 const PROXY_PATH = '/jellyfin';
+
+/** Keep in sync with src/config/theme-ids.ts and docker/entrypoint.sh. */
+const THEME_IDS = ['default', 'neon-grid', 'crimson', 'glass', 'horizon', 'constellation'];
+
+/** The file types the container serves from /custom (docker/nginx.conf.template). */
+const CUSTOM_TYPES: Record<string, string> = {
+  '.css': 'text/css; charset=utf-8',
+  '.woff2': 'font/woff2',
+  '.woff': 'font/woff',
+  '.ttf': 'font/ttf',
+  '.otf': 'font/otf',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.webp': 'image/webp',
+  '.avif': 'image/avif',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+};
+
+/** Own style sheets in CUSTOM_DIR, found like the container entrypoint finds them in /custom. */
+function customCssIn(folder: string | null) {
+  const has = (name: string) => folder !== null && existsSync(resolve(folder, name));
+  return { all: has('custom.css'), themes: THEME_IDS.filter((id) => has(`${id}.css`)) };
+}
 
 /**
  * Serves /config.js during development and `vite preview`.
@@ -21,6 +47,8 @@ function readEnv(env: Record<string, string | undefined>, name: string): string 
 function devAppConfig(env: Record<string, string | undefined>): Plugin {
   const devUrl = readEnv(env, 'JELLYFIN_DEV_URL');
   const demoMode = readEnv(env, 'DEMO_MODE');
+  const customDir = readEnv(env, 'CUSTOM_DIR');
+  const customRoot = customDir === null ? null : resolve(customDir);
   const config = {
     jellyfinUrl: readEnv(env, 'JELLYFIN_URL'),
     lockServer: readEnv(env, 'LOCK_SERVER') === 'true',
@@ -28,6 +56,7 @@ function devAppConfig(env: Record<string, string | undefined>): Plugin {
     defaultTheme: readEnv(env, 'DEFAULT_THEME') ?? 'default',
     appTitle: readEnv(env, 'APP_TITLE') ?? 'Jellymorph',
     demoMode: demoMode === null ? devUrl === null : demoMode === 'true',
+    customCss: customCssIn(customRoot),
   };
   const body = `window.__APP_CONFIG__ = ${JSON.stringify(config)};\n`;
   const serve = (server: ViteDevServer | PreviewServer) => {
@@ -35,6 +64,21 @@ function devAppConfig(env: Record<string, string | undefined>): Plugin {
       response.setHeader('Content-Type', 'text/javascript; charset=utf-8');
       response.setHeader('Cache-Control', 'no-cache');
       response.end(body);
+    });
+    // The mounted folder of the container, for development and the end-to-end tests.
+    server.middlewares.use('/custom/', (request, response) => {
+      const name = decodeURIComponent((request.url ?? '').split('?')[0] ?? '').replace(/^\/+/, '');
+      const file = customRoot === null ? null : resolve(customRoot, name);
+      const inside = customRoot !== null && file?.startsWith(customRoot + sep) === true;
+      const type = CUSTOM_TYPES[extname(name).toLowerCase()];
+      if (!file || !type || !inside || !existsSync(file) || !statSync(file).isFile()) {
+        response.statusCode = 404;
+        response.end();
+        return;
+      }
+      response.setHeader('Content-Type', type);
+      response.setHeader('Cache-Control', 'no-cache');
+      response.end(readFileSync(file));
     });
   };
   return { name: 'jellymorph:dev-config', configureServer: serve, configurePreviewServer: serve };

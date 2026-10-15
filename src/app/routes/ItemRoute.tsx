@@ -3,6 +3,8 @@ import type { ItemDetail } from '@/domain/types';
 import type { Presentation } from '@/themes/contract';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useItemDetail, useSeries, useSimilarItems } from '@/hooks/useItem';
+import { useDetailLayout } from '@/hooks/useLayout';
+import { useThemeOptions } from '@/themes/context';
 import { ThemeSlot } from '@/themes/ThemeSlot';
 
 function useClose(): () => void {
@@ -18,6 +20,7 @@ function SeriesView({ series, presentation }: { series: ItemDetail; presentation
   const model = useSeries(series.id, params.get('season'));
   const similar = useSimilarItems(series.id);
   const onClose = useClose();
+  const layout = useDetailLayout(useThemeOptions().layout);
   return (
     <ThemeSlot
       name="SeriesPage"
@@ -31,6 +34,7 @@ function SeriesView({ series, presentation }: { series: ItemDetail; presentation
         similar,
         presentation,
         onClose,
+        layout,
       }}
     />
   );
@@ -42,12 +46,15 @@ function ItemView({ itemId, presentation }: { itemId: string; presentation: Pres
   const isSeries = detail.status === 'success' && detail.data.kind === 'series';
   const similar = useSimilarItems(itemId, detail.status === 'success' && !isEpisode && !isSeries);
   const onClose = useClose();
+  const layout = useDetailLayout(useThemeOptions().layout);
   useDocumentTitle(detail.status === 'success' ? detail.data.name : null);
 
   if (detail.status === 'success' && detail.data.kind === 'series') {
     return <SeriesView series={detail.data} presentation={presentation} />;
   }
-  return <ThemeSlot name="ItemDetailPage" props={{ detail, similar, presentation, onClose }} />;
+  return (
+    <ThemeSlot name="ItemDetailPage" props={{ detail, similar, presentation, onClose, layout }} />
+  );
 }
 
 /** Details as a page, or as an overlay above the previous page (see ShellRoutes). */

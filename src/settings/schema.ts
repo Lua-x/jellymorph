@@ -4,6 +4,7 @@
  * Unknown or invalid values (e.g. a theme from a newer version) are ignored, never applied.
  */
 import { isThemeId, type ThemeId } from '@/config/theme-ids';
+import { layoutFromJson, layoutToJson, parseLayout, type Layout } from '@/domain/layout';
 import { DEFAULT_LANGUAGE, isLanguage, type Language } from '@/i18n';
 
 export type ColorSchemePreference = 'auto' | 'dark' | 'light';
@@ -19,6 +20,8 @@ export interface UserSettings {
   trailerAutoplay: boolean;
   /** Interface sounds of themes that have them (off by default). */
   uiSounds: boolean;
+  /** The user's own arrangement of lists (phase 14); lists not in it follow the defaults. */
+  layout: Layout;
 }
 
 export const COLOR_SCHEME_PREFERENCES = ['auto', 'dark', 'light'] as const;
@@ -33,6 +36,7 @@ export function defaultUserSettings(theme: ThemeId): UserSettings {
     motion: 'system',
     trailerAutoplay: true,
     uiSounds: false,
+    layout: {},
   };
 }
 
@@ -50,6 +54,8 @@ export function parseUserSettings(raw: unknown): Partial<UserSettings> {
   if (includes(MOTION_PREFERENCES, value.motion)) result.motion = value.motion;
   if (typeof value.trailerAutoplay === 'boolean') result.trailerAutoplay = value.trailerAutoplay;
   if (typeof value.uiSounds === 'boolean') result.uiSounds = value.uiSounds;
+  if (typeof value.layout === 'object' && value.layout !== null)
+    result.layout = parseLayout(value.layout);
   return result;
 }
 
@@ -66,6 +72,7 @@ export function toCustomPrefs(settings: UserSettings): Record<string, string> {
     [`${PREFIX}motion`]: settings.motion,
     [`${PREFIX}trailerAutoplay`]: String(settings.trailerAutoplay),
     [`${PREFIX}uiSounds`]: String(settings.uiSounds),
+    [`${PREFIX}layout`]: layoutToJson(settings.layout),
   };
 }
 
@@ -89,5 +96,7 @@ export function fromCustomPrefs(
     motion: prefs[`${PREFIX}motion`],
     trailerAutoplay: flag('trailerAutoplay'),
     uiSounds: flag('uiSounds'),
+    // Saved before arrangements existed: no value, so the defaults stay.
+    layout: prefs[`${PREFIX}layout`] == null ? undefined : layoutFromJson(prefs[`${PREFIX}layout`]),
   });
 }

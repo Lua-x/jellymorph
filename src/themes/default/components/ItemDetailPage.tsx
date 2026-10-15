@@ -5,7 +5,7 @@ import { CastList, DetailHeader, DetailSkeleton } from './DetailHeader';
 import styles from './ItemDetailPage.module.css';
 import { ErrorState } from './States';
 
-export function ItemDetailPage({ detail, similar }: ItemDetailPageProps) {
+export function ItemDetailPage({ detail, similar, layout }: ItemDetailPageProps) {
   const { t } = useTranslation('content');
 
   if (detail.status === 'pending') return <DetailSkeleton />;
@@ -14,7 +14,7 @@ export function ItemDetailPage({ detail, similar }: ItemDetailPageProps) {
 
   return (
     <article className={styles.page}>
-      <DetailHeader item={item} />
+      <DetailHeader item={item} layout={layout} />
       <CastList cast={item.cast} />
       {item.kind !== 'episode' && !(similar.status === 'success' && similar.data.length === 0) && (
         <ThemeSlot

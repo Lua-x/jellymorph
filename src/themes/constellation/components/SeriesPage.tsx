@@ -17,6 +17,7 @@ export function SeriesPage({
   episodes,
   nextUp,
   similar,
+  layout,
 }: SeriesPageProps) {
   const { t } = useTranslation('content');
   const actions = useMediaActions();
@@ -26,6 +27,7 @@ export function SeriesPage({
   return (
     <article className={styles.page} aria-labelledby={headingId}>
       <DetailHeader
+        layout={layout}
         item={series}
         headingId={headingId}
         actions={
@@ -66,7 +68,7 @@ export function SeriesPage({
           nextUpId={next?.id ?? null}
         />
         <SuggestionsSection items={similar} />
-        <DetailsSection item={series} />
+        <DetailsSection item={series} facts={layout.facts} />
       </div>
     </article>
   );

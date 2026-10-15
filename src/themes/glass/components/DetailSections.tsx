@@ -1,3 +1,4 @@
+import type { FactId } from '@/domain/layout';
 import { useId, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CastMember, ItemDetail, MediaItem, QueryResult } from '@/domain/types';
@@ -64,8 +65,8 @@ export function SimilarShelf({ items }: { items: QueryResult<MediaItem[]> }) {
   );
 }
 
-/** The facts in a panel of frosted glass: two columns of label and value. */
-export function InfoPanel({ item }: { item: ItemDetail }) {
+/** The facts in a panel of frosted glass: two columns of label and value, in `facts` order. */
+export function InfoPanel({ item, facts }: { item: ItemDetail; facts: readonly FactId[] }) {
   const { t, i18n } = useTranslation('content');
   const { t: tGlass } = useTranslation('theme-glass');
   const headingId = useId();
@@ -77,26 +78,34 @@ export function InfoPanel({ item }: { item: ItemDetail }) {
     : item.year !== null
       ? String(item.year)
       : null;
-  const rows: [string, ReactNode][] = [
-    [tGlass('detail.genres'), item.genres.join(', ') || null],
-    [tGlass('detail.released'), released],
-    [tGlass('detail.runtime'), item.kind === 'series' ? null : runtimeText(t, item.runtimeMinutes)],
-    [tGlass('detail.rated'), item.officialRating],
-    [
+  const rows: Partial<Record<FactId, [string, ReactNode]>> = {
+    genres: [tGlass('detail.genres'), item.genres.join(', ') || null],
+    year: [tGlass('detail.released'), released],
+    runtime: [
+      tGlass('detail.runtime'),
+      item.kind === 'series' ? null : runtimeText(t, item.runtimeMinutes),
+    ],
+    officialRating: [tGlass('detail.rated'), item.officialRating],
+    directors: [
       t('detail.director', { count: directors.length }),
       directors.length > 0 ? <ShortList entries={directors.map((person) => person.name)} /> : null,
     ],
-    [t('detail.studios'), item.studios.length > 0 ? <ShortList entries={item.studios} /> : null],
-    [
+    studios: [
+      t('detail.studios'),
+      item.studios.length > 0 ? <ShortList entries={item.studios} /> : null,
+    ],
+    audio: [
       t('detail.audio'),
       item.audioTracks.length > 0 ? <TrackList tracks={item.audioTracks} /> : null,
     ],
-    [
+    subtitles: [
       t('detail.subtitles'),
       item.subtitleTracks.length > 0 ? <TrackList tracks={item.subtitleTracks} /> : null,
     ],
-  ];
-  const shown = rows.filter(([, value]) => value !== null && value !== '');
+  };
+  const shown = facts
+    .map((id) => rows[id])
+    .filter((row): row is [string, ReactNode] => !!row && row[1] !== null && row[1] !== '');
   if (shown.length === 0) return null;
   return (
     <section className={styles.section} aria-labelledby={headingId}>

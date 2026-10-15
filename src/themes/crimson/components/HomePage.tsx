@@ -1,16 +1,17 @@
 import type { TFunction } from 'i18next';
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Genre, HomeSection, Library, QueryResult } from '@/domain/types';
+import type { Genre, HomeRow, Library, QueryResult } from '@/domain/types';
 import { paths } from '@/navigation/paths';
 import { AppLink } from '@/ui/AppLink';
 import { JellyImage } from '@/ui/JellyImage';
 import { ThemeSlot } from '../../ThemeSlot';
 import type { HomePageProps } from '../../contract';
+import { homeIsEmpty, splitHero } from '../../default/components/home';
 import { EmptyState, ErrorState } from '../../default/components/States';
 import styles from './HomePage.module.css';
 
-function sectionTitle(t: TFunction<'content'>, section: HomeSection): string {
+function sectionTitle(t: TFunction<'content'>, section: HomeRow): string {
   if (section.kind === 'latest')
     return t('home.sections.latest', { library: section.library?.name ?? '' });
   return t(`home.sections.${section.kind}`);
@@ -73,41 +74,45 @@ function GenreList({ genres }: { genres: QueryResult<Genre[]> }) {
   );
 }
 
-/** Hero, then rows of wide cards; libraries after the first two rows, genres at the end. */
-export function HomePage({ hero, libraries, sections }: HomePageProps) {
+/** Hero, then rows of wide cards; by default libraries after the first two rows, genres last. */
+export function HomePage(props: HomePageProps) {
+  const { hero, libraries, sections } = props;
   const { t } = useTranslation('content');
   const { t: tCommon } = useTranslation();
-  const nothing =
-    sections.length === 0 &&
-    libraries.status === 'success' &&
-    libraries.data.length === 0 &&
-    hero.status !== 'pending';
-  const rows = sections.filter((section) => section.kind !== 'genres');
-  const genres = sections.find((section) => section.kind === 'genres');
-  const renderRow = (section: (typeof rows)[number]) => (
-    <ThemeSlot
-      key={section.id}
-      name="Row"
-      props={{
-        title: sectionTitle(t, section),
-        items: section.items,
-        variant: 'landscape',
-        seeAll: section.seeAll,
-        context: 'page',
-      }}
-    />
-  );
+  const { heroShown, below } = splitHero(sections);
 
   return (
     <div className={styles.page}>
       <h1 className="visually-hidden">{tCommon('nav.home')}</h1>
-      <ThemeSlot name="Hero" props={{ items: hero, context: 'page' }} />
-      <div className={styles.rows}>
-        {nothing && <EmptyState title={t('home.empty.title')} message={t('home.empty.message')} />}
-        {rows.slice(0, 2).map(renderRow)}
-        <LibraryRow libraries={libraries} />
-        {rows.slice(2).map(renderRow)}
-        {genres?.kind === 'genres' && <GenreList genres={genres.genres} />}
+      {heroShown && <ThemeSlot name="Hero" props={{ items: hero, context: 'page' }} />}
+      <div className={heroShown ? styles.rows : `${styles.rows} ${styles.standalone}`}>
+        {homeIsEmpty(props) && (
+          <EmptyState title={t('home.empty.title')} message={t('home.empty.message')} />
+        )}
+        {below.map((section) => {
+          switch (section.kind) {
+            case 'hero':
+              return null;
+            case 'libraries':
+              return <LibraryRow key={section.id} libraries={libraries} />;
+            case 'genres':
+              return <GenreList key={section.id} genres={section.genres} />;
+            default:
+              return (
+                <ThemeSlot
+                  key={section.id}
+                  name="Row"
+                  props={{
+                    title: sectionTitle(t, section),
+                    items: section.items,
+                    variant: 'landscape',
+                    seeAll: section.seeAll,
+                    context: 'page',
+                  }}
+                />
+              );
+          }
+        })}
       </div>
     </div>
   );

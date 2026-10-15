@@ -10,6 +10,7 @@
  */
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { resolve } from 'node:path';
 import { runInNewContext } from 'node:vm';
 
 const image = process.argv[2] ?? '';
@@ -198,6 +199,7 @@ async function defaults() {
       defaultTheme: 'default',
       appTitle: 'Jellymorph',
       demoMode: false,
+      customCss: { all: false, themes: [] },
     });
   });
 
@@ -276,6 +278,7 @@ async function fixedServer() {
       defaultTheme: 'default',
       appTitle: title,
       demoMode: false,
+      customCss: { all: false, themes: [] },
     });
   });
 
@@ -426,8 +429,23 @@ async function proxy() {
 async function demoE2e() {
   console.log('Playwright suite in demo mode');
   const port = 18090;
-  const container = start('demo', port, { DEMO_MODE: 'true' });
+  // The folder for own styles, as users mount it (phase 14); e2e/customization.spec uses it.
+  const custom = resolve(import.meta.dirname, '..', 'e2e', 'fixtures', 'custom');
+  const container = start('demo', port, { DEMO_MODE: 'true' }, ['-v', `${custom}:/custom:ro`]);
   await waitHealthy(port, container);
+
+  await check('own styles from the mounted folder', container, async () => {
+    const config = (await readConfig(port)) as { customCss: unknown };
+    assert.deepEqual(config.customCss, { all: true, themes: ['crimson'] });
+    const sheet = await get(port, '/custom/custom.css');
+    assert.equal(sheet.response.status, 200);
+    assert.match(header(sheet.response, 'content-type'), /text\/css/);
+    assert.equal(header(sheet.response, 'cache-control'), 'no-cache');
+    assert.ok(cspOf(sheet.response).get('default-src'), 'security headers on own files');
+    // Only styles, fonts and pictures leave the folder.
+    assert.equal((await get(port, '/custom/not-served.txt')).response.status, 404);
+    assert.equal((await get(port, '/custom/missing.css')).response.status, 404);
+  });
   const result = spawnSync(
     'npx',
     ['playwright', 'test', '--grep-invert', '@shots|@previews|@readme'],

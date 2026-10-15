@@ -44,7 +44,8 @@ type IconName =
   | 'forward'
   | 'chapters'
   | 'skipNext'
-  | 'arrowLeft';
+  | 'arrowLeft'
+  | 'grip';
 
 const HEART =
   'M12 20s-7.5-4.6-9.2-9.4C1.6 7.2 3.8 4 7 4c2.1 0 3.5 1.1 5 3 1.5-1.9 2.9-3 5-3 3.2 0 5.4 3.2 4.2 6.6C19.5 15.4 12 20 12 20z';
@@ -56,6 +57,8 @@ const paths: Record<IconName, string> = {
   chevronLeft: 'M15 6l-6 6 6 6',
   filter: 'M4 6h16M7 12h10M10 18h4',
   arrowUp: 'M12 19V5M6 11l6-6 6 6',
+  // Six dots: something to grab and drag.
+  grip: 'M9 5.5a.5.5 0 1 0 0 1a.5.5 0 1 0 0-1zM15 5.5a.5.5 0 1 0 0 1a.5.5 0 1 0 0-1zM9 11.5a.5.5 0 1 0 0 1a.5.5 0 1 0 0-1zM15 11.5a.5.5 0 1 0 0 1a.5.5 0 1 0 0-1zM9 17.5a.5.5 0 1 0 0 1a.5.5 0 1 0 0-1zM15 17.5a.5.5 0 1 0 0 1a.5.5 0 1 0 0-1z',
   arrowDown: 'M12 5v14M6 13l6 6 6-6',
   star: 'M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z',
   play: 'M8 5.5v13l10-6.5z',

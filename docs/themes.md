@@ -147,6 +147,8 @@ Alle Werte stehen als CSS Custom Properties unter dem Theme-Scope. Theme-CSS ble
 
 **Pflicht-Tokens** (`REQUIRED_TOKENS`) für jedes Farbschema: Farben (`--color-bg`, `-surface`, `-surface-raised`, `-surface-hover`, `-border`, `-text`, `-text-muted`, `-accent`, `-on-accent`, `-accent-text`, `-focus`, `-danger`, `-success`, `-progress`, `-overlay`), Schriften (`--font-body`, `-display`, `-mono`), Radien (`--radius-card`, `-control`), Schatten (`--shadow-card`, `-overlay`), Zeiten und Kurven (`--duration-fast`, `-base`, `-slow`, `--ease-standard`, `-emphasized`) und `--focus-ring`.
 
+**Tokens sind öffentlich:** Betreiber können sie mit eigenem CSS aus dem gemappten Ordner überschreiben (README, „Eigene Gestaltung“). Neue Tokens daher sprechend benennen und nicht ohne Not umbenennen.
+
 **Kontraste** (`CONTRAST_PAIRS`) rechnet `src/themes/tokens.test.ts` nach: Text auf Hintergrund und Flächen mindestens 4,5:1, Fokusfarbe auf Hintergrund mindestens 3:1. Effekte wie Glow oder Scanlines dürfen nie über Fließtext liegen.
 
 **Theme-neutrale Größen** liegen in `src/app/base.css` und gelten für alle Themes: `--page-gutter` (Seitenrand inklusive TV-Overscan), `--overscan-x`/`--overscan-y`, z-Index-Stufen, Safe-Area.
@@ -195,6 +197,12 @@ Der Player gehört der App. `PlayerOverlay` bekommt ein `PlayerModel` mit Zustan
 Nur Details (`/item/:id`) öffnen als Overlay; `overlay` an anderen Zielen (Person, Sammlung) ist ein normaler Link. Ein Overlay-Link innerhalb eines Overlays ersetzt den Verlaufseintrag, Schließen führt also immer zur Seite zurück. Crimsons `DetailSheet` ist die Vorlage.
 
 **Verwaltung:** Jede Detailseite bindet `<ItemAdmin item={item} renderTrigger={…} />` neben Favorit und „gesehen“ ein. Für alle anderen rendert es nichts. Das Theme liefert nur den Knopf: `renderTrigger` bekommt `label` und `buttonProps` (Ref, `aria-expanded`, `aria-controls`, `onClick`), die auf den eigenen Knopf gehören; ein runder Knopf ohne Text nimmt `label` als `aria-label`. Menü und Dialoge sind gemeinsam und nehmen die Tokens des Themes an (`--color-surface`, `--color-border`, `--radius-card`, `--shadow-overlay` …). Das Menü erscheint in der obersten Ebene des Browsers, `overflow: hidden` im Kopf schneidet es also nicht ab. `NavModel.dashboard` ist für Administratoren der Link zur Server-Verwaltung von Jellyfin (sonst `null`); jedes Profilmenü zeigt ihn als Link mit `target="_blank"`.
+
+**Anordnung (Phase 14):** Startseite, Detailseiten und Navigation kommen fertig angeordnet an, nach dem Theme, der Vorgabe des Administrators oder der Anordnung des Benutzers. Jedes Theme legt seine eigene Anordnung in `options.layout` fest (`home`, `detailActions`, `facts`; Vorlage: `default/layout.ts`) und zeichnet dann nur noch in der Reihenfolge, in der es die Daten bekommt:
+
+- `HomePageProps.sections` enthält außer den Reihen und Genres auch `{ kind: 'hero' }` und `{ kind: 'libraries' }` an ihrem Platz; ausgeblendete Bereiche fehlen. `splitHero()`, `homeIsEmpty()` und `rowVariant()` aus `default/components/home.ts` helfen beim Zeichnen.
+- `ItemDetailPageProps.layout` und `SeriesPageProps.layout` haben `actions` (Knöpfe in Reihenfolge) und `facts` (Angaben in Reihenfolge, nur die sichtbaren). Am einfachsten baut das Theme eine Zuordnung von ID zu Element und zeichnet `layout.actions.map(…)`; Angaben an mehreren Stellen folgen derselben Liste.
+- `NavModel.items` ist schon angeordnet; Themes ordnen die Einträge nicht selbst um (die Suche als Symbol an anderer Stelle ist erlaubt).
 
 **Oberflächenklänge:** Ein Theme mit `features: { uiSounds: true }` bekommt in den Einstellungen den Schalter „Klänge der Oberfläche“ (standardmäßig aus, pro Benutzer am Server gespeichert). Das Theme erzeugt die Klänge selbst und spielt sie nur, solange `useUiSounds()` `true` liefert.
 

@@ -19,6 +19,7 @@ import { SeriesPage } from './components/SeriesPage';
 import { SettingsPage } from './components/SettingsPage';
 import { EmptyState, ErrorState, LoadingState } from './components/States';
 import { Toast } from './components/Toast';
+import { classicLayout } from './layout';
 
 /** Classic: the reference implementation of every slot and the fallback for all themes. */
 export const theme: CompleteThemeModule = {
@@ -48,5 +49,6 @@ export const theme: CompleteThemeModule = {
     detailPresentation: 'page',
     heroItemCount: 6,
     cardShape: 'mixed',
+    layout: classicLayout,
   },
 };

@@ -10,6 +10,8 @@ set -eu
 html_dir=${JELLYMORPH_HTML_DIR:-/usr/share/nginx/html}
 template_dir=${JELLYMORPH_TEMPLATE_DIR:-/etc/jellymorph}
 out_dir=${JELLYMORPH_RUNTIME_DIR:-/tmp/jellymorph}
+# Own styles, fonts and pictures (phase 14); nginx serves them from this folder.
+custom_dir=${JELLYMORPH_CUSTOM_DIR:-/custom}
 
 # Keep in sync with src/config/theme-ids.ts (checked by src/config/theme-ids.test.ts).
 theme_ids="default neon-grid crimson glass horizon constellation"
@@ -102,6 +104,24 @@ if [ -n "$proxy_target" ]; then
   proxy_path=/jellyfin
 fi
 
+# Own style sheets: custom.css for every theme, <theme>.css for one. Found once at start; changes
+# to these files apply on the next page load, new files after a restart.
+custom_all=false
+custom_themes=""
+custom_found=""
+if [ -d "$custom_dir" ]; then
+  if [ -f "$custom_dir/custom.css" ]; then
+    custom_all=true
+    custom_found="custom.css"
+  fi
+  for id in $theme_ids; do
+    if [ -f "$custom_dir/$id.css" ]; then
+      custom_themes="$custom_themes${custom_themes:+, }\"$id\""
+      custom_found="$custom_found${custom_found:+, }$id.css"
+    fi
+  done
+fi
+
 # Which servers the browser may talk to (docs/architecture.md §14). Demo mode and the proxy stay on
 # the own origin; a locked server is exactly one origin; otherwise users may add any server.
 if [ "$demo_mode" = true ]; then
@@ -149,7 +169,8 @@ window.__APP_CONFIG__ = {
   "proxyPath": $(json_or_null "$proxy_path"),
   "defaultTheme": $(json_string "$default_theme"),
   "appTitle": $(json_string "$app_title"),
-  "demoMode": $demo_mode
+  "demoMode": $demo_mode,
+  "customCss": { "all": $custom_all, "themes": [$custom_themes] }
 };
 EOF
 
@@ -204,5 +225,6 @@ else
 fi
 
 log "server: $mode; default theme: $default_theme; title: $app_title"
+log "own styles: ${custom_found:-none}"
 
 exec "$@"
