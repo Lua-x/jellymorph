@@ -23,15 +23,15 @@ describe('release notes', () => {
         'docker pull ghcr.io/lua-x/jellymorph:1.2.0',
         '```',
         '',
-        '## Neu',
+        '## New',
         '',
         '- add the player (phase 3) (aaaaaaa)',
         '',
-        '## Behoben',
+        '## Fixed',
         '',
         '- **player:** keep the subtitle choice (bbbbbbb)',
         '',
-        '## Schneller',
+        '## Faster',
         '',
         '- smaller base bundle (ddddddd)',
         '',
@@ -52,7 +52,7 @@ describe('release notes', () => {
       options,
     );
     expect(notes).toContain(
-      '## Achtung: inkompatible Änderungen\n\n' +
+      '## Breaking changes\n\n' +
         '- new settings format (1111111)\n' +
         '- rename variables – APP_NAME is now APP_TITLE (2222222)',
     );

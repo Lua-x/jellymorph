@@ -15,9 +15,9 @@ interface Entry {
 }
 
 const SECTIONS = [
-  { type: 'feat', title: 'Neu' },
-  { type: 'fix', title: 'Behoben' },
-  { type: 'perf', title: 'Schneller' },
+  { type: 'feat', title: 'New' },
+  { type: 'fix', title: 'Fixed' },
+  { type: 'perf', title: 'Faster' },
 ] as const;
 
 const CONVENTIONAL = /^(?<type>[a-z]+)(?:\((?<scope>[^)]*)\))?(?<breaking>!)?: (?<text>.+)$/;
@@ -52,7 +52,7 @@ export function releaseNotes(
   const parts = [
     `## Docker\n\n\`\`\`bash\ndocker pull ${options.image}:${options.version}\n\`\`\``,
   ];
-  if (breaking.length > 0) parts.push(`## Achtung: inkompatible Änderungen\n\n${list(breaking)}`);
+  if (breaking.length > 0) parts.push(`## Breaking changes\n\n${list(breaking)}`);
   for (const section of SECTIONS) {
     const entries = sections.get(section.type) ?? [];
     if (entries.length > 0) parts.push(`## ${section.title}\n\n${list(entries)}`);
