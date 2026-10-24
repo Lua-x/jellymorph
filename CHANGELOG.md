@@ -2,6 +2,12 @@
 
 All notable changes to Jellymorph. Versions follow [Semantic Versioning](https://semver.org/). The release notes on GitHub are also generated automatically from the commits.
 
+## 1.2.1 – 2026-10-25
+
+### Fixed
+
+- Opening a detail page no longer wakes a sleeping hard disk with the artwork. Jellymorph asked for pictures in a quality that made Jellyfin send the original file (for backdrops and logos often stored next to the media) instead of its cached copy. Pictures now always come from Jellyfin's image cache after the first request, as in jellyfin-web.
+
 ## 1.2.0 – 2026-10-15
 
 Make it your own: everybody arranges the home page, the navigation and the detail pages the way they like, and operators give Jellymorph their own colors and fonts.

@@ -3,6 +3,7 @@
  * headsets and lock screens, and a screen wake lock while a video plays.
  */
 import type { MediaItem } from '@/domain/types';
+import { sizedImageUrl } from '@/ui/image-url';
 
 export interface MediaSessionHandlers {
   play: () => void;
@@ -16,9 +17,8 @@ export interface MediaSessionHandlers {
 function artwork(item: MediaItem): MediaImage[] {
   const image = item.images.primary ?? item.images.thumb ?? item.images.backdrop;
   if (!image) return [];
-  const separator = image.url.includes('?') ? '&' : '?';
   return [256, 512].map((size) => ({
-    src: `${image.url}${separator}maxWidth=${String(size)}&quality=90`,
+    src: sizedImageUrl(image.url, size),
     sizes: `${String(size)}x${String(Math.round(size / (image.aspectRatio ?? 1)))}`,
   }));
 }
