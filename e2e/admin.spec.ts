@@ -14,6 +14,7 @@ const THEMES = [
   { name: 'Glass', id: 'glass' },
   { name: 'Horizon', id: 'horizon' },
   { name: 'Constellation', id: 'constellation' },
+  { name: 'Cobalt', id: 'cobalt' },
 ] as const;
 
 /** A 1×1 PNG, as uploaded from the device. */

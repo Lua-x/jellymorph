@@ -14,7 +14,7 @@ out_dir=${JELLYMORPH_RUNTIME_DIR:-/tmp/jellymorph}
 custom_dir=${JELLYMORPH_CUSTOM_DIR:-/custom}
 
 # Keep in sync with src/config/theme-ids.ts (checked by src/config/theme-ids.test.ts).
-theme_ids="default neon-grid crimson glass horizon constellation"
+theme_ids="default neon-grid crimson glass horizon constellation cobalt onyx"
 
 # http(s), host name or [IPv6], optional port and base path. No query, user info or spaces, so the
 # value can go into JSON, the CSP and the nginx configuration without escaping.

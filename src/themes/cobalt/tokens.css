@@ -1,0 +1,54 @@
+/*
+ * Cobalt – design tokens (docs/architecture.md §7.4). Dark only: a deep night blue with a cobalt
+ * accent (#0047ab, ΔE76 ≈ 32 to the brand blue of the model). Main buttons are white.
+ */
+
+[data-theme='cobalt'] {
+  color-scheme: dark;
+
+  --color-bg: #070e22;
+  --color-surface: #0f1834;
+  --color-surface-raised: #162245;
+  --color-surface-hover: #1e2c58;
+  --color-border: #2d3c6c;
+  --color-text: #f2f5ff;
+  --color-text-muted: #a9b5d8;
+  --color-accent: #0047ab;
+  --color-on-accent: #ffffff;
+  --color-accent-text: #8aa4ff;
+  --color-focus: #ffffff;
+  --color-danger: #ff8f8f;
+  --color-success: #4fd18b;
+  --color-progress: #4d7dff;
+  --color-overlay: rgb(3 7 18 / 74%);
+
+  --font-body: 'Manrope Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Manrope Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', 'SFMono-Regular', Consolas, monospace;
+
+  --radius-card: 0.375rem;
+  --radius-control: 0.375rem;
+  --shadow-card: 0 0.375rem 1rem rgb(2 6 18 / 45%);
+  --shadow-overlay: 0 1rem 3rem rgb(2 6 18 / 75%);
+
+  --duration-fast: 120ms;
+  --duration-base: 220ms;
+  --duration-slow: 420ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --focus-ring: 0 0 0 2px var(--color-bg), 0 0 0 4px #ffffff;
+
+  --logo-shape: #0047ab;
+  --logo-dot: #ffffff;
+  --backdrop-glow: rgb(0 71 171 / 30%);
+  --backdrop-glow-2: rgb(77 125 255 / 12%);
+
+  /* Theme-own tokens */
+  --cb-nav-height: 4.25rem;
+  --cb-glow: #0b1d4d;
+  --cb-button: #ffffff;
+  --cb-button-hover: #dfe6ff;
+  --cb-on-button: #070e22;
+  --cb-secondary: rgb(64 82 132 / 62%);
+  --cb-secondary-hover: rgb(92 112 170 / 78%);
+}

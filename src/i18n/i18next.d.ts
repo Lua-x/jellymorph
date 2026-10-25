@@ -6,6 +6,7 @@ import type errors from './locales/de/errors.json';
 import type player from './locales/de/player.json';
 import type settings from './locales/de/settings.json';
 import type themes from './locales/de/themes.json';
+import type cobalt from '../themes/cobalt/i18n/de.json';
 import type constellation from '../themes/constellation/i18n/de.json';
 import type crimson from '../themes/crimson/i18n/de.json';
 import type glass from '../themes/glass/i18n/de.json';
@@ -28,6 +29,7 @@ declare module 'i18next' {
       'theme-glass': typeof glass;
       'theme-horizon': typeof horizon;
       'theme-constellation': typeof constellation;
+      'theme-cobalt': typeof cobalt;
     };
   }
 }

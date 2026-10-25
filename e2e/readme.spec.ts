@@ -125,6 +125,19 @@ test.describe('README pictures @readme', () => {
     await save(page, 'horizon-card');
   });
 
+  test('Cobalt', async ({ page }) => {
+    await signInAs(page, 'Alex');
+    await chooseTheme(page, 'Cobalt', 'cobalt');
+    await home(page, 'cobalt');
+    await openFromSearch(page, 'Hafenviertel', 'Serien');
+    // The episodes with the season pill, below the header.
+    await page.getByRole('heading', { name: 'Episoden' }).evaluate((heading) => {
+      window.scrollTo(0, heading.getBoundingClientRect().top + window.scrollY - 540);
+    });
+    await settle(page);
+    await save(page, 'cobalt-series');
+  });
+
   test('Constellation', async ({ page }) => {
     await signInAs(page, 'Alex');
     await chooseTheme(page, 'Constellation', 'constellation');

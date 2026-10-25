@@ -6,6 +6,8 @@ export const THEME_IDS = [
   'glass',
   'horizon',
   'constellation',
+  'cobalt',
+  'onyx',
 ] as const;
 
 export type ThemeId = (typeof THEME_IDS)[number];

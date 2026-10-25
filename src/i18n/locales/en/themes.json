@@ -22,5 +22,13 @@
   "constellation": {
     "name": "Constellation",
     "description": "Starry sky, large library tiles and an expanding sidebar."
+  },
+  "cobalt": {
+    "name": "Cobalt",
+    "description": "Deep blue, a title stage with a filmstrip, poster rows and channel-like library tiles."
+  },
+  "onyx": {
+    "name": "Onyx",
+    "description": "Almost black with a blue shimmer, a side panel, a tall spotlight and ranked rows."
   }
 }

@@ -17,7 +17,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="License: AGPL-3.0" /></a>
 </p>
 
-> **Version 1.2:** six themes, the full feature set, administration of single titles for administrators and now your own arrangement and styling. What changed is in the [changelog](CHANGELOG.md).
+> **Version 1.3:** seven themes, now with Cobalt, the full feature set, administration of single titles for administrators and your own arrangement and styling. What changed is in the [changelog](CHANGELOG.md).
 
 ## Themes
 
@@ -77,6 +77,15 @@ A starry sky as background, an icon rail that expands on focus, banners with the
   <img src="docs/screenshots/constellation-series.jpg" width="49%" alt="Constellation: a series with a row of episodes" />
 </p>
 
+### Cobalt
+
+Deep night blue, a large title stage with a filmstrip of the featured titles below it, rows of posters and the libraries as channel tiles. Detail pages show the picture large on the right and the episodes as a list.
+
+<p>
+  <img src="docs/screenshots/cobalt-home.jpg" width="49%" alt="Cobalt: title stage with filmstrip and channel tiles" />
+  <img src="docs/screenshots/cobalt-series.jpg" width="49%" alt="Cobalt: a series with the season pill and its episodes" />
+</p>
+
 The pictures show the demo mode with made-up titles and generated artwork.
 
 ## Features
@@ -109,14 +118,14 @@ Jellymorph is then available at `http://<host>:8080`. A complete Docker Compose 
 
 ### Variables
 
-| Variable                | Purpose                                                                                                                            | Default      |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| `JELLYFIN_PROXY_TARGET` | Address of your Jellyfin server. Jellymorph passes it through under `/jellyfin` (recommended).                                     | empty        |
-| `JELLYFIN_URL`          | Server address pre-filled at sign-in. The browser connects directly.                                                               | empty        |
-| `LOCK_SERVER`           | `true`: the address from `JELLYFIN_URL` is fixed and cannot be changed in the app.                                                 | `false`      |
-| `DEFAULT_THEME`         | Theme for users without a choice of their own: `default` (Classic), `neon-grid`, `crimson`, `glass`, `horizon` or `constellation`. | `default`    |
-| `APP_TITLE`             | Name in the browser tab and when installed as an app                                                                               | `Jellymorph` |
-| `DEMO_MODE`             | `true`: a demo with made-up data, without any Jellyfin server                                                                      | `false`      |
+| Variable                | Purpose                                                                                                                                      | Default      |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| `JELLYFIN_PROXY_TARGET` | Address of your Jellyfin server. Jellymorph passes it through under `/jellyfin` (recommended).                                               | empty        |
+| `JELLYFIN_URL`          | Server address pre-filled at sign-in. The browser connects directly.                                                                         | empty        |
+| `LOCK_SERVER`           | `true`: the address from `JELLYFIN_URL` is fixed and cannot be changed in the app.                                                           | `false`      |
+| `DEFAULT_THEME`         | Theme for users without a choice of their own: `default` (Classic), `neon-grid`, `crimson`, `glass`, `horizon`, `constellation` or `cobalt`. | `default`    |
+| `APP_TITLE`             | Name in the browser tab and when installed as an app                                                                                         | `Jellymorph` |
+| `DEMO_MODE`             | `true`: a demo with made-up data, without any Jellyfin server                                                                                | `false`      |
 
 Changes need no new build: adjust the variable, restart the container. Invalid values, such as a typo in the theme name, stop the container with a message in the log (`docker logs jellymorph`) that names the variable.
 
@@ -183,7 +192,7 @@ volumes:
   - ./custom:/custom:ro
 ```
 
-- `custom.css` applies to every theme, `<theme>.css` to one: `default.css` (Classic), `neon-grid.css`, `crimson.css`, `glass.css`, `horizon.css`, `constellation.css`.
+- `custom.css` applies to every theme, `<theme>.css` to one: `default.css` (Classic), `neon-grid.css`, `crimson.css`, `glass.css`, `horizon.css`, `constellation.css`, `cobalt.css`.
 - Put fonts and pictures next to them (e.g. `custom/fonts/`) and refer to them relatively.
 - Jellymorph serves only CSS, fonts (woff2, woff, ttf, otf) and pictures from the folder. Changes to existing files apply on the next page load, new files after a restart of the container.
 

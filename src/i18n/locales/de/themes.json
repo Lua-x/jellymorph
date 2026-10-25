@@ -22,5 +22,13 @@
   "constellation": {
     "name": "Constellation",
     "description": "Sternenhimmel, große Bibliothekskacheln und eine aufklappbare Seitenleiste."
+  },
+  "cobalt": {
+    "name": "Cobalt",
+    "description": "Tiefes Blau, Titelbühne mit Filmstreifen, Posterreihen und Bibliotheken als Senderkacheln."
+  },
+  "onyx": {
+    "name": "Onyx",
+    "description": "Fast schwarz mit Blauschimmer, Seitenleiste, hohe Titelbühne und Ranglisten."
   }
 }

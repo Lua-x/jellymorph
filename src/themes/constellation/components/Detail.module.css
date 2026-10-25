@@ -284,6 +284,7 @@
 
 .facts > div {
   display: grid;
+  align-content: start;
   gap: 0.125rem;
   min-width: 0;
 }

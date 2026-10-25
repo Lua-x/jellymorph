@@ -1,0 +1,16 @@
+{
+  "hero": {
+    "strip": "Empfohlene Titel",
+    "pause": "Automatischen Wechsel anhalten",
+    "resume": "Automatischen Wechsel fortsetzen"
+  },
+  "detail": {
+    "related": "Mehr wie dieses",
+    "details": "Details",
+    "released": "Erschienen",
+    "runtime": "Laufzeit",
+    "rated": "Freigabe",
+    "genres": "Genres",
+    "episode": "Folge {{number}}"
+  }
+}

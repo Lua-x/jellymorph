@@ -175,6 +175,8 @@ test.describe('own arrangement', () => {
     await moveToTop(list(page, 'Startseite'), 'Genres');
     await chooseTheme(page, 'Crimson', 'crimson');
     expect((await homeOrder(page))[0]).toBe('Genres');
+    await chooseTheme(page, 'Cobalt', 'cobalt');
+    expect((await homeOrder(page))[0]).toBe('Genres');
   });
 
   test('the arrangement section is accessible', async ({ page }) => {

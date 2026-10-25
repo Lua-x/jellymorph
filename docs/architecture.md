@@ -612,6 +612,7 @@ Implementation (`themes/loader.ts`, `themes/transition.ts`): the loader remember
 
 Before finishing every theme phase: no brand names in code, file names, comments or texts; colors only in a similar mood (distance to known brand colors documented); fonts only freely licensed through `@fontsource`; icons drawn ourselves; no "in the style of" notes in the UI.
 
+- Cobalt: background `#070e22` with a cobalt glow `#0b1d4d` at the top (generic night blue), accent `#0047ab` (classic cobalt, ΔE76 ≈ 32 to the model's brand blue), main buttons white instead of blue. Library tiles are colored gradients with the library's own picture, no channel logos. Font Manrope (OFL) instead of the model's house font.
 - Constellation: background `#0b1533` with a gradient `#13235a` → `#070d22` (deep night blue, ΔE76 ≈ 14 and 17 to the base tones of the model), accent `#2bb6c9` (starlight turquoise instead of brand blue, ΔE76 ≈ 80). No brand logo in the tiles: libraries and collections show their own picture and name. Font Nunito Sans (OFL) instead of the model's house font.
 - Horizon: background `#13192a` (dark blue-gray, ΔE76 ≈ 8 to the model's background), accent `#2a63e6` (strong blue, ΔE76 ≥ 32 to the model's blue). Font Figtree (OFL) instead of the model's house font.
 - Glass: accent `#4256cf` (dark) or `#2456c8` (light), ΔE76 ≥ 16 and ≥ 12 to the known system blues; the main actions are white or almost black instead of blue. No original font (Inter instead of the model's system font), icons drawn ourselves.

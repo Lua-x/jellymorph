@@ -13,6 +13,7 @@ const THEMES = [
   { name: 'Glass', id: 'glass' },
   { name: 'Horizon', id: 'horizon' },
   { name: 'Constellation', id: 'constellation' },
+  { name: 'Cobalt', id: 'cobalt' },
 ] as const;
 
 async function useTheme(page: Page, theme: (typeof THEMES)[number]) {

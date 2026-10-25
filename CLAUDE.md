@@ -10,7 +10,7 @@ The user writes in German; summaries and questions to the user stay in German. T
 
 A standalone, self-hosted web client for Jellyfin, run as a Docker container. The user signs in to their Jellyfin server and chooses a theme in the settings.
 
-A theme is not a color scheme but a complete way of using the app: layout, navigation, card shapes, detail pages, player overlay and animations. Four themes take their cues from the structure of large streaming services, one is a cyberpunk design of our own.
+A theme is not a color scheme but a complete way of using the app: layout, navigation, card shapes, detail pages, player overlay and animations. Six themes take their cues from the structure of large streaming services (four from the start, two more after 1.2), one is a cyberpunk design of our own.
 
 Quality bar: the app should feel like a finished commercial product, not like a demo. Smooth animations (60 fps), no layout shifts, immediate feedback on every interaction, well-thought-out loading, empty and error states.
 
@@ -73,6 +73,8 @@ src/
     glass/
     horizon/
     constellation/
+    cobalt/
+    onyx/
   mocks/          # MSW handlers + fixtures (demo mode)
 docker/
   nginx.conf.template
@@ -254,6 +256,28 @@ Model: Disney+
 - On desktop/TV a narrow icon side bar that expands on focus
 - Rounded cards with a soft shadow, slight scaling on focus
 
+### cobalt – "Cobalt"
+
+Model: Paramount+ (added 2026-10-25)
+
+- Deep night blue as a gradient, a strong cobalt blue as the accent (deliberately not the brand blue), white main buttons
+- Title stage over the full width under a transparent bar: title logo, short facts and buttons at the bottom left; along the bottom a filmstrip of small pictures of the next titles that can be chosen directly; the active one fills with a progress bar until the change
+- Rows with portrait posters as the default, only "Continue watching" and "Next up" in landscape with progress; on focus a white frame, slight enlargement, title and year appear
+- Libraries as a row of tiles like channel tiles (colored gradient with the library picture) directly below the stage
+- Detail page: picture large on the right, logo, facts and buttons on the left; below it the season choice as a pill and the episodes as a list with still and overview, then "More like this" as a poster row
+- Player: the Classic player in Cobalt colors (timeline in cobalt); a free font no other theme uses (e.g. Manrope)
+
+### onyx – "Onyx"
+
+Model: HBO Max (added 2026-10-25)
+
+- Almost black with a cool blue shimmer at the top and behind the stage, white main buttons, plain editorial typography
+- A fixed side panel on the left with text on desktop and TV, divided into areas (Home, Series, Movies, Libraries, My list); on phones a bar at the bottom
+- A very tall "spotlight" stage (about four fifths of the window) with a large title logo and a blue light edge, changing with dots
+- Rows of landscape cards with the title below; a ranked row "Top rated" with large numbers next to the posters (Jellyfin has no play counts across users)
+- "New and coming soon": recently added titles and upcoming episodes (Jellyfin `/Shows/Upcoming`, a new shared hook)
+- Detail page: stage over the full width, below it season chips and episodes as a sideways row of large stills, then "More like this" and "Extras" (local trailers)
+
 ## 7. Docker & operation
 
 - Multi-stage Dockerfile: Node (build) → `nginxinc/nginx-unprivileged:alpine` (non-root, port 8080)
@@ -320,7 +344,9 @@ From here on: phase n → next minor version (1.x.0), bug fixes as a patch (1.x.
 - [x] Phase 12 – Real-world polish before the release: overview shortened with "Show more", audio and subtitle tracks shortened to 3 entries with "show more", HTML line breaks (`<br>`) from the metadata as paragraphs instead of text, navigation with many libraries (overflow into a "More" menu), test on the user's real server (pictures, jump bar, genre pages, playback direct and through transcoding, subtitles, settings on the server). Everything in every theme. → v1.0.0, then the user sets the tag `v1.0.0` _(done 2026-10-14, approved 2026-10-14; shipped with v1.1.0, because the tag `v1.0.0` sits on the state of phase 11, 697918c)_
 - [x] Phase 13 – Admin functions per title (only visible to administrators): "Edit" menu on the detail pages with identify, edit metadata, pictures (choose from online sources, upload, delete), refresh metadata, search/download/upload/delete subtitles, delete item; scan library; "Open server administration" links to the Jellyfin dashboard (the dashboard itself is not rebuilt). → v1.1.0 _(done 2026-10-14, approved 2026-10-15, tag `v1.1.0` on e7243ee)_
 - [x] Phase 14 – Make it your own: own colors, fonts and CSS per theme (files from a mounted folder, no injected CSS because of the CSP); arrangement by setting in every theme: order and visibility of the buttons on the detail page, details shown, home page areas, navigation entries; a default for everybody (admin) and per user, by drag and drop. No foreign code. → v1.2.0 _(done 2026-10-15, approved 2026-10-15)_
-- [ ] Phase 15 – Own themes as plugins: a public, versioned theme interface, loading at runtime from the mounted folder, a starter template for building, choosing installed themes in the settings. Security concept: plugin themes are code with access to the session; only the container admin may install them. → v1.3.0
+- [x] Phase 15 – Theme cobalt (§6) → v1.3.0 _(done 2026-10-25)_
+- [ ] Phase 16 – Theme onyx (§6) → v1.4.0
+- [ ] Phase 17 – Own themes as plugins: a public, versioned theme interface, loading at runtime from the mounted folder, a starter template for building, choosing installed themes in the settings. Security concept: plugin themes are code with access to the session; only the container admin may install them. → v1.5.0 (moved from phase 15 on 2026-10-25, see §12)
 
 Not planned (user decision 2026-10-14): native apps for Android/iOS, SSO.
 
@@ -477,6 +503,13 @@ Claude Code records important architecture decisions and deviations here, with r
   - README, CHANGELOG, docs/architecture.md, docs/themes.md, this file and the headings of the generated release notes (`scripts/lib/changelog.ts`: "Breaking changes", "New", "Fixed", "Faster") are in English. The app itself stays bilingual with German as the default. The README pictures still show the German interface. Repository description and topics are set by the user on GitHub (no `gh` here).
   - **App icon "faceted play"** (chosen from three drafts): a play symbol cut into three facets on a rounded square, in a purple of our own: square `#2a1466`, facets `#d9c9ff` (light), `#b597ff` (mid), `#8f63ff` (deep). Same shape in `public/favicon.svg`, `src/ui/Logo.tsx`, the boot splash in `index.html` and the PNG icons (`scripts/render-icons.ts`, background `#2a1466`). Themes tint the mark with `--logo-shape` and `--logo-dot`; the facets are mixed from those two in oklab, or set exactly with `--logo-facet-mid` and `--logo-facet-deep`. The deep facet spans the whole triangle, so no background shows at the seams.
 - **2026-10-25 – 1.2.1, detail pages woke the hard disk** (reported by the user: opening a movie in Jellymorph woke the disk, in jellyfin-web it did not; mostly the backdrop). Cause, checked in the Jellyfin source (`ImageProcessingOptions.HasDefaultOptions`, `ImageProcessor.ProcessImage`): with `quality` ≥ 90 and a `maxWidth` at least as large as the original, Jellyfin skips its cache of resized images and sends the original file, which on the user's server lies on the hard disk. Jellymorph asked for quality 90; jellyfin-web asks for 80 on backdrops (`getDefaultImageQuality`). `src/ui/image-url.ts` now uses 80 for backdrops (so both clients can share cache entries) and 85 for everything else, as planned in architecture.md §5.6; the Media Session artwork uses the same helper. The first request per image and size still reads the original once, as in jellyfin-web. Not checked on the real server (session expired); the user tests it.
+- **2026-10-25 – Two more themes before the plugins** (user decisions): a theme modeled on Paramount+ named **Cobalt** (phase 15, v1.3.0) and one modeled on HBO Max named **Onyx**, dark with a blue shimmer rather than the earlier purple (phase 16, v1.4.0). The plugin phase moves to 17 (v1.5.0); its open questions (an opt-in variable `THEME_PLUGINS=true`, the starter template in the repo plus a ZIP at each release) are asked again then. Both concepts in §6 were approved as proposed; only layout principles and interaction patterns are taken over (§2).
+- **2026-10-25 – Phase 15, Cobalt:**
+  - **Own components:** AppShell (Crimson's bar adapted: transparent over the stage, night blue after scrolling, a white bar under hovered or focused links and a light blue one under the current page, round avatar), Hero (title stage over the full width with a filmstrip, see below), HomePage (channel tiles right after the stage, poster rows, genres as pills), Row (posters by default, `rowVariant` keeps continue watching and next up in landscape; slim full-height arrows under the pointer), MediaCard (white frame and 5 % enlargement on hover and focus; a poster's title and year sit below the picture and fade in, the space is kept so nothing moves), ItemDetailPage and SeriesPage (picture large on the right, logo, facts, tagline, overview and buttons on the left; then the episodes with a season pill, "More like this" as a poster row and a details panel). Sign-in, library, search, favorites, settings, the player and the states are Classic in Cobalt colors.
+  - **Filmstrip:** all featured titles as small pictures below the stage; the current one carries a progress bar. The bar is a CSS animation (`transform: scaleX`, 9 s), and its `animationend` brings the next title, so bar and change can never drift apart; hovering or focusing the stage and a playing trailer pause it (`animation-play-state`), the pause button stops it (WCAG 2.2.2), reduced motion and the live preview never start it. Slides cross-fade in one grid cell; titles not shown are `inert`. Layers: pictures, trailer, shade, text, filmstrip.
+  - **Colors and font:** night blue `#070e22` with a cobalt glow at the top of the page, accent `#0047ab` (ΔE76 ≈ 32 to the brand blue), white main buttons; Manrope (OFL, `@fontsource-variable/manrope`, a new font dependency like the other themes' fonts).
+  - **Found while checking the screenshots:** grids without `grid-template-columns: minmax(0, 1fr)` grew with the filmstrip on phones, and the text left the screen (the page-grid rule of phase 2, again). Poster titles laid over the picture collided with the title in the artwork, so they moved below it. In the details panels of Horizon and Constellation (and first Cobalt), a short fact next to a long one sat in the middle of its row; facts now start at the top (`align-content: start`).
+  - **Tests:** `e2e/cobalt.spec.ts` (14 runs on desktop and mobile: switch with font and channel tiles, filmstrip chooses titles, pauses under the pointer, moves on when the bar is full, pause button; posters with captions on hover; film details; season pill and episodes; arrow keys; focus = hover; axe; animation properties; reduced motion), Cobalt added to the accessibility, admin, long-content and arrangement tests. Screenshots `c1-…c9-cobalt-*`, preview picture, README pictures.
 - **2026-10-07 – MSW 3 through the Vite plugin `msw/vite` in `worker-only` mode.** It serves `mockServiceWorker.js` in the dev server and puts it into `dist/` on build. The file is therefore not in the repo and always matches the installed MSW version. It is started through the stable `setupWorker` API, not the experimental `virtual:msw`.
 
 - **2026-10-07 – SDK 1.0.0 despite the minimum version 10.10.** `@jellyfin/sdk` 1.0.0 is generated against the OpenAPI of Jellyfin 12.0 (classes renamed, e.g. `ItemsApi` → `LibraryApi`, `PlaystateApi` → `SessionApi`). A comparison of all endpoint paths with SDK 0.11.0 (= Jellyfin 10.10) shows: every path the client needs exists unchanged in 10.10. The SDK's `MINIMUM_VERSION` is still 10.10.0. Details: docs/architecture.md §1.2.

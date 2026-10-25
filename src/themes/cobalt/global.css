@@ -1,0 +1,29 @@
+/*
+ * Cobalt – global styles. Every selector starts with the theme scope; :where() keeps the
+ * specificity low so component styles always win.
+ */
+
+/* Night blue that brightens towards the top of the page, fixed while scrolling. */
+[data-theme='cobalt'] body {
+  background:
+    radial-gradient(120% 60rem at 50% -20rem, var(--cb-glow), transparent 70%) fixed,
+    var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+}
+
+:where([data-theme='cobalt']) ::selection {
+  background: rgb(0 71 171 / 70%);
+  color: #ffffff;
+}
+
+:where([data-theme='cobalt']) :focus-visible {
+  outline: 0.125rem solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+:where([data-theme='cobalt']) h1,
+:where([data-theme='cobalt']) h2 {
+  font-weight: 800;
+  letter-spacing: -0.015em;
+}

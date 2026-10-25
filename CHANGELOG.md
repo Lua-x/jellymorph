@@ -2,6 +2,18 @@
 
 All notable changes to Jellymorph. Versions follow [Semantic Versioning](https://semver.org/). The release notes on GitHub are also generated automatically from the commits.
 
+## 1.3.0 – 2026-10-25
+
+A seventh theme: Cobalt.
+
+### New
+
+- Theme **Cobalt**: deep night blue with a cobalt accent and the Manrope font. A large title stage under a transparent bar, with a filmstrip of the featured titles: choose one directly, or watch the current one fill with a progress bar until the next one comes (paused while you look at the stage, stopped with the pause button, never with reduced motion). Rows of posters whose title and year appear with focus, continue watching and next up in landscape, the libraries as channel tiles right below the stage, and detail pages with the picture large on the right, a season pill and a list of episodes.
+
+### Fixed
+
+- Horizon and Constellation: in the details, a short fact next to a long one (for example the director next to many audio tracks) moved down to the middle of the row. Facts now start at the top.
+
 ## 1.2.1 – 2026-10-25
 
 ### Fixed

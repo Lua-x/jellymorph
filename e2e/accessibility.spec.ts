@@ -22,6 +22,7 @@ const THEMES = [
   { name: 'Glass', id: 'glass', scheme: 'light' },
   { name: 'Horizon', id: 'horizon', scheme: 'dark' },
   { name: 'Constellation', id: 'constellation', scheme: 'dark' },
+  { name: 'Cobalt', id: 'cobalt', scheme: 'dark' },
 ] as const;
 
 interface Listed {
