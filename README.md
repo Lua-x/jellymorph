@@ -167,6 +167,7 @@ volumes:
 
 - It only works with `JELLYFIN_PROXY_TARGET`: without the proxy the browser loads pictures straight from Jellyfin and never passes Jellymorph.
 - Use a named volume as above; Docker gives it the right owner by itself. A host folder (`./cache:/cache`) has to belong to UID 101 (`sudo chown 101 cache`), otherwise the container stops with a message.
+- On a NAS (Synology, UGREEN, QNAP …) it is easier to keep the folder yours and run the container as your own user: add `user: '1000:10'` to the service, with the two numbers `uid` and `gid` that `id` shows when you are signed in over SSH. The folder then needs no other owner, and you can still clear it yourself.
 - Pictures nobody asked for in a year are removed, and when the cache is full, the ones used least recently make room. The response header `X-Cache-Status` (`MISS`, `HIT`) shows where a picture came from.
 - Each picture is still read from the disk once. The title stage on the home page therefore changes its titles once a day instead of on every visit, and the trailer in it is off unless you switch it on.
 
