@@ -1,0 +1,31 @@
+/*
+ * Onyx – global styles. Every selector starts with the theme scope; :where() keeps the
+ * specificity low so component styles always win.
+ */
+
+/* Almost black, with a cool blue shimmer along the top of the window (fixed while scrolling). */
+[data-theme='onyx'] body {
+  background:
+    radial-gradient(70% 30rem at 70% -12rem, var(--ox-shimmer), transparent 70%) fixed,
+    var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+}
+
+:where([data-theme='onyx']) ::selection {
+  background: rgb(110 156 245 / 45%);
+  color: #ffffff;
+}
+
+:where([data-theme='onyx']) :focus-visible {
+  outline: 0.125rem solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Plain editorial headings: tight, a little condensed. */
+:where([data-theme='onyx']) h1,
+:where([data-theme='onyx']) h2 {
+  font-stretch: 92%;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}

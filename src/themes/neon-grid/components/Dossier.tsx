@@ -18,7 +18,11 @@ import { ScrambleText } from './ScrambleText';
 import { ExpandableText, ShortList, TrackList } from '../../default/components/Expandable';
 
 /** "Play", or "Resume from …" plus "Start over" for a started video. */
-export function PlayActions({ item }: { item: Pick<MediaItem, 'id' | 'kind' | 'userData'> }) {
+export function PlayActions({
+  item,
+}: {
+  item: Pick<MediaItem, 'id' | 'kind' | 'userData' | 'available'>;
+}) {
   const { t } = useTranslation('content');
   const actions = useMediaActions();
   if (!isPlayable(item) || item.kind === 'series') return null;

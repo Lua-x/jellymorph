@@ -1,0 +1,420 @@
+.shell {
+  min-height: 100dvh;
+}
+
+.skipLink {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 100;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-control);
+  background: var(--ox-button);
+  color: var(--ox-on-button);
+  font-weight: 700;
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+
+.skipLink:focus-visible {
+  outline: 0.125rem solid var(--color-accent);
+  transform: none;
+}
+
+/* --- Phones: a small bar on top (brand, search, profile) ------------------------------------- */
+
+.sidebar {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: calc(0.75rem + var(--overscan-y)) var(--page-gutter) 0.25rem;
+}
+
+.nav {
+  display: none;
+}
+
+.item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  min-height: 2.75rem;
+  padding: 0 0.75rem;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--color-text-muted);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.item > svg {
+  flex: none;
+  font-size: 1.375rem;
+}
+
+/* Focus = hover: a lighter band and white text; focus adds the white ring. */
+.item:is(:hover, :focus-visible) {
+  background: rgb(255 255 255 / 9%);
+  color: #ffffff;
+}
+
+.item:focus-visible {
+  outline: 0.125rem solid #ffffff;
+  outline-offset: -0.125rem;
+}
+
+/* The current section: white, with a blue light edge on the left. */
+.active {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.active::before {
+  position: absolute;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  left: 0;
+  width: 0.1875rem;
+  border-radius: 999px;
+  background: var(--ox-edge);
+  box-shadow: 0 0 0.75rem var(--ox-edge);
+  content: '';
+}
+
+.brand {
+  flex: 1;
+  gap: 0.625rem;
+  padding-left: 0.25rem;
+  color: #ffffff;
+}
+
+.logo {
+  flex: none;
+  font-size: 1.75rem;
+}
+
+.brandName {
+  font-size: 1.1875rem;
+  font-stretch: 92%;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* On phones search is an icon next to the profile. */
+.search {
+  padding: 0 0.625rem;
+}
+
+/* Hidden only visually, so the icon link keeps its name for screen readers. */
+.search .label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.groupLabel {
+  display: block;
+  padding: 1.25rem 0.75rem 0.375rem;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.divided {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.profile {
+  position: relative;
+  flex: none;
+}
+
+.profileButton {
+  padding: 0 0.375rem;
+}
+
+span.avatar {
+  flex: none;
+  width: 2.125rem;
+  height: 2.125rem;
+  border-radius: 999px;
+}
+
+.profileButton .label {
+  display: none;
+}
+
+.profileButton[aria-expanded='true'] {
+  background: rgb(255 255 255 / 9%);
+  color: #ffffff;
+}
+
+/* --- Account menu ---------------------------------------------------------------------------- */
+
+.panel {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 2;
+  width: 16rem;
+  padding: 0.5rem 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-overlay);
+  animation: panel-in var(--duration-base) var(--ease-emphasized) both;
+}
+
+.panel[hidden] {
+  display: none;
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.375rem);
+  }
+}
+
+.panelName {
+  display: grid;
+  margin: 0;
+  padding: 0.5rem 1rem 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+  font-weight: 700;
+}
+
+.panelServer {
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.menuList {
+  display: grid;
+  margin: 0;
+  padding: 0.375rem 0 0;
+  list-style: none;
+}
+
+.menuDivider {
+  margin-top: 0.375rem;
+  padding-top: 0.375rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0 1rem;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.menuItem > svg {
+  color: var(--color-text-muted);
+  font-size: 1.125rem;
+}
+
+.menuItem:is(:hover, :focus-visible):not(:disabled) {
+  background: var(--color-surface-hover);
+}
+
+.menuItem:focus-visible {
+  outline: 0.125rem solid #ffffff;
+  outline-offset: -0.125rem;
+}
+
+.menuItem:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+/* --- Content --------------------------------------------------------------------------------- */
+
+/* Full-bleed parts (the stage) reach the panel edge and the window top with these offsets. */
+.main {
+  --ox-main-top: 1rem;
+
+  padding: var(--ox-main-top) var(--page-gutter) calc(5.5rem + env(safe-area-inset-bottom));
+}
+
+.main:focus {
+  outline: none;
+}
+
+.bottomNav {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 30;
+  padding-bottom: env(safe-area-inset-bottom);
+  background: rgb(5 7 13 / 96%);
+  box-shadow: 0 -1px 0 rgb(255 255 255 / 8%);
+}
+
+.bottomNav ul {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bottomLink {
+  display: grid;
+  justify-items: center;
+  gap: 0.125rem;
+  padding: 0.5rem 0 0.625rem;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.bottomLink > svg {
+  font-size: 1.375rem;
+}
+
+.bottomLink:is(:hover, :focus-visible) {
+  background: rgb(255 255 255 / 8%);
+  color: #ffffff;
+}
+
+.bottomLink:focus-visible {
+  outline: 0.125rem solid #ffffff;
+  outline-offset: -0.125rem;
+}
+
+.bottomActive {
+  color: #ffffff;
+}
+
+/* --- Desktop and TV: the side panel ------------------------------------------------------------ */
+
+@media (min-width: 48rem) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 30;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
+    width: calc(var(--ox-panel) + var(--overscan-x));
+    padding: calc(1.25rem + var(--overscan-y)) 0.75rem calc(1rem + var(--overscan-y))
+      calc(0.75rem + var(--overscan-x));
+    border-right: 1px solid rgb(255 255 255 / 6%);
+    background:
+      radial-gradient(120% 18rem at 0 0, var(--ox-shimmer), transparent 75%), rgb(5 7 13 / 94%);
+  }
+
+  .brand {
+    flex: none;
+    margin-bottom: 1.25rem;
+    padding-left: 0.5rem;
+  }
+
+  .search {
+    order: 0;
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--color-border);
+    background: rgb(255 255 255 / 4%);
+  }
+
+  .search .label {
+    position: static;
+    width: auto;
+    height: auto;
+    clip-path: none;
+  }
+
+  .nav {
+    display: block;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+
+  .list {
+    display: grid;
+    gap: 0.125rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .profile {
+    margin-top: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .profileButton {
+    width: 100%;
+    padding: 0 0.5rem;
+  }
+
+  .profileButton .label {
+    display: inline;
+  }
+
+  .panel {
+    top: auto;
+    right: auto;
+    bottom: calc(100% + 0.25rem);
+    left: 0;
+    width: 100%;
+  }
+
+  .main {
+    --ox-main-top: calc(1rem + var(--overscan-y));
+
+    max-width: var(--content-max-width);
+    margin: 0 auto;
+    padding: var(--ox-main-top) var(--page-gutter) calc(4rem + var(--overscan-y))
+      calc(var(--ox-panel) + var(--overscan-x) + var(--page-gutter));
+  }
+
+  .bottomNav {
+    display: none;
+  }
+}
+
+:global([data-motion='reduced']) .panel {
+  animation: none;
+}

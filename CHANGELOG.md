@@ -2,6 +2,19 @@
 
 All notable changes to Jellymorph. Versions follow [Semantic Versioning](https://semver.org/). The release notes on GitHub are also generated automatically from the commits.
 
+## 1.4.0 – 2026-10-25
+
+An eighth theme: Onyx.
+
+### New
+
+- Theme **Onyx**: almost black with a cool blue shimmer, white main buttons and the Instrument Sans font. A fixed side panel with text on desktop and TV (search, home, the libraries as a section of their own, favorites, the profile at the foot), a bar at the bottom on phones. A very tall spotlight with a blue light edge that changes with dots and stops with the pause button. Rows of landscape cards with the title below, a ranked row of the best rated titles with large outlined numbers, and detail pages with season chips, the episodes as a sideways row of large stills (the next one scrolled into view), "More like this", the extras with the local trailer and the details.
+- Two new home page areas in Onyx: **Top rated** (movies and series by community rating) and **Coming soon** (the next episodes of your series that Jellyfin already knows, with the day they air). Like every area they can be moved or hidden in the arrangement; themes that do not show them do not offer them there.
+
+### Fixed
+
+- Episodes that Jellyfin only knows from the metadata (not aired yet, or missing when "Display missing episodes" is switched on) no longer offer a play button that could only fail.
+
 ## 1.3.0 – 2026-10-25
 
 A seventh theme: Cobalt.

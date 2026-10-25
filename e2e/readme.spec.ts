@@ -138,6 +138,19 @@ test.describe('README pictures @readme', () => {
     await save(page, 'cobalt-series');
   });
 
+  test('Onyx', async ({ page }) => {
+    await signInAs(page, 'Alex');
+    await chooseTheme(page, 'Onyx', 'onyx');
+    await home(page, 'onyx');
+    await openFromSearch(page, 'Hafenviertel', 'Serien');
+    // The season chips and the row of stills, below the stage.
+    await page.getByRole('heading', { name: 'Episoden' }).evaluate((heading) => {
+      window.scrollTo(0, heading.getBoundingClientRect().top + window.scrollY - 360);
+    });
+    await settle(page);
+    await save(page, 'onyx-series');
+  });
+
   test('Constellation', async ({ page }) => {
     await signInAs(page, 'Alex');
     await chooseTheme(page, 'Constellation', 'constellation');

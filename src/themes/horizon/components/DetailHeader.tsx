@@ -16,7 +16,11 @@ import { HorizonButton } from './HorizonButton';
 import { ExpandableText } from '../../default/components/Expandable';
 
 /** "Play" or "Resume from …", plus "Start over" for a started video. */
-function PlayButtons({ item }: { item: Pick<MediaItem, 'id' | 'kind' | 'userData'> }) {
+function PlayButtons({
+  item,
+}: {
+  item: Pick<MediaItem, 'id' | 'kind' | 'userData' | 'available'>;
+}) {
   const { t } = useTranslation('content');
   const actions = useMediaActions();
   if (!isPlayable(item) || item.kind === 'series') return null;

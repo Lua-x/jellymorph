@@ -65,6 +65,12 @@ describe('toMediaItem', () => {
     expect(item.images).toEqual({ primary: null, backdrop: null, thumb: null, logo: null });
   });
 
+  it('marks episodes without a file (upcoming, LocationType Virtual) as not available', () => {
+    expect(toMediaItem(episode, urls).available).toBe(true);
+    expect(toMediaItem({ ...episode, LocationType: 'FileSystem' }, urls).available).toBe(true);
+    expect(toMediaItem({ ...episode, LocationType: 'Virtual' }, urls).available).toBe(false);
+  });
+
   it('only reports an end year for ended series', () => {
     const series: BaseItemDto = {
       Id: 's',

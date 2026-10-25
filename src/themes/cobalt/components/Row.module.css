@@ -80,7 +80,13 @@
   display: none;
 }
 
+/*
+ * Each entry is the containing block of what is positioned inside it (e.g. visually hidden text):
+ * otherwise that would be placed relative to the viewport outside the scroller, escape its
+ * clipping and widen the whole page on phones.
+ */
 .slot {
+  position: relative;
   flex: 0 0 calc((100% - (var(--per-row) - 1) * var(--gap)) / var(--per-row));
   min-width: 0;
   scroll-snap-align: start;

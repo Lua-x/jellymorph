@@ -199,6 +199,7 @@ test.describe('screenshots @shots', () => {
           { name: 'Horizon', id: 'horizon' },
           { name: 'Constellation', id: 'constellation' },
           { name: 'Cobalt', id: 'cobalt' },
+          { name: 'Onyx', id: 'onyx' },
         ]) {
           // Crimson shows details above the page; start each theme from home.
           await page.goto('/');
@@ -1067,6 +1068,111 @@ test.describe('screenshots @shots', () => {
         await page.keyboard.press('ArrowDown');
         await page.waitForTimeout(700);
         await shoot(page, 'c9-cobalt-tv-details');
+      });
+    });
+  }
+
+  /** Theme Onyx (phase 16): every screen it designs, in all four sizes. */
+  for (const viewport of VIEWPORTS) {
+    test.describe(`onyx ${String(viewport.width)}x${String(viewport.height)}`, () => {
+      test.use({ viewport });
+
+      test('onyx', async ({ page }) => {
+        test.setTimeout(150_000);
+        await signInAs(page, 'Alex');
+        await chooseTheme(page, 'Onyx', 'onyx');
+        await page.goto('/');
+        const resume = page.getByRole('region', { name: 'Weiterschauen', exact: true });
+        await expect(resume.getByRole('list').getByRole('link').first()).toBeVisible();
+        // Resting on the spotlight holds its rotation for the picture.
+        await page.mouse.move(viewport.width * 0.7, 200);
+        await shoot(page, 'd1-onyx-home');
+        await page.mouse.move(0, 0);
+        await shoot(page, 'd1-onyx-home', '-full', true);
+
+        const ranked = page.getByRole('region', { name: 'Am besten bewertet' });
+        await ranked.scrollIntoViewIfNeeded();
+        await page.evaluate(() => {
+          window.scrollBy(0, -120);
+        });
+        await shoot(page, 'd2-onyx-ranked');
+
+        await openFromSearch(page, 'Kupferherz', 'Filme');
+        await shoot(page, 'd3-onyx-movie');
+        await shoot(page, 'd3-onyx-movie', '-full', true);
+
+        await openFromSearch(page, 'Hafenviertel', 'Serien');
+        await shoot(page, 'd4-onyx-series');
+        await page.getByRole('heading', { name: 'Episoden' }).evaluate((heading) => {
+          window.scrollTo(0, heading.getBoundingClientRect().top + window.scrollY - 120);
+        });
+        await page.mouse.move(0, 0);
+        await shoot(page, 'd4-onyx-series', '-episodes');
+
+        await page.goto('/search?q=or');
+        await expect(page.getByRole('region', { name: /^Filme/ })).toBeVisible();
+        await shoot(page, 'd5-onyx-search');
+
+        await page.goto('/');
+        await page
+          .getByRole('region', { name: 'Bibliotheken' })
+          .getByRole('link', { name: /^Filme/ })
+          .click();
+        await expect(page.getByText('56 Titel')).toBeVisible();
+        await page.mouse.move(0, 0);
+        await shoot(page, 'd6-onyx-library');
+
+        const movie = (await demoItems(page, 'Movie')).find(directPlayable);
+        if (!movie) throw new Error('Missing demo title');
+        await pausedPlayer(page, movie.Id, 22);
+        await shoot(page, 'd7-onyx-player');
+
+        await page.goto('/settings');
+        await expect(page.getByRole('heading', { level: 1, name: 'Einstellungen' })).toBeVisible();
+        await shoot(page, 'd8-onyx-settings');
+      });
+    });
+  }
+
+  for (const viewport of [
+    { width: 1920, height: 1080 },
+    { width: 3840, height: 2160 },
+  ]) {
+    test.describe(`onyx TV ${String(viewport.width)}x${String(viewport.height)}`, () => {
+      test.use({ viewport });
+
+      test('onyx TV mode', async ({ page }) => {
+        await page.addInitScript(() => {
+          const raw = localStorage.getItem('jellymorph.settings');
+          const settings = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+          localStorage.setItem(
+            'jellymorph.settings',
+            JSON.stringify({ ...settings, deviceMode: 'tv', overscan: 0.03 }),
+          );
+        });
+        await signInAs(page, 'Alex');
+        await chooseTheme(page, 'Onyx', 'onyx');
+        await page.goto('/');
+        await expect(page.locator('html')).toHaveAttribute('data-device', 'tv');
+        const resume = page.getByRole('region', { name: 'Weiterschauen', exact: true });
+        await expect(resume.getByRole('list').getByRole('link').first()).toBeVisible();
+        await page.keyboard.press('ArrowDown');
+        await expect(async () => {
+          if ((await resume.locator(':focus').count()) === 0)
+            await page.keyboard.press('ArrowDown');
+          await expect(resume.locator(':focus')).toHaveCount(1, { timeout: 400 });
+        }).toPass({ timeout: 8000 });
+        await page.waitForTimeout(700);
+        await shoot(page, 'd9-onyx-tv-home');
+
+        // Left from the first card reaches the side panel with the remote.
+        const panel = page.getByRole('banner');
+        await expect(async () => {
+          if ((await panel.locator(':focus').count()) === 0) await page.keyboard.press('ArrowLeft');
+          await expect(panel.locator(':focus')).toHaveCount(1, { timeout: 400 });
+        }).toPass({ timeout: 8000 });
+        await page.waitForTimeout(500);
+        await shoot(page, 'd9-onyx-tv-panel');
       });
     });
   }

@@ -116,6 +116,7 @@ export function toMediaItem(dto: BaseItemDto, urls: ImageUrlFactory): MediaItem 
     overview: plainText(dto.Overview),
     tagline: dto.Taglines?.[0] ?? null,
     premiereDate: dto.PremiereDate ?? null,
+    available: dto.LocationType !== 'Virtual',
     images: {
       primary: image(
         urls,

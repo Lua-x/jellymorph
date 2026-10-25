@@ -6,6 +6,7 @@ import { defaultManifest } from './default/manifest';
 import { glassManifest } from './glass/manifest';
 import { horizonManifest } from './horizon/manifest';
 import { neonGridManifest } from './neon-grid/manifest';
+import { onyxManifest } from './onyx/manifest';
 
 /** Every available theme. Adding a theme = a new folder plus one entry here. */
 export const THEMES: readonly ThemeManifest[] = [
@@ -16,6 +17,7 @@ export const THEMES: readonly ThemeManifest[] = [
   horizonManifest,
   constellationManifest,
   cobaltManifest,
+  onyxManifest,
 ];
 
 export function getThemeManifest(id: ThemeId): ThemeManifest {

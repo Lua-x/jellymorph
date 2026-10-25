@@ -1,0 +1,56 @@
+/*
+ * Onyx – design tokens (docs/architecture.md §7.4). Dark only: almost black with a cool blue
+ * shimmer; the accent is an ice blue (#6e9cf5, ΔE76 ≈ 75 to the brand blue of the model) with
+ * dark ink on it. Main buttons are white.
+ */
+
+[data-theme='onyx'] {
+  color-scheme: dark;
+
+  --color-bg: #05070d;
+  --color-surface: #0d111b;
+  --color-surface-raised: #141a28;
+  --color-surface-hover: #1c2436;
+  --color-border: #2a3348;
+  --color-text: #f3f5fa;
+  --color-text-muted: #a3acbf;
+  --color-accent: #6e9cf5;
+  --color-on-accent: #05070d;
+  --color-accent-text: #8fb3f8;
+  --color-focus: #ffffff;
+  --color-danger: #ff8f8f;
+  --color-success: #4fd18b;
+  --color-progress: #6e9cf5;
+  --color-overlay: rgb(2 4 8 / 76%);
+
+  --font-body: 'Instrument Sans Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Instrument Sans Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', 'SFMono-Regular', Consolas, monospace;
+
+  --radius-card: 0.25rem;
+  --radius-control: 0.25rem;
+  --shadow-card: 0 0.375rem 1rem rgb(0 0 0 / 50%);
+  --shadow-overlay: 0 1rem 3rem rgb(0 0 0 / 80%);
+
+  --duration-fast: 120ms;
+  --duration-base: 220ms;
+  --duration-slow: 420ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --focus-ring: 0 0 0 2px var(--color-bg), 0 0 0 4px #ffffff;
+
+  --logo-shape: #1b3a7a;
+  --logo-dot: #ffffff;
+  --backdrop-glow: rgb(46 98 214 / 26%);
+  --backdrop-glow-2: rgb(110 156 245 / 12%);
+
+  /* Theme-own tokens */
+  --ox-panel: 15rem;
+  --ox-shimmer: rgb(36 82 190 / 34%);
+  --ox-edge: #6e9cf5;
+  --ox-button: #ffffff;
+  --ox-button-hover: #dde6f7;
+  --ox-on-button: #05070d;
+  --ox-secondary: rgb(72 84 112 / 58%);
+  --ox-secondary-hover: rgb(104 118 152 / 74%);
+}

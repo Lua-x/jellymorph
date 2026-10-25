@@ -8,7 +8,11 @@
 export const LAYOUT_LISTS = ['home', 'nav', 'detailActions', 'facts'] as const;
 export type LayoutListId = (typeof LAYOUT_LISTS)[number];
 
-/** Areas of the home page. `latest` stands for one row per library ("New in …"). */
+/**
+ * Areas of the home page. `latest` stands for one row per library ("New in …"). A theme offers
+ * only the areas in its own default order (`LayoutDefaults.home`): `topRated` and `upcoming`
+ * came with Onyx (phase 16) and stay out of the other themes.
+ */
 export const HOME_AREAS = [
   'hero',
   'libraries',
@@ -18,6 +22,8 @@ export const HOME_AREAS = [
   'favorites',
   'collections',
   'genres',
+  'topRated',
+  'upcoming',
 ] as const;
 export type HomeAreaKind = (typeof HOME_AREAS)[number];
 

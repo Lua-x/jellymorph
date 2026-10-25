@@ -17,7 +17,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="License: AGPL-3.0" /></a>
 </p>
 
-> **Version 1.3:** seven themes, now with Cobalt, the full feature set, administration of single titles for administrators and your own arrangement and styling. What changed is in the [changelog](CHANGELOG.md).
+> **Version 1.4:** eight themes, now with Cobalt and Onyx, the full feature set, administration of single titles for administrators and your own arrangement and styling. What changed is in the [changelog](CHANGELOG.md).
 
 ## Themes
 
@@ -86,12 +86,21 @@ Deep night blue, a large title stage with a filmstrip of the featured titles bel
   <img src="docs/screenshots/cobalt-series.jpg" width="49%" alt="Cobalt: a series with the season pill and its episodes" />
 </p>
 
+### Onyx
+
+Almost black with a cool blue shimmer, a side panel with text, a very tall spotlight with a blue light edge, a ranked row of the best rated titles and the upcoming episodes of your series. Detail pages choose seasons with chips and show the episodes as a sideways row of large stills.
+
+<p>
+  <img src="docs/screenshots/onyx-home.jpg" width="49%" alt="Onyx: side panel and the tall spotlight" />
+  <img src="docs/screenshots/onyx-series.jpg" width="49%" alt="Onyx: a series with season chips and a row of episodes" />
+</p>
+
 The pictures show the demo mode with made-up titles and generated artwork.
 
 ## Features
 
 - **Sign-in:** several servers, profile picker, password or Quick Connect. Only the access token is stored, never the password.
-- **Home page:** continue watching, next up, new per library, favorites, collections and genres, in the order of your Jellyfin libraries.
+- **Home page:** continue watching, next up, new per library, favorites, collections and genres, in the order of your Jellyfin libraries; Onyx adds the best rated titles and the upcoming episodes.
 - **Libraries:** a fast grid even with thousands of titles, sorting, filters (genre, year, watched, favorites) and an A–Z jump bar.
 - **Details and series:** cast, audio and subtitle tracks, trailers, seasons, episodes with progress, the next episode highlighted. Live search, grouped by type.
 - **Player:** plays directly where the browser can, otherwise through HLS transcoding. Audio and subtitle choice (picture subtitles are burned in), quality, speed, full screen, picture-in-picture, preview thumbnails on the timeline, "Skip intro", next episode with countdown. Progress goes back to Jellyfin, so "Continue watching" is right on every device.
@@ -118,14 +127,14 @@ Jellymorph is then available at `http://<host>:8080`. A complete Docker Compose 
 
 ### Variables
 
-| Variable                | Purpose                                                                                                                                      | Default      |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| `JELLYFIN_PROXY_TARGET` | Address of your Jellyfin server. Jellymorph passes it through under `/jellyfin` (recommended).                                               | empty        |
-| `JELLYFIN_URL`          | Server address pre-filled at sign-in. The browser connects directly.                                                                         | empty        |
-| `LOCK_SERVER`           | `true`: the address from `JELLYFIN_URL` is fixed and cannot be changed in the app.                                                           | `false`      |
-| `DEFAULT_THEME`         | Theme for users without a choice of their own: `default` (Classic), `neon-grid`, `crimson`, `glass`, `horizon`, `constellation` or `cobalt`. | `default`    |
-| `APP_TITLE`             | Name in the browser tab and when installed as an app                                                                                         | `Jellymorph` |
-| `DEMO_MODE`             | `true`: a demo with made-up data, without any Jellyfin server                                                                                | `false`      |
+| Variable                | Purpose                                                                                                                                              | Default      |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| `JELLYFIN_PROXY_TARGET` | Address of your Jellyfin server. Jellymorph passes it through under `/jellyfin` (recommended).                                                       | empty        |
+| `JELLYFIN_URL`          | Server address pre-filled at sign-in. The browser connects directly.                                                                                 | empty        |
+| `LOCK_SERVER`           | `true`: the address from `JELLYFIN_URL` is fixed and cannot be changed in the app.                                                                   | `false`      |
+| `DEFAULT_THEME`         | Theme for users without a choice of their own: `default` (Classic), `neon-grid`, `crimson`, `glass`, `horizon`, `constellation`, `cobalt` or `onyx`. | `default`    |
+| `APP_TITLE`             | Name in the browser tab and when installed as an app                                                                                                 | `Jellymorph` |
+| `DEMO_MODE`             | `true`: a demo with made-up data, without any Jellyfin server                                                                                        | `false`      |
 
 Changes need no new build: adjust the variable, restart the container. Invalid values, such as a typo in the theme name, stop the container with a message in the log (`docker logs jellymorph`) that names the variable.
 
@@ -192,7 +201,7 @@ volumes:
   - ./custom:/custom:ro
 ```
 
-- `custom.css` applies to every theme, `<theme>.css` to one: `default.css` (Classic), `neon-grid.css`, `crimson.css`, `glass.css`, `horizon.css`, `constellation.css`, `cobalt.css`.
+- `custom.css` applies to every theme, `<theme>.css` to one: `default.css` (Classic), `neon-grid.css`, `crimson.css`, `glass.css`, `horizon.css`, `constellation.css`, `cobalt.css`, `onyx.css`.
 - Put fonts and pictures next to them (e.g. `custom/fonts/`) and refer to them relatively.
 - Jellymorph serves only CSS, fonts (woff2, woff, ttf, otf) and pictures from the folder. Changes to existing files apply on the next page load, new files after a restart of the container.
 

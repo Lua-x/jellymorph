@@ -13,6 +13,7 @@ export const CLIP_URL = clipUrl;
 const TICKS = 10_000_000;
 
 export function isPlayableItem(item: MockItem): boolean {
+  if (item.virtual) return false;
   return item.type === 'Movie' || item.type === 'Episode' || item.type === 'Trailer';
 }
 

@@ -21,6 +21,9 @@ describe('home', () => {
     ).toBeInTheDocument();
     expect(await screen.findByRole('region', { name: 'Sammlungen' }, TIMEOUT)).toBeInTheDocument();
     expect(await screen.findByRole('link', { name: 'Komödie' }, TIMEOUT)).toBeInTheDocument();
+    // Onyx's ranked row and upcoming episodes are not areas of Classic.
+    expect(screen.queryByRole('region', { name: 'Am besten bewertet' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Demnächst' })).not.toBeInTheDocument();
   });
 });
 

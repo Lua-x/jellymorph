@@ -14,6 +14,7 @@ const THEMES = [
   { name: 'Horizon', id: 'horizon' },
   { name: 'Constellation', id: 'constellation' },
   { name: 'Cobalt', id: 'cobalt' },
+  { name: 'Onyx', id: 'onyx' },
 ] as const;
 
 async function useTheme(page: Page, theme: (typeof THEMES)[number]) {
@@ -51,7 +52,8 @@ for (const theme of THEMES) {
   });
 }
 
-const TOP_BARS = THEMES.filter((theme) => theme.id !== 'constellation');
+// Constellation and Onyx have a vertical panel on desktop instead of a bar.
+const TOP_BARS = THEMES.filter((theme) => theme.id !== 'constellation' && theme.id !== 'onyx');
 
 for (const theme of TOP_BARS) {
   test(`${theme.name}: libraries that do not fit move into "Mehr" @desktop-only`, async ({
@@ -98,5 +100,29 @@ for (const theme of TOP_BARS) {
     await menu.getByRole('link', { name: target }).click();
     await expect(page.getByRole('heading', { level: 1, name: target })).toBeVisible();
     await expect(menu).toBeHidden();
+  });
+}
+
+for (const theme of THEMES) {
+  test(`${theme.name}: home and series pages fit the width of the screen`, async ({ page }) => {
+    await useTheme(page, theme);
+    const width = page.viewportSize()?.width ?? 0;
+    // Something wider than the screen makes phones zoom the whole page out (innerWidth grows).
+    const fits = async () => {
+      expect(await page.evaluate(() => window.innerWidth)).toBe(width);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+        width,
+      );
+    };
+    await page.goto('/');
+    await expect(page.getByRole('region', { name: 'Weiterschauen', exact: true })).toBeVisible();
+    await page.waitForTimeout(800);
+    await fits();
+    const series = (await demoItems(page, 'Episode'))[0]?.SeriesId;
+    if (!series) throw new Error('No series in the demo');
+    await page.goto(`/item/${series}`);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await page.waitForTimeout(800);
+    await fits();
   });
 }

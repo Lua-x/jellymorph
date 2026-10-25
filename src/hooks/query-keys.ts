@@ -22,6 +22,8 @@ export const queryKeys = {
   latest: (key: SessionKey, libraryId: string) => [...user(key), 'latest', libraryId] as const,
   favoritesPreview: (key: SessionKey) => [...user(key), 'favoritesPreview'] as const,
   collections: (key: SessionKey) => [...user(key), 'collections'] as const,
+  topRated: (key: SessionKey) => [...user(key), 'topRated'] as const,
+  upcoming: (key: SessionKey) => [...user(key), 'upcoming'] as const,
   genres: (key: SessionKey) => [...user(key), 'genres'] as const,
   itemPage: (key: SessionKey, query: string, page: number) =>
     [...user(key), 'itemPage', query, page] as const,

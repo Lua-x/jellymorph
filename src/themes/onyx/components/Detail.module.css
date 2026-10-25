@@ -1,0 +1,390 @@
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.sections {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2.75rem;
+  padding-top: 1.75rem;
+}
+
+.section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.heading {
+  margin: 0;
+  font-size: clamp(1.125rem, 1rem + 0.45vw, 1.5rem);
+  font-stretch: 92%;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+/* The next episode inside the main button. */
+.nextLabel {
+  margin-left: 0.375rem;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+/* --- Season chips ----------------------------------------------------------------------------- */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chip {
+  min-height: 2.5rem;
+  padding: 0 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Focus = hover: white border and a lighter fill; focus adds the outline. */
+.chip:is(:hover, :focus-visible) {
+  border-color: #ffffff;
+  background: rgb(255 255 255 / 9%);
+}
+
+.chip:focus-visible {
+  outline: 0.125rem solid #ffffff;
+  outline-offset: 2px;
+}
+
+.chip[aria-pressed='true'] {
+  border-color: #ffffff;
+  background: #ffffff;
+  color: var(--ox-on-button);
+}
+
+/* --- Episodes: a sideways row of large stills ------------------------------------------------- */
+
+.episodesViewport {
+  margin: 0 calc(var(--page-gutter) * -1);
+}
+
+.episodes {
+  display: flex;
+  gap: 1rem;
+  margin: -0.75rem 0;
+  padding: 1rem var(--page-gutter);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-padding-inline: var(--page-gutter);
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  list-style: none;
+}
+
+.episodes::-webkit-scrollbar {
+  display: none;
+}
+
+/* A containing block for the hidden texts inside (see Row.module.css). */
+.episode {
+  position: relative;
+  display: grid;
+  flex: 0 0 clamp(16rem, 26vw, 26rem);
+  align-content: start;
+  gap: 0.5rem;
+  min-width: 0;
+  scroll-snap-align: start;
+}
+
+.still {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-card);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: transform var(--duration-base) var(--ease-emphasized);
+}
+
+.still > span:first-child {
+  position: absolute;
+  inset: 0;
+}
+
+.episode[data-next] .still {
+  box-shadow:
+    0 0 0 0.125rem var(--color-accent),
+    var(--shadow-card);
+}
+
+.stillPlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  margin: -1.5rem 0 0 -1.5rem;
+  border-radius: 999px;
+  background: rgb(5 7 13 / 70%);
+  color: #ffffff;
+  font-size: 1.25rem;
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+
+/* Focus = hover: white frame, slightly larger, the play symbol turns white. */
+.still:is(:hover, :focus-visible) {
+  outline: none;
+  box-shadow: var(--focus-ring), var(--shadow-card);
+  transform: scale(1.03);
+}
+
+.still:is(:hover, :focus-visible) .stillPlay {
+  background: #ffffff;
+  color: var(--ox-on-button);
+  transform: scale(1.12);
+}
+
+.stillProgress {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 0.1875rem;
+  background: rgb(255 255 255 / 28%);
+}
+
+.stillProgress > span {
+  display: block;
+  height: 100%;
+  background: var(--color-progress);
+  transform-origin: left center;
+}
+
+.episodeMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  margin: 0.25rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.episodeNumber {
+  color: var(--color-accent-text);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.nextBadge {
+  padding: 0.0625rem 0.375rem;
+  border-radius: 0.125rem;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-size: 0.75rem;
+}
+
+.played {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.episodeTitle {
+  justify-self: start;
+  border-radius: 0.125rem;
+  color: var(--color-text);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.episodeTitle:is(:hover, :focus-visible) {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+.episodeTitle:focus-visible {
+  outline: 0.125rem solid #ffffff;
+  outline-offset: 2px;
+}
+
+.episodeOverview {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+/* --- Extras ----------------------------------------------------------------------------------- */
+
+.extras {
+  display: flex;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.extra {
+  display: grid;
+  gap: 0.5rem;
+  width: clamp(16rem, 26vw, 26rem);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.extraPicture {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-card);
+  transition: transform var(--duration-base) var(--ease-emphasized);
+}
+
+.extraPicture > span:first-child {
+  position: absolute;
+  inset: 0;
+}
+
+.extra:is(:hover, :focus-visible) {
+  outline: none;
+}
+
+.extra:is(:hover, :focus-visible) .extraPicture {
+  box-shadow: var(--focus-ring), var(--shadow-card);
+  transform: scale(1.03);
+}
+
+.extra:is(:hover, :focus-visible) .stillPlay {
+  background: #ffffff;
+  color: var(--ox-on-button);
+}
+
+.extraLabel {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* --- Details ---------------------------------------------------------------------------------- */
+
+.details {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 2rem 3rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
+  gap: 1.25rem 2rem;
+  align-content: start;
+  margin: 0;
+}
+
+.facts > div {
+  display: grid;
+  align-content: start;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.facts dt {
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.subheading {
+  margin: 0 0 0.75rem;
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.cast ul {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cast li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.5rem;
+}
+
+.person {
+  border-radius: 0.125rem;
+  color: var(--color-text);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.person:is(:hover, :focus-visible) {
+  color: var(--color-accent-text);
+  text-decoration: underline;
+}
+
+.person:focus-visible {
+  outline: 0.125rem solid #ffffff;
+  outline-offset: 2px;
+}
+
+.role {
+  color: var(--color-text-muted);
+}
+
+:global([data-motion='reduced']) :is(.still, .stillPlay, .extraPicture) {
+  transition: none;
+}
+
+@media (max-width: 48rem) {
+  .episode {
+    flex-basis: 80vw;
+  }
+
+  .details {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

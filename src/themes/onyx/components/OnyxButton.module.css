@@ -1,0 +1,115 @@
+.button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  max-width: 100%;
+  min-height: 2.75rem;
+  padding: 0 1.25rem;
+  border: 0;
+  border-radius: var(--radius-control);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+
+.button > svg {
+  flex: none;
+  font-size: 1.25rem;
+}
+
+.button:focus-visible {
+  outline: none;
+}
+
+/* Focus = hover: brighter fill (per variant) and a white ring with a gap. */
+.button:is(:hover, :focus-visible) {
+  box-shadow:
+    0 0 0 0.125rem var(--color-bg),
+    0 0 0 0.25rem #ffffff;
+}
+
+.button:active {
+  transform: scale(0.97);
+}
+
+.button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.primary {
+  background: var(--ox-button);
+  color: var(--ox-on-button);
+}
+
+.primary:is(:hover, :focus-visible) {
+  background: var(--ox-button-hover);
+}
+
+.secondary,
+.round {
+  background: var(--ox-secondary);
+  color: #ffffff;
+  backdrop-filter: blur(0.5rem);
+}
+
+.secondary:is(:hover, :focus-visible),
+.round:is(:hover, :focus-visible) {
+  background: var(--ox-secondary-hover);
+}
+
+.round {
+  width: 2.75rem;
+  padding: 0;
+  border-radius: 999px;
+}
+
+/* Pressed: the light blue accent with dark ink (white on it would be too faint). */
+.round[aria-pressed='true'] {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.round[aria-pressed='true']:is(:hover, :focus-visible) {
+  background: #8bb0f8;
+}
+
+.lg {
+  min-height: 3.25rem;
+  padding: 0 1.75rem;
+  font-size: 1.0625rem;
+}
+
+.lg.round {
+  width: 3.25rem;
+  padding: 0;
+}
+
+.lg > svg {
+  font-size: 1.375rem;
+}
+
+/* Long labels end with an ellipsis instead of leaving the screen. */
+.label {
+  display: inline-block;
+  min-width: 0;
+  overflow: hidden;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+}
+
+/* Blur is expensive for TV graphics chips; the fill alone is dense enough there. */
+:global([data-device='tv']) :is(.secondary, .round) {
+  backdrop-filter: none;
+}
+
+:global([data-motion='reduced']) .button {
+  transition: none;
+}

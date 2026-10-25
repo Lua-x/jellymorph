@@ -263,6 +263,7 @@ export function itemDto(library: UserLibrary, userId: string, item: MockItem) {
     }),
     Studios: item.studios.map((name) => ({ Name: name })),
     MediaStreams: mediaStreamsDto(item),
+    ...(item.virtual ? { MediaType: 'Video', LocationType: 'Virtual' } : {}),
     ...(isPlayableItem(item)
       ? {
           MediaType: 'Video',
@@ -301,6 +302,7 @@ export interface ItemQuery {
   nameLessThan?: string;
   imageTypes?: string[];
   hasOverview?: boolean;
+  minCommunityRating?: number;
   sortBy?: string[];
   sortOrder?: string[];
   startIndex?: number;
@@ -331,6 +333,7 @@ export function parseItemQuery(url: URL): ItemQuery {
     nameLessThan: params.get('nameLessThan') ?? undefined,
     imageTypes: list('imageTypes'),
     hasOverview: flag('hasOverview'),
+    minCommunityRating: number('minCommunityRating'),
     sortBy: list('sortBy'),
     sortOrder: list('sortOrder'),
     startIndex: number('startIndex'),
@@ -414,6 +417,10 @@ export function queryItems(library: UserLibrary, userId: string, query: ItemQuer
     );
   }
   if (query.hasOverview) items = items.filter((item) => Boolean(item.overview));
+  const minRating = query.minCommunityRating;
+  if (minRating !== undefined) {
+    items = items.filter((item) => (item.communityRating ?? 0) >= minRating);
+  }
 
   const sortBy = query.sortBy ?? ['SortName'];
   const descending = query.sortOrder?.[0] === 'Descending';

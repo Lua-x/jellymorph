@@ -16,7 +16,11 @@ import { CobaltButton } from './CobaltButton';
 import styles from './DetailHeader.module.css';
 
 /** "Play" or "Resume from …", plus "Start over" for a started video. */
-function PlayButtons({ item }: { item: Pick<MediaItem, 'id' | 'kind' | 'userData'> }) {
+function PlayButtons({
+  item,
+}: {
+  item: Pick<MediaItem, 'id' | 'kind' | 'userData' | 'available'>;
+}) {
   const { t } = useTranslation('content');
   const actions = useMediaActions();
   if (!isPlayable(item) || item.kind === 'series') return null;

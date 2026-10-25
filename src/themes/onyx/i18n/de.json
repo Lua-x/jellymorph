@@ -1,0 +1,24 @@
+{
+  "nav": {
+    "libraries": "Bibliotheken"
+  },
+  "hero": {
+    "slides": "Empfohlene Titel",
+    "pause": "Automatischen Wechsel anhalten",
+    "resume": "Automatischen Wechsel fortsetzen"
+  },
+  "card": {
+    "airs": "Ab {{date}}",
+    "soon": "Bald"
+  },
+  "detail": {
+    "related": "Mehr wie dieses",
+    "extras": "Extras",
+    "details": "Details",
+    "released": "Erschienen",
+    "runtime": "Laufzeit",
+    "rated": "Freigabe",
+    "genres": "Genres",
+    "episode": "Folge {{number}}"
+  }
+}

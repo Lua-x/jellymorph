@@ -1,0 +1,293 @@
+/* Very tall, from the top of the window to the edge of the side panel. */
+.hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-height: clamp(30rem, 80vh, 62rem);
+  margin: calc(var(--ox-main-top) * -1) calc(var(--page-gutter) * -1) 0;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--color-bg);
+}
+
+.hero[data-context='preview'] {
+  min-height: 48cqi;
+  margin: 0;
+}
+
+.skeleton {
+  background:
+    radial-gradient(60% 40% at 70% 30%, rgb(36 82 190 / 25%), transparent), var(--color-surface);
+}
+
+/* --- Layers ----------------------------------------------------------------------------------- */
+
+/* The pictures stop above the bottom edge, where the shade is solid (no light line). */
+.backdrops {
+  position: absolute;
+  inset: 0 0 4px;
+  z-index: 0;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 1s var(--ease-standard);
+}
+
+.backdrop[data-current] {
+  opacity: 1;
+}
+
+.trailer {
+  position: absolute;
+  inset: 0 0 4px;
+  z-index: 1;
+  width: 100%;
+  height: calc(100% - 4px);
+  max-width: none;
+  object-fit: cover;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.2s var(--ease-standard);
+}
+
+.trailer[data-playing='true'] {
+  opacity: 1;
+}
+
+/* Black from the left for the text and into the page at the bottom, with a cool blue tint. */
+.shade {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background:
+    linear-gradient(90deg, rgb(5 7 13 / 94%) 0%, rgb(5 7 13 / 62%) 36%, transparent 66%),
+    linear-gradient(0deg, var(--color-bg) 0%, rgb(5 7 13 / 70%) 18%, transparent 45%),
+    radial-gradient(80% 60% at 0% 100%, rgb(36 82 190 / 28%), transparent 70%);
+}
+
+/* The blue light edge along the bottom of the stage. */
+.edge {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 3;
+  height: 0.125rem;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--ox-edge) 30%,
+    var(--ox-edge) 70%,
+    transparent
+  );
+  box-shadow:
+    0 0 1rem var(--ox-edge),
+    0 0 3rem rgb(110 156 245 / 45%);
+  opacity: 0.8;
+}
+
+/* --- Text ------------------------------------------------------------------------------------- */
+
+.stage {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: end;
+  padding: calc(var(--ox-main-top) + 3rem) var(--page-gutter) 1rem;
+}
+
+.slide {
+  grid-area: 1 / 1;
+  min-width: 0;
+  opacity: 0;
+  transition: opacity 700ms var(--ease-standard);
+}
+
+.slide[data-current] {
+  opacity: 1;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: start;
+  gap: 1.125rem;
+  width: min(40rem, 50%);
+}
+
+.logo {
+  width: min(32rem, 92%);
+  height: clamp(5rem, 12vw, 12rem);
+  margin: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(2.5rem, 1.4rem + 3.4vw, 5rem);
+  font-stretch: 88%;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 0.98;
+  text-shadow: 0 2px 16px rgb(0 0 0 / 55%);
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem 1rem;
+  margin: 0;
+  color: var(--color-text);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.badge {
+  padding: 0.0625rem 0.375rem;
+  border: 1px solid rgb(255 255 255 / 55%);
+  border-radius: 0.125rem;
+  font-size: 0.8125rem;
+}
+
+.overview {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: rgb(243 245 250 / 90%);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 100%;
+  margin-top: 0.25rem;
+}
+
+/* --- Dots and pause --------------------------------------------------------------------------- */
+
+.controls {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0 var(--page-gutter) 1.75rem;
+}
+
+.dots {
+  display: flex;
+}
+
+.dot {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.dot > span {
+  display: block;
+  width: 1.25rem;
+  height: 0.1875rem;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 40%);
+  transition:
+    transform var(--duration-base) var(--ease-emphasized),
+    opacity var(--duration-base) var(--ease-standard);
+}
+
+.dot[aria-current='true'] > span {
+  background: #ffffff;
+}
+
+/* Focus = hover: the bar brightens and grows. */
+.dot:is(:hover, :focus-visible) > span {
+  background: #ffffff;
+  transform: scaleY(1.8);
+}
+
+.dot:focus-visible {
+  outline: 0.125rem solid #ffffff;
+  outline-offset: -0.25rem;
+  border-radius: var(--radius-control);
+}
+
+.pause {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-left: 0.25rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--ox-secondary);
+  color: #ffffff;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.pause:is(:hover, :focus-visible) {
+  outline: none;
+  background: var(--ox-secondary-hover);
+  box-shadow: var(--focus-ring);
+}
+
+:global([data-motion='reduced']) :is(.backdrop, .slide, .trailer, .dot > span) {
+  transition: none;
+}
+
+/* --- Small screens: picture on top, text below ------------------------------------------------ */
+
+@media (max-width: 48rem) {
+  .hero {
+    min-height: 0;
+  }
+
+  .backdrops,
+  .trailer {
+    inset: 0 0 auto;
+    height: calc(100vw * 9 / 16);
+  }
+
+  .shade {
+    background:
+      linear-gradient(
+        0deg,
+        var(--color-bg) 0%,
+        var(--color-bg) calc(100% - 100vw * 9 / 16),
+        transparent calc(100% - 100vw * 9 / 16 + 5rem)
+      ),
+      radial-gradient(80% 40% at 0% 100%, rgb(36 82 190 / 28%), transparent 70%);
+  }
+
+  .stage {
+    padding-top: calc(100vw * 9 / 16 - 2.5rem);
+  }
+
+  .content {
+    width: auto;
+  }
+
+  .overview {
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+}

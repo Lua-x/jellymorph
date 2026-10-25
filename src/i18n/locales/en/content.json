@@ -48,7 +48,9 @@
       "latest": "New in {{library}}",
       "favorites": "Your favorites",
       "collections": "Collections",
-      "genres": "Genres"
+      "genres": "Genres",
+      "topRated": "Top rated",
+      "upcoming": "Coming soon"
     },
     "empty": {
       "title": "Nothing to watch yet",

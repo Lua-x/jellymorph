@@ -123,7 +123,7 @@ export function artworkSvg(item: MockItem, type: MockImageType): string {
     const size = item.name.length > 18 ? 74 : 104;
     // Long titles are squeezed into the box instead of running out of it.
     const fit =
-      item.name.length * size * 0.56 > 776
+      item.name.length * size * 0.6 > 776
         ? ' textLength="776" lengthAdjust="spacingAndGlyphs"'
         : '';
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 220">

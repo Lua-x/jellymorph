@@ -48,7 +48,9 @@
       "latest": "Neu in {{library}}",
       "favorites": "Deine Favoriten",
       "collections": "Sammlungen",
-      "genres": "Genres"
+      "genres": "Genres",
+      "topRated": "Am besten bewertet",
+      "upcoming": "Demnächst"
     },
     "empty": {
       "title": "Noch nichts zu sehen",

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { patchUserData } from './useMediaActions';
+import { isPlayable, patchUserData } from './useMediaActions';
 
 const userData = {
   played: false,
@@ -36,5 +36,15 @@ describe('patchUserData', () => {
     const patched = patchUserData(detail, 'a', { played: true }) as typeof detail;
     expect(patched.userData.played).toBe(true);
     expect(patched.cast).toBe(detail.cast);
+  });
+});
+
+describe('isPlayable', () => {
+  it('plays videos and series, but not what has no file yet', () => {
+    expect(isPlayable({ kind: 'movie', available: true })).toBe(true);
+    expect(isPlayable({ kind: 'series', available: true })).toBe(true);
+    expect(isPlayable({ kind: 'collection', available: true })).toBe(false);
+    // An upcoming episode has a page, but nothing to play.
+    expect(isPlayable({ kind: 'episode', available: false })).toBe(false);
   });
 });

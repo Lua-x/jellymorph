@@ -7,6 +7,8 @@ import {
   fetchLatest,
   fetchNextUp,
   fetchResume,
+  fetchTopRated,
+  fetchUpcoming,
 } from '@/api/items';
 import { fetchCurrentUser, fetchLibraries } from '@/api/user';
 import { visibleIds, type HomeAreaKind } from '@/domain/layout';
@@ -94,6 +96,19 @@ export function useHomeSections(defaults: readonly HomeAreaKind[]): HomeSection[
     queryFn: ({ signal }) => fetchGenres(api, signal),
     staleTime: 30 * 60_000,
   });
+  // Only themes that offer these areas ask the server for them.
+  const topRated = useQuery({
+    queryKey: queryKeys.topRated(key),
+    queryFn: ({ signal }) => fetchTopRated(api, signal),
+    staleTime: 30 * 60_000,
+    enabled: defaults.includes('topRated'),
+  });
+  const upcoming = useQuery({
+    queryKey: queryKeys.upcoming(key),
+    queryFn: ({ signal }) => fetchUpcoming(api, signal),
+    staleTime: 30 * 60_000,
+    enabled: defaults.includes('upcoming'),
+  });
 
   const latestLibraries = latestLibrariesOf(libraries.data ?? [], user.data?.latestExcludes ?? []);
   const latest = useQueries({
@@ -132,6 +147,20 @@ export function useHomeSections(defaults: readonly HomeAreaKind[]): HomeSection[
       seeAll: collectionsLibrary ? paths.library(collectionsLibrary.id) : null,
     },
     { id: 'genres', kind: 'genres', genres: toQueryResult(genres) },
+    {
+      id: 'topRated',
+      kind: 'topRated',
+      library: null,
+      items: toQueryResult(topRated),
+      seeAll: null,
+    },
+    {
+      id: 'upcoming',
+      kind: 'upcoming',
+      library: null,
+      items: toQueryResult(upcoming),
+      seeAll: null,
+    },
   ];
   const byId = new Map(sections.map((section) => [section.id, section]));
   return visibleIds(homeAreaIds(defaults, latestLibraries), layout.home)

@@ -50,9 +50,12 @@ function patchCaches(client: QueryClient, key: SessionKey, itemId: string, patch
 
 const PLAYABLE: ReadonlySet<ItemKind> = new Set(['movie', 'episode', 'video', 'series']);
 
-/** Items with a "Play" button: videos directly, series via their next episode. */
-export function isPlayable(item: Pick<MediaItem, 'kind'>): boolean {
-  return PLAYABLE.has(item.kind);
+/**
+ * Items with a "Play" button: videos directly, series via their next episode. Upcoming episodes
+ * (no file yet) have none.
+ */
+export function isPlayable(item: Pick<MediaItem, 'kind' | 'available'>): boolean {
+  return PLAYABLE.has(item.kind) && item.available;
 }
 
 /** Where playback starts: ask when there is a saved position, or decide up front. */

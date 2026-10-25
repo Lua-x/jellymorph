@@ -1,7 +1,7 @@
 import { http, HttpResponse, ws } from 'msw';
 import { customImageResponse } from './admin-handlers';
 import { artworkSvg, displayItem } from './artwork';
-import { itemsById, trailers, type MockImageType } from './catalog';
+import { itemsById, trailers, upcoming, type MockImageType } from './catalog';
 import { DEMO_VIEWS } from './fixtures';
 import type { Authed } from './handlers';
 import { libraryArtSvg, svgResponseInit } from './images';
@@ -75,6 +75,17 @@ export function createContentHandlers(state: MockState, authed: Authed) {
         );
         return page(items.slice(0, limitOf(request, 20)));
       }),
+    ),
+    http.get(
+      '*/Shows/Upcoming',
+      authed((user, request) =>
+        page(
+          [...upcoming]
+            .sort((a, b) => (a.premiereDate ?? '').localeCompare(b.premiereDate ?? ''))
+            .slice(0, limitOf(request, 16))
+            .map((item) => itemDto(library, user.id, item)),
+        ),
+      ),
     ),
     http.get(
       '*/Items/Latest',

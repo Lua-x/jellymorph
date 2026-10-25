@@ -115,6 +115,35 @@ export async function fetchNextUp(
   return mapItems(api, data.Items);
 }
 
+/**
+ * The best rated films and series by their community rating (phase 16, Onyx's ranked row).
+ * Jellyfin has no play counts across users, so the rating stands in for "most popular".
+ */
+export async function fetchTopRated(api: Api, signal?: AbortSignal): Promise<MediaItem[]> {
+  const { data } = await getLibraryApi(api).getItems(
+    {
+      ...cardQuery,
+      includeItemTypes: ['Movie', 'Series'],
+      recursive: true,
+      sortBy: ['CommunityRating', 'SortName'],
+      sortOrder: ['Descending'],
+      minCommunityRating: 1,
+      limit: 10,
+    },
+    { signal },
+  );
+  return mapItems(api, data.Items);
+}
+
+/** Episodes Jellyfin expects soon (unaired, without a file yet), earliest first. */
+export async function fetchUpcoming(api: Api, signal?: AbortSignal): Promise<MediaItem[]> {
+  const { data } = await getShowApi(api).getUpcomingEpisodes(
+    { ...cardQuery, limit: 16 },
+    { signal },
+  );
+  return mapItems(api, data.Items);
+}
+
 export async function fetchLatest(
   api: Api,
   libraryId: string,

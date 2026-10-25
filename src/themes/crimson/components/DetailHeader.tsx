@@ -16,7 +16,11 @@ import styles from './DetailHeader.module.css';
 import { ExpandableText, ShortList, TrackList } from '../../default/components/Expandable';
 
 /** "Play" or "Resume", plus "Start over" for a started video. */
-function PlayButtons({ item }: { item: Pick<MediaItem, 'id' | 'kind' | 'userData'> }) {
+function PlayButtons({
+  item,
+}: {
+  item: Pick<MediaItem, 'id' | 'kind' | 'userData' | 'available'>;
+}) {
   const { t } = useTranslation('content');
   const actions = useMediaActions();
   if (!isPlayable(item) || item.kind === 'series') return null;

@@ -1,0 +1,24 @@
+{
+  "nav": {
+    "libraries": "Libraries"
+  },
+  "hero": {
+    "slides": "Featured titles",
+    "pause": "Pause automatic rotation",
+    "resume": "Resume automatic rotation"
+  },
+  "card": {
+    "airs": "Airs {{date}}",
+    "soon": "Soon"
+  },
+  "detail": {
+    "related": "More like this",
+    "extras": "Extras",
+    "details": "Details",
+    "released": "Released",
+    "runtime": "Runtime",
+    "rated": "Rated",
+    "genres": "Genres",
+    "episode": "Episode {{number}}"
+  }
+}

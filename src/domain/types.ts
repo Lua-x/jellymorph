@@ -152,6 +152,11 @@ export interface MediaItem {
   overview: string | null;
   tagline: string | null;
   premiereDate: string | null;
+  /**
+   * False for items Jellyfin knows without a file, such as upcoming episodes (LocationType
+   * "Virtual"): they have a page but nothing to play.
+   */
+  available: boolean;
   images: {
     primary: ImageRef | null;
     backdrop: ImageRef | null;
@@ -217,7 +222,8 @@ export interface Genre {
   image: ImageRef | null;
 }
 
-export type HomeSectionKind = 'resume' | 'nextUp' | 'latest' | 'favorites' | 'collections';
+export type HomeSectionKind =
+  'resume' | 'nextUp' | 'latest' | 'favorites' | 'collections' | 'topRated' | 'upcoming';
 
 /**
  * An area of the home page, in the order the user sees them (phase 14: arranged in the

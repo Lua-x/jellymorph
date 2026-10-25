@@ -74,6 +74,8 @@ export interface MockItem {
   container: 'mkv' | 'mp4';
   memberIds: string[];
   localTrailerCount: number;
+  /** An episode Jellyfin expects but has no file for yet (LocationType "Virtual", phase 16). */
+  virtual?: boolean;
   /* Set only by the administration endpoints of the demo server (phase 13). */
   originalTitle?: string | null;
   forcedSortName?: string | null;
@@ -804,7 +806,40 @@ export const trailers: MockItem[] = movies
     localTrailerCount: 0,
   }));
 
-export const itemsById = new Map([...allItems, ...trailers].map((item) => [item.id, item]));
+const UPCOMING_TITLES = ['Neue Ufer', 'Die Rückkehr', 'Funkstille', 'Letzte Runde', 'Sturmwarnung'];
+
+/**
+ * The next episode of each continuing series, airing in the coming days (Jellyfin's
+ * /Shows/Upcoming). Reachable by id, but not listed in seasons or libraries; added after the
+ * generation, so no other demo data changes. The dates follow the clock of the visit.
+ */
+export const upcoming: MockItem[] = series
+  .filter((show) => show.status === 'Continuing')
+  .slice(0, 5)
+  .flatMap((show, index) => {
+    const last = episodes.filter((episode) => episode.seriesId === show.id).at(-1);
+    if (!last) return [];
+    const airs = new Date(Date.now() + (index * 3 + 2) * 86_400_000);
+    airs.setUTCHours(0, 0, 0, 0);
+    return [
+      {
+        ...last,
+        id: `u${last.id.slice(1)}`,
+        name: UPCOMING_TITLES[index] ?? last.name,
+        sortName: sortNameOf(UPCOMING_TITLES[index] ?? last.name),
+        indexNumber: (last.indexNumber ?? 0) + 1,
+        premiereDate: airs.toISOString(),
+        year: airs.getUTCFullYear(),
+        overview: null,
+        streams: [],
+        virtual: true,
+      },
+    ];
+  });
+
+export const itemsById = new Map(
+  [...allItems, ...trailers, ...upcoming].map((item) => [item.id, item]),
+);
 
 /** Takes items out of the demo catalog (the administration endpoint "delete"). */
 export function removeFromCatalog(ids: ReadonlySet<string>) {

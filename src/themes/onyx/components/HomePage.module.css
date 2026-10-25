@@ -1,0 +1,206 @@
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.rows {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2.5rem;
+  padding-top: 1.75rem;
+}
+
+/* Without the spotlight (hidden in the arrangement) the rows start at the top. */
+.standalone {
+  padding-top: 0.5rem;
+}
+
+.section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+}
+
+.heading {
+  margin: 0;
+  font-size: clamp(1.125rem, 1rem + 0.45vw, 1.5rem);
+  font-stretch: 92%;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+/* --- Ranked row: a large outlined number beside each poster ---------------------------------- */
+
+.rankedViewport {
+  margin: 0 calc(var(--page-gutter) * -1);
+}
+
+.ranked {
+  display: flex;
+  gap: 1rem;
+  margin: -0.75rem 0;
+  padding: 1rem var(--page-gutter);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-padding-inline: var(--page-gutter);
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  list-style: none;
+}
+
+.ranked::-webkit-scrollbar {
+  display: none;
+}
+
+.rank {
+  position: relative;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: flex-end;
+  scroll-snap-align: start;
+}
+
+/* Outlined digits, overlapped a little by the poster. */
+.number {
+  position: relative;
+  z-index: 0;
+  margin-right: -0.875rem;
+  color: transparent;
+  font-size: clamp(6rem, 3rem + 7vw, 11rem);
+  font-stretch: 80%;
+  font-weight: 800;
+  line-height: 0.8;
+  letter-spacing: -0.06em;
+  -webkit-text-stroke: 0.1875rem rgb(143 179 248 / 85%);
+  user-select: none;
+}
+
+.rankLink {
+  position: relative;
+  z-index: 1;
+  display: block;
+  border-radius: var(--radius-card);
+  outline: none;
+}
+
+.poster {
+  position: relative;
+  display: block;
+  width: clamp(7.5rem, 4rem + 7vw, 12rem);
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-card);
+  transition: transform var(--duration-base) var(--ease-emphasized);
+}
+
+/* Focus = hover: the white frame and a slight enlargement. */
+.rankLink:is(:hover, :focus-visible) .poster {
+  box-shadow: var(--focus-ring), var(--shadow-card);
+  transform: scale(1.04);
+}
+
+.posterSkeleton {
+  background: var(--color-surface-raised);
+  box-shadow: none;
+}
+
+/* --- Libraries -------------------------------------------------------------------------------- */
+
+.libraries {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.library {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-card);
+  color: #ffffff;
+  text-decoration: none;
+  transition: transform var(--duration-base) var(--ease-emphasized);
+}
+
+.library > span:first-child {
+  position: absolute;
+  inset: 0;
+}
+
+.library:is(:hover, :focus-visible) {
+  outline: none;
+  box-shadow: var(--focus-ring), var(--shadow-card);
+  transform: scale(1.03);
+}
+
+.libraryFallback {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgb(36 82 190 / 45%), var(--color-surface-raised));
+}
+
+.libraryName {
+  position: relative;
+  z-index: 1;
+  padding: 0 1rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* --- Genres ----------------------------------------------------------------------------------- */
+
+.genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.genre {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: 0 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  color: var(--color-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.genre:is(:hover, :focus-visible) {
+  border-color: #ffffff;
+  background: rgb(255 255 255 / 9%);
+}
+
+.genre:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+:global([data-motion='reduced']) :is(.poster, .library) {
+  transition: none;
+}
+
+@media (max-width: 40rem) {
+  .libraries {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .number {
+    margin-right: -1rem;
+  }
+}
