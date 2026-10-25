@@ -17,7 +17,9 @@
     "preview": "Live-Vorschau",
     "previewOf": "Vorschau von {{name}} mit deinen Inhalten",
     "previewScheme": "Farbschema der Vorschau",
-    "isActive": "Dieses Theme ist aktiv."
+    "isActive": "Dieses Theme ist aktiv.",
+    "plugin": "Plugin",
+    "loadFailed": "Das Theme „{{name}}“ konnte nicht geladen werden. Jellymorph zeigt stattdessen Classic."
   },
   "colorScheme": {
     "label": "Farbschema",

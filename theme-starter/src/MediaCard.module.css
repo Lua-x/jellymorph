@@ -1,0 +1,72 @@
+.card {
+  display: grid;
+  gap: 0.375rem;
+  min-width: 0;
+  border-radius: var(--radius-card);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.picture {
+  position: relative;
+  display: block;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-card);
+  transition: transform var(--duration-base) var(--ease-emphasized);
+}
+
+.card[data-shape='wide'] .picture {
+  aspect-ratio: 16 / 9;
+}
+
+.picture > span:first-child {
+  position: absolute;
+  inset: 0;
+}
+
+/* Focus looks like hover: the picture lifts and gets the warm focus ring. */
+.card:focus-visible {
+  outline: none;
+}
+
+.card:is(:hover, :focus-visible) .picture {
+  box-shadow: var(--focus-ring), var(--shadow-card);
+  transform: translateY(-0.25rem);
+}
+
+.progress {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  left: 0.5rem;
+  height: 0.25rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 25%);
+}
+
+.progress > span:first-child {
+  display: block;
+  height: 100%;
+  background: var(--color-progress);
+  transform-origin: left center;
+}
+
+.title {
+  overflow: hidden;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.subtitle {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+:global([data-motion='reduced']) .picture {
+  transition: none;
+}

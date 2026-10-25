@@ -27,7 +27,20 @@ describe('parseAppConfig', () => {
       appTitle: 'Kino',
       demoMode: false,
       customCss: { all: true, themes: ['crimson'] },
+      themePlugins: [],
     });
+  });
+
+  it('takes plugin themes the container found, and one of them as the default theme', () => {
+    const { config, warnings } = parseAppConfig({
+      themePlugins: ['aurora', 'aurora', 'Bad Name', 'crimson', 7],
+      defaultTheme: 'aurora',
+    });
+    expect(config.themePlugins).toEqual(['aurora']);
+    expect(config.defaultTheme).toBe('aurora');
+    expect(warnings).toHaveLength(1);
+    // A plugin that is not installed cannot be the default.
+    expect(parseAppConfig({ defaultTheme: 'aurora' }).config.defaultTheme).toBe('default');
   });
 
   it('keeps only known themes for own style sheets', () => {

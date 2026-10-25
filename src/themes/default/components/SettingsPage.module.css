@@ -352,6 +352,13 @@
   font-weight: 700;
 }
 
+/* Plugin themes come from the container's folder, not from Jellymorph. */
+.pluginBadge {
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-muted);
+}
+
 .themeDescription {
   color: var(--color-text-muted);
   font-size: 0.875rem;

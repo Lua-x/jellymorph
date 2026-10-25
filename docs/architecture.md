@@ -631,6 +631,17 @@ Crimson shows details as a layer above the page they come from (`detailPresentat
 - **Loading:** page chunks are loaded with `React.lazy`. The overlay has its own suspense boundary so the page below does not vanish while loading.
 - **Verification:** `navigation/overlay.test.ts`, E2E `e2e/crimson.spec.ts` (opening, the mouse wheel scrolls only the overlay, Back and Esc with an unchanged scroll position and focus on the card, a title from "More like this" replaces the overlay, opened directly as a page, the season switch stays in the overlay).
 
+### 7.10 Plugin themes (phase 17) **[Decision]**
+
+Themes can also come from the container's folder `/custom/themes/<id>`, built with `theme-starter/`. Format, interface, loading order and security are described for theme authors in [themes.md](themes.md#12-plugin-themes) §12; the decisions behind them:
+
+- **Shared runtime through import paths instead of an import map:** a plugin is a plain ES module whose build (`theme-starter/vite.config.ts`, `output.paths`) points `react`, `react/jsx-runtime`, `react-dom`, `react-i18next` and `jellymorph` to `/plugin-api/v1/*.js`. Those static files read the app's objects from `globalThis.__jellymorph.v1` (`plugin-api/install.ts`). An import map would have been an inline script, which the CSP (`script-src 'self'`) forbids, and its hash would change with every deployment. Two copies of React (one in the plugin) would break hooks.
+- **The public interface is one module:** `src/plugin-api/jellymorph.ts` lists what plugins may use: the contract and its types, `ThemeSlot`, links and pictures, Classic's building blocks, text helpers, paths and hooks. Everything else stays private. Versions: `"api"` in theme.json for the interface (served side by side as `/plugin-api/v<n>/`), `contractVersion` in the module for the contract; within a version things are only added.
+- **Ids:** `ThemeId` is now any well-formed id (`config/theme-ids.ts`); `BuiltInThemeId` is the list of built-in themes. Which plugins exist is only known at runtime, so stored choices keep the id and the registry decides (`getThemeManifest` falls back to Classic). Manifests split into `BuiltInThemeManifest` (texts as keys of the `themes` namespace) and `PluginThemeManifest` (texts from theme.json); `themes/names.ts` reads both.
+- **Two steps:** theme.json is read before the first render (the settings list plugins without loading their code), the module only when the theme is shown or previewed. Both, and the interface itself, are separate chunks loaded only when `config.themePlugins` is not empty. Measured: the base bundle grew from 187.1 to 192.8 KB gzip, mostly because Vite splits the modules the interface shares with the base into more chunks.
+- **Never take the app down:** `loadThemeOrClassic` (`themes/loader.ts`) never rejects. A theme whose code cannot be loaded (checked by `checkPluginModule`: contract version, known slots, components, options, texts) is shown as Classic with a message; a plugin is then marked broken for the visit and leaves the list (`usePluginFailures`). Before, a built-in chunk lost by the network made the whole app fail at start.
+- **Operator decision (user decision 2026-10-25):** `THEME_PLUGINS=true` switches plugins on; without it nginx serves no JS or JSON from `/custom` (`docker/plugins.conf.template` is only included then), and the dev server behaves the same. The template lives in the repository and is attached to every release as a ZIP with generated types (`scripts/pack-starter.ts`; CI builds it as a check).
+
 ---
 
 ## 8. Navigation and input
@@ -961,6 +972,10 @@ Occasion: opening Jellymorph woke the user's sleeping hard disks, on which the a
 - **Volume:** `/cache` exists in the image owned by `101:0` with mode 0775; a named volume takes that over, so nginx can write without further setup (also with any UID in group 0). Host folders need `chown 101`.
 - Uploads (POST) and deletions in the administration dialogs pass through the same location uncached; afterwards the picture has a new tag anyway.
 - Tested in the container test (`scripts/test-container.ts`): miss then hit, one copy per format with the normalized `Accept`, untagged and API requests bypass, user pictures, and kept pictures after a restart while the upstream is stopped.
+
+### 15.4 Plugin themes (phase 17)
+
+`THEME_PLUGINS` (`true`/`false`, default `false`). With `true` the entrypoint lists every folder in `/custom/themes` with a `theme.json` as `themePlugins` in `config.js` and renders `plugins.conf`, a location that serves `.js` and `.json` from `/custom/themes/<id>/` without caching and with the usual security headers; their style sheets and pictures already go through the location for own styles. A folder whose name is not a valid id, that has the name of a built-in theme or that has no `theme.json` stops the container with a message naming the folder (the same rule as for invalid variables). `DEFAULT_THEME` may then also name a plugin. The container test covers the folder errors, serving with and without the switch, and runs the whole Playwright suite with plugins switched on. The interface files `/plugin-api/v1/*.js` are part of the build (`public/`) and always served.
 
 ---
 

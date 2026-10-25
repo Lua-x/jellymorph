@@ -17,6 +17,7 @@ This guide describes version 1 of the theme contract (`src/themes/contract.ts`).
 9. [Texts](#9-texts)
 10. [Checklist before finishing](#10-checklist-before-finishing)
 11. [The bundled themes](#11-the-bundled-themes)
+12. [Plugin themes](#12-plugin-themes)
 
 ## 1. Structure of a theme
 
@@ -287,3 +288,51 @@ What each theme draws itself and what it takes over from Classic. Good templates
 | Onyx                | AppShell, HomePage, ItemDetailPage, SeriesPage, Hero, Row, MediaCard                                                                                   | Sign-in, library, search, favorites, settings, player, states | `heroItemCount: 6`, `cardShape: 'landscape'`, home with `topRated`, `upcoming` | Instrument Sans                     |
 
 Pictures of every theme are in the [README](../README.md#themes), the decisions on each theme in CLAUDE.md §12.
+
+## 12. Plugin themes
+
+Since 1.5 a theme can also live outside the app: as a plugin in the container's mounted folder, built with the template in [theme-starter/](../theme-starter/README.md) (every release carries it as `jellymorph-theme-starter.zip`). A plugin theme follows the same contract and rules as a built-in one; only the way it is built and loaded differs.
+
+### Folder and theme.json
+
+`/custom/themes/<id>/` holds one theme. The folder name is its id (lowercase letters, digits and hyphens, not the id of a built-in theme). Inside:
+
+| File            | Purpose                                                                                                                                                                                                                                                                               |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `theme.json`    | What the settings show before any code loads: `id` (= folder name), `api` (interface version), `name` and `description` (`en`, optionally `de`), `colorSchemes`, `preview` per scheme, `entry` (default `index.js`), `styles`, optionally `version`, `author` and `features.uiSounds` |
+| `index.js`      | An ES module whose default export is the `ThemeModule` (`contractVersion`, `components`, `options`, `texts`), as in §1                                                                                                                                                                |
+| `index.css`     | The theme's styles; every global rule scoped to `[data-theme='<id>']` as in §4                                                                                                                                                                                                        |
+| preview picture | Shown on the theme's tile in the settings                                                                                                                                                                                                                                             |
+
+All paths in `theme.json` stay inside the folder (no `..`, no absolute paths, no hidden files). The app checks `theme.json` and the module like any untrusted input (`src/plugin-api/themes.ts`): an invalid `theme.json` leaves the theme out of the list, an invalid module (unknown contract version, unknown slots, options of the wrong kind) shows Classic instead and a message. Every problem is written to the browser console with `[plugins]` or `[themes]` in front.
+
+### The plugin interface
+
+A plugin does not bundle React. Its build points five imports to modules the app serves under `/plugin-api/v1/` (`public/plugin-api/v1`), which hand out the app's own objects (`src/plugin-api/install.ts`, set up only when plugins are installed):
+
+| Import              | From the app                                                                                                                                                                                                           |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `react`             | React                                                                                                                                                                                                                  |
+| `react/jsx-runtime` | the JSX runtime                                                                                                                                                                                                        |
+| `react-dom`         | `createPortal`, `flushSync` and the resource hints                                                                                                                                                                     |
+| `react-i18next`     | `useTranslation`, `Trans` (the app's i18next instance: its namespaces and the theme's `theme-<id>`)                                                                                                                    |
+| `jellymorph`        | everything in `src/plugin-api/jellymorph.ts`: the contract and its types, `ThemeSlot`, `useActiveTheme`, `useThemeOptions`, `AppLink`, `JellyImage`, Classic's building blocks (§5), text helpers, paths and the hooks |
+
+`src/plugin-api/jellymorph.ts` is the public interface: what is not exported there is private and may change in any version. Within version 1 the list only grows; removing or changing something needs `/plugin-api/v2/` (and `"api": 2`), and the app keeps serving v1 next to it for as long as possible. A unit test checks that the files in `public/plugin-api/v1` export exactly these names.
+
+### Loading
+
+1. The container lists the folders with a `theme.json` in `config.js` (`themePlugins`), only with `THEME_PLUGINS=true`. A folder name that does not fit, the name of a built-in theme or a folder without `theme.json` stops the container with a message.
+2. Before the first render, the app installs the interface and reads every `theme.json` (one small request per plugin); valid ones join the theme list after the built-in themes (`registerPluginThemes`).
+3. The code loads when the theme is shown or previewed: first the style sheets as `<link>`, then the module with `import()`. Both are files of the own origin, so the Content Security Policy needs no exception.
+4. If that fails, the theme counts as broken for the visit: Classic stands in, a message tells the user, and the theme leaves the list (`loadThemeOrClassic` in `src/themes/loader.ts`). A stored choice of a theme that is missing or broken shows Classic, without losing the choice.
+
+`DEFAULT_THEME` may name a plugin theme. Users' stored choices keep any well-formed id, so a theme that is switched off for a while comes back when it is installed again.
+
+### Security
+
+A plugin theme is code that runs with the session of every user who opens Jellymorph, exactly like the app itself. Jellymorph cannot sandbox it: a theme renders the app's pages and must reach the same data. That is why plugins are an operator decision: only whoever controls the container's folder can install one, only with `THEME_PLUGINS=true`, and without that switch nginx serves no code from `/custom` at all. Jellyfin administrators cannot install themes through the interface. The settings mark plugin themes with a badge.
+
+### Testing
+
+`scripts/build-starter.ts` builds the example of the template into `e2e/fixtures/custom/themes/starter`; `e2e/plugins.spec.ts` checks it there (badge, own slots, Classic for the rest, colors, reload, accessibility) together with two test plugins: one with a module for an unknown contract, one for an interface version the app does not offer. The container test runs the whole suite with `THEME_PLUGINS=true` and checks that the same folder serves no code without it. `scripts/pack-starter.ts` builds the template the way the release ZIP carries it and compiles it against the generated types.

@@ -1,7 +1,7 @@
-import type { ThemeManifest } from '../contract';
+import type { BuiltInThemeManifest } from '../contract';
 import previewDark from './preview-dark.jpg';
 
-export const constellationManifest: ThemeManifest = {
+export const constellationManifest: BuiltInThemeManifest = {
   id: 'constellation',
   nameKey: 'constellation.name',
   descriptionKey: 'constellation.description',

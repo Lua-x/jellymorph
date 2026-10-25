@@ -2,6 +2,21 @@
 
 All notable changes to Jellymorph. Versions follow [Semantic Versioning](https://semver.org/). The release notes on GitHub are also generated automatically from the commits.
 
+## 1.5.0 – 2026-10-25
+
+Your own themes as plugins.
+
+### New
+
+- **Plugin themes:** a complete theme of your own installs as a plugin in the mounted folder (`/custom/themes/<id>`) and appears in the settings next to the built-in themes, with the badge "Plugin". It follows the same contract as the built-in themes; every slot it leaves out is drawn by Classic in its colors. Plugins are off unless the operator sets `THEME_PLUGINS=true`, because a plugin is code that runs with every user's session. `DEFAULT_THEME` may name a plugin theme.
+- **A public plugin interface, version 1:** plugins use the app's own React, translations and theme building blocks (links, pictures, Classic's components, text helpers, the hooks), served under `/plugin-api/v1/`. Within version 1 the interface only grows.
+- **Starter template:** `jellymorph-theme-starter.zip` at every release (and `theme-starter/` in the repository) with an example theme, a build that maps the imports to the interface, the types of this version and a step-by-step guide.
+- A theme that cannot be loaded (a broken plugin, or a lost connection) no longer breaks the app: Classic stands in and a message says so.
+
+### Fixed
+
+- Own style sheets (`<theme>.css`) for Cobalt and Onyx were not found by the development server.
+
 ## 1.4.1 – 2026-10-25
 
 Fewer wake-ups for sleeping hard disks.

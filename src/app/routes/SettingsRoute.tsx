@@ -14,7 +14,8 @@ import type { SettingsModel, ThemeChoice } from '@/settings/model';
 import { MAX_OVERSCAN, useDeviceSettings } from '@/settings/store';
 import { useUserSettings } from '@/settings/user-settings';
 import { useThemeOptions } from '@/themes/context';
-import { THEMES } from '@/themes/registry';
+import { useThemeNames } from '@/themes/names';
+import { allThemes, getThemeManifest, usePluginFailures } from '@/themes/registry';
 import { ThemeSlot } from '@/themes/ThemeSlot';
 
 export function SettingsRoute() {
@@ -39,10 +40,13 @@ export function SettingsRoute() {
   const update = useUserSettings.getState().update;
   const deviceSettings = useDeviceSettings.getState();
 
-  const themes: ThemeChoice[] = THEMES.map((manifest) => ({
+  const themeNames = useThemeNames();
+  // Plugins that failed to load leave the list (re-render when that happens).
+  usePluginFailures((state) => state.failed);
+  const themes: ThemeChoice[] = allThemes().map((manifest) => ({
     id: manifest.id,
-    name: t(manifest.nameKey, { ns: 'themes' }),
-    description: t(manifest.descriptionKey, { ns: 'themes' }),
+    ...themeNames(manifest),
+    plugin: manifest.plugin !== undefined,
     preview: manifest.preview,
     colorSchemes: manifest.colorSchemes,
     uiSounds: manifest.features?.uiSounds ?? false,
@@ -50,7 +54,8 @@ export function SettingsRoute() {
 
   const settings: SettingsModel = {
     themes,
-    theme: appearance.theme,
+    // A stored theme that is not installed (any more) shows as Classic, as it is rendered.
+    theme: getThemeManifest(appearance.theme).id,
     setTheme: (theme) => {
       update({ theme });
     },

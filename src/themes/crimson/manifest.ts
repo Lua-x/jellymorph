@@ -1,7 +1,7 @@
-import type { ThemeManifest } from '../contract';
+import type { BuiltInThemeManifest } from '../contract';
 import previewDark from './preview-dark.jpg';
 
-export const crimsonManifest: ThemeManifest = {
+export const crimsonManifest: BuiltInThemeManifest = {
   id: 'crimson',
   nameKey: 'crimson.name',
   descriptionKey: 'crimson.description',

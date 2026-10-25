@@ -22,6 +22,8 @@ export interface ThemeChoice {
   colorSchemes: readonly ColorScheme[];
   /** The theme has interface sounds (offer the switch). */
   uiSounds: boolean;
+  /** Installed in the container as a plugin (phase 17), not part of Jellymorph. */
+  plugin: boolean;
 }
 
 /** Whose arrangement the editor changes: the user's own, or the default for everybody (admins). */

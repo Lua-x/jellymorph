@@ -1,8 +1,9 @@
 # Jellymorph site, rendered by docker/entrypoint.sh into /tmp/jellymorph/site.conf.
 # Placeholder: JM_LISTEN_IPV6 (the IPv6 listen directive, or nothing). The entrypoint also
-# writes the files included from /tmp/jellymorph: headers.conf (security headers incl. CSP)
-# and proxy.conf (the /jellyfin/ reverse proxy, empty without JELLYFIN_PROXY_TARGET), and in
-# the http context cache.conf (the picture cache, empty without IMAGE_CACHE).
+# writes the files included from /tmp/jellymorph: headers.conf (security headers incl. CSP),
+# proxy.conf (the /jellyfin/ reverse proxy, empty without JELLYFIN_PROXY_TARGET), plugins.conf
+# (plugin themes, empty without THEME_PLUGINS) and, in the http context, cache.conf (the
+# picture cache, empty without IMAGE_CACHE).
 
 include /tmp/jellymorph/cache.conf;
 
@@ -78,6 +79,9 @@ server {
 
     # Own styles, fonts and pictures from the mounted folder /custom (phase 14). Only these file
     # types; anything else there is a 404. Never cached, so edits apply on the next page load.
+    # Plugin themes (THEME_PLUGINS=true): modules and theme.json from /custom/themes.
+    include /tmp/jellymorph/plugins.conf;
+
     location ~ ^/custom/(?<custom_file>[A-Za-z0-9_./-]+\.(?:css|woff2|woff|ttf|otf|png|jpe?g|webp|avif|gif|svg))$ {
         alias /custom/$custom_file;
         include /tmp/jellymorph/headers.conf;

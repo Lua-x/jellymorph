@@ -46,10 +46,14 @@ describe('settings schema', () => {
     expect(fromCustomPrefs(older)).not.toHaveProperty('uiSounds');
   });
 
+  it('keeps a plugin theme even before the plugins are known (it shows as Classic if missing)', () => {
+    expect(parseUserSettings({ theme: 'aurora' })).toEqual({ theme: 'aurora' });
+  });
+
   it('ignores invalid values instead of applying them', () => {
     expect(
       parseUserSettings({
-        theme: 'from-the-future',
+        theme: 'Not An Id!',
         colorScheme: 'sepia',
         motion: 'full',
         language: 'xx',

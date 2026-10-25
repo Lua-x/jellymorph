@@ -1,4 +1,4 @@
-import { isThemeId, type ThemeId } from './theme-ids';
+import { isBuiltInThemeId, isThemeId, type ThemeId } from './theme-ids';
 
 export interface AppConfig {
   /** Server address to pre-fill (JELLYFIN_URL). */
@@ -18,6 +18,11 @@ export interface AppConfig {
    * custom.css for every theme, <theme>.css for one theme.
    */
   customCss: CustomCss;
+  /**
+   * Plugin themes (phase 17): folder names in /custom/themes, listed by the container only with
+   * THEME_PLUGINS=true. Their theme.json is read at start (plugin-api/themes.ts).
+   */
+  themePlugins: readonly string[];
 }
 
 export interface CustomCss {
@@ -33,6 +38,7 @@ export const DEFAULT_APP_CONFIG: AppConfig = {
   appTitle: 'Jellymorph',
   demoMode: false,
   customCss: { all: false, themes: [] },
+  themePlugins: [],
 };
 
 export interface ParsedAppConfig {
@@ -84,8 +90,21 @@ function readCustomCss(value: unknown, warnings: string[]): CustomCss {
     return DEFAULT_APP_CONFIG.customCss;
   }
   const record = value as Record<string, unknown>;
-  const themes = Array.isArray(record.themes) ? record.themes.filter(isThemeId) : [];
+  const themes = Array.isArray(record.themes) ? record.themes.filter(isBuiltInThemeId) : [];
   return { all: record.all === true, themes: [...new Set(themes)] };
+}
+
+function readThemePlugins(value: unknown, warnings: string[]): string[] {
+  if (value === undefined || value === null) return [];
+  if (!Array.isArray(value)) {
+    warnings.push('themePlugins must be a list; ignoring it.');
+    return [];
+  }
+  const ids = value.filter((id): id is string => isThemeId(id) && !isBuiltInThemeId(id));
+  if (ids.length !== value.length) {
+    warnings.push('themePlugins: ignoring names that are not valid plugin theme ids.');
+  }
+  return [...new Set(ids)];
 }
 
 /** Validates the untrusted runtime configuration. Never throws; invalid values fall back to defaults. */
@@ -105,8 +124,12 @@ export function parseAppConfig(raw: unknown): ParsedAppConfig {
     lockServer = false;
   }
 
+  const themePlugins = readThemePlugins(source.themePlugins, warnings);
   let defaultTheme: ThemeId = DEFAULT_APP_CONFIG.defaultTheme;
-  if (isThemeId(source.defaultTheme)) {
+  if (
+    isBuiltInThemeId(source.defaultTheme) ||
+    (isThemeId(source.defaultTheme) && themePlugins.includes(source.defaultTheme))
+  ) {
     defaultTheme = source.defaultTheme;
   } else if (source.defaultTheme !== undefined && source.defaultTheme !== '') {
     warnings.push('defaultTheme is not a known theme id; using "default".');
@@ -126,6 +149,7 @@ export function parseAppConfig(raw: unknown): ParsedAppConfig {
       appTitle,
       demoMode: readBoolean(source.demoMode, 'demoMode', warnings) ?? false,
       customCss: readCustomCss(source.customCss, warnings),
+      themePlugins,
     },
     warnings,
   };

@@ -32,11 +32,13 @@ export default defineConfig({
   webServer: EXTERNAL_BASE_URL
     ? undefined
     : {
-        command: `npm run build && npm run preview -- --port ${PORT} --strictPort`,
+        // The example plugin theme first, so the server lists it (e2e/plugins.spec).
+        command: `node scripts/build-starter.ts && npm run build && npm run preview -- --port ${PORT} --strictPort`,
         port: PORT,
         reuseExistingServer: !process.env.CI,
-        // Own style sheets as the container would find them in /custom (e2e/customization.spec).
-        env: { DEMO_MODE: 'true', CUSTOM_DIR: 'e2e/fixtures/custom' },
+        // Own style sheets and plugin themes as the container would find them in /custom
+        // (e2e/customization.spec, e2e/plugins.spec).
+        env: { DEMO_MODE: 'true', CUSTOM_DIR: 'e2e/fixtures/custom', THEME_PLUGINS: 'true' },
         timeout: 180_000,
       },
 });

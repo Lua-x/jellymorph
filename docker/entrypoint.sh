@@ -82,14 +82,39 @@ jellyfin_url=$(read_url JELLYFIN_URL "${JELLYFIN_URL:-}")
 proxy_target=$(read_url JELLYFIN_PROXY_TARGET "${JELLYFIN_PROXY_TARGET:-}")
 lock_server=$(read_bool LOCK_SERVER "${LOCK_SERVER:-}" false)
 demo_mode=$(read_bool DEMO_MODE "${DEMO_MODE:-}" false)
+theme_plugins=$(read_bool THEME_PLUGINS "${THEME_PLUGINS:-}" false)
+
+# Plugin themes (phase 17): every folder in /custom/themes with a theme.json, only when the
+# administrator switches them on. Their code runs with every user's session, so a folder that
+# does not fit stops the container instead of being skipped quietly. The app checks theme.json.
+plugin_ids=""
+plugins_json=""
+if [ "$theme_plugins" = true ] && [ -d "$custom_dir/themes" ]; then
+  for folder in "$custom_dir"/themes/*/; do
+    [ -d "$folder" ] || continue
+    id=$(basename "$folder")
+    if ! printf '%s\n' "$id" | grep -Eq '^[a-z0-9]([a-z0-9-]{0,62}[a-z0-9])?$'; then
+      fail "THEME_PLUGINS: the folder themes/$id needs a name of lowercase letters, digits and hyphens."
+    fi
+    case " $theme_ids " in
+      *" $id "*) fail "THEME_PLUGINS: themes/$id has the name of a built-in theme; rename the folder and its id." ;;
+    esac
+    if [ ! -f "$folder/theme.json" ]; then
+      fail "THEME_PLUGINS: themes/$id has no theme.json."
+    fi
+    plugin_ids="$plugin_ids${plugin_ids:+ }$id"
+    plugins_json="$plugins_json${plugins_json:+, }\"$id\""
+  done
+fi
 
 default_theme=${DEFAULT_THEME:-default}
+valid_themes="$theme_ids${plugin_ids:+ $plugin_ids}"
 case "$default_theme" in
-  *[!a-z-]*) fail "DEFAULT_THEME must be one of: $theme_ids (got \"$default_theme\")." ;;
+  *[!a-z0-9-]*) fail "DEFAULT_THEME must be one of: $valid_themes (got \"$default_theme\")." ;;
 esac
-case " $theme_ids " in
+case " $valid_themes " in
   *" $default_theme "*) ;;
-  *) fail "DEFAULT_THEME must be one of: $theme_ids (got \"$default_theme\")." ;;
+  *) fail "DEFAULT_THEME must be one of: $valid_themes (got \"$default_theme\")." ;;
 esac
 
 app_title=$(printf '%s' "${APP_TITLE:-}" | tr -d '\000-\037\177' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
@@ -193,7 +218,8 @@ window.__APP_CONFIG__ = {
   "defaultTheme": $(json_string "$default_theme"),
   "appTitle": $(json_string "$app_title"),
   "demoMode": $demo_mode,
-  "customCss": { "all": $custom_all, "themes": [$custom_themes] }
+  "customCss": { "all": $custom_all, "themes": [$custom_themes] },
+  "themePlugins": [$plugins_json]
 };
 EOF
 
@@ -252,6 +278,12 @@ else
   : > "$out_dir/proxy.conf"
 fi
 
+if [ "$theme_plugins" = true ]; then
+  cp "$template_dir/plugins.conf.template" "$out_dir/plugins.conf"
+else
+  : > "$out_dir/plugins.conf"
+fi
+
 if [ -n "$image_cache" ]; then
   JM_CACHE_DIR=$cache_dir/images JM_CACHE_SIZE=$image_cache \
     envsubst '${JM_CACHE_DIR} ${JM_CACHE_SIZE}' \
@@ -262,6 +294,13 @@ fi
 
 log "server: $mode; default theme: $default_theme; title: $app_title"
 log "own styles: ${custom_found:-none}"
+if [ "$theme_plugins" = true ] && [ -n "$plugin_ids" ]; then
+  log "plugin themes: $(printf "%s" "$plugin_ids" | sed "s/ /, /g")"
+elif [ "$theme_plugins" = true ]; then
+  log "plugin themes: none found in $custom_dir/themes"
+else
+  log "plugin themes: off"
+fi
 if [ -n "$image_cache" ]; then
   log "picture cache: up to $image_cache in $cache_dir"
 else

@@ -10,7 +10,7 @@
  * phase 4 the settings (SettingsPage).
  */
 import type { ComponentType, ReactNode } from 'react';
-import type { ThemeId } from '@/config/theme-ids';
+import type { BuiltInThemeId, ThemeId } from '@/config/theme-ids';
 import type { LayoutDefaults } from '@/domain/layout';
 import type { Language } from '@/i18n';
 import type {
@@ -32,17 +32,14 @@ import type { NavModel } from '@/navigation/nav-model';
 import type { PlayerModel } from '@/player/model';
 import type { SettingsModel } from '@/settings/model';
 
-export type { ThemeId };
+export type { BuiltInThemeId, ThemeId };
 
 export const THEME_CONTRACT_VERSION = 1;
 
 export type ColorScheme = 'dark' | 'light';
 
-export interface ThemeManifest {
+interface ThemeManifestBase {
   id: ThemeId;
-  /** Key in the "themes" namespace, e.g. `default.name`. */
-  nameKey: `${ThemeId}.name`;
-  descriptionKey: `${ThemeId}.description`;
   /** Preview images per color scheme (asset URLs, only loaded on the settings page). */
   preview: Partial<Record<ColorScheme, string>>;
   /** Supported color schemes; the first one is the default. */
@@ -51,6 +48,34 @@ export interface ThemeManifest {
   features?: ThemeFeatures;
   load: () => Promise<ThemeModule>;
 }
+
+/** A theme that ships with the app; its name and description are app texts. */
+export interface BuiltInThemeManifest extends ThemeManifestBase {
+  id: BuiltInThemeId;
+  /** Key in the "themes" namespace, e.g. `default.name`. */
+  nameKey: `${BuiltInThemeId}.name`;
+  descriptionKey: `${BuiltInThemeId}.description`;
+  plugin?: undefined;
+}
+
+/** A text in English and, where the author wrote it, other languages of the app. */
+export type LocalizedText = { en: string } & Partial<Record<Language, string>>;
+
+/**
+ * A theme installed in the container's folder /custom/themes (phase 17, docs/themes.md §12).
+ * Its texts come from its theme.json; its code loads from the folder only when it is used.
+ */
+export interface PluginThemeManifest extends ThemeManifestBase {
+  plugin: {
+    name: LocalizedText;
+    description: LocalizedText;
+    /** As the author declared them in theme.json, for display only. */
+    version: string | null;
+    author: string | null;
+  };
+}
+
+export type ThemeManifest = BuiltInThemeManifest | PluginThemeManifest;
 
 export interface ThemeFeatures {
   /** The theme plays interface sounds when the user turns them on (useUiSounds). */

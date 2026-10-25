@@ -17,7 +17,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="License: AGPL-3.0" /></a>
 </p>
 
-> **Version 1.4:** eight themes, now with Cobalt and Onyx, the full feature set, administration of single titles for administrators and your own arrangement and styling. What changed is in the [changelog](CHANGELOG.md).
+> **Version 1.5:** eight themes and your own as plugins, the full feature set, administration of single titles for administrators and your own arrangement and styling. What changed is in the [changelog](CHANGELOG.md).
 
 ## Themes
 
@@ -106,7 +106,7 @@ The pictures show the demo mode with made-up titles and generated artwork.
 - **Player:** plays directly where the browser can, otherwise through HLS transcoding. Audio and subtitle choice (picture subtitles are burned in), quality, speed, full screen, picture-in-picture, preview thumbnails on the timeline, "Skip intro", next episode with countdown. Progress goes back to Jellyfin, so "Continue watching" is right on every device.
 - **Administration (for administrators):** an "Edit" menu on every detail page: identify, edit metadata, choose, upload or delete pictures, search, upload or delete subtitles, refresh metadata, delete the item. Plus "Scan library" and a link to Jellyfin's dashboard in the profile menu (you sign in there once with your Jellyfin account). Other users see none of this.
 - **Arrangement:** order and visibility of the home page areas, the navigation and the buttons and details on detail pages, by dragging or with the arrow keys. Administrators set a default for everybody; own arrangements take precedence.
-- **Own styling:** your own colors, fonts and CSS per theme from a mounted folder (see below).
+- **Own styling:** your own colors, fonts and CSS per theme from a mounted folder, and whole themes of your own as plugins (see below).
 - **Input:** mouse, touch, keyboard and remote control. On TVs a TV mode with larger type and an adjustable overscan margin, in 1080p and 4K.
 - **Accessibility:** contrast according to WCAG AA, focus at least as clear as hover, reduced motion on request or by system setting. Every page of every theme is checked automatically with axe.
 - **Languages:** German and English.
@@ -136,6 +136,7 @@ Jellymorph is then available at `http://<host>:8080`. A complete Docker Compose 
 | `APP_TITLE`             | Name in the browser tab and when installed as an app                                                                                                                                | `Jellymorph` |
 | `DEMO_MODE`             | `true`: a demo with made-up data, without any Jellyfin server                                                                                                                       | `false`      |
 | `IMAGE_CACHE`           | Keeps pictures in a volume, so Jellyfin is asked only once per picture: `true` (up to 5 GB), a size such as `10g` or `500m`, or `false`. Needs `JELLYFIN_PROXY_TARGET` (see below). | `false`      |
+| `THEME_PLUGINS`         | `true`: load plugin themes from `/custom/themes` (see "Plugin themes" below).                                                                                                       | `false`      |
 
 Changes need no new build: adjust the variable, restart the container. Invalid values, such as a typo in the theme name, stop the container with a message in the log (`docker logs jellymorph`) that names the variable.
 
@@ -254,6 +255,26 @@ The easiest way is to override the design tokens, the CSS variables of the theme
 
 Keep an eye on contrast with your own colors; the checks of the themes only cover their own values.
 
+### Plugin themes
+
+A whole theme of your own (layout, cards, stage, anything a built-in theme can change) installs as a plugin. Every release carries a starter template, `jellymorph-theme-starter.zip`, with an example theme and a step-by-step guide; it is also in [theme-starter/](theme-starter/README.md).
+
+1. Build the theme (`npm install`, `npm run build` in the template) and copy its folder into `themes/` of your mounted folder, e.g. `custom/themes/sunset/`.
+2. Switch plugins on and restart the container:
+
+   ```yaml
+   environment:
+     THEME_PLUGINS: 'true'
+   volumes:
+     - ./custom:/custom:ro
+   ```
+
+3. The theme appears under _Settings → Theme_ with the badge "Plugin". `DEFAULT_THEME` may name it too.
+
+- **Only install themes you trust.** A plugin theme is code that runs in every user's browser with that user's session, like Jellymorph itself. That is why only whoever controls the container can install one, and only with `THEME_PLUGINS=true`; without it, Jellymorph serves no code from the mounted folder.
+- The container log lists the plugin themes it found. A folder name that does not fit or a missing `theme.json` stops the container with a message; a theme for a newer plugin interface, or one that fails to load, is left out with a message in the browser console, and Classic stands in.
+- How to build one is in [docs/themes.md](docs/themes.md#12-plugin-themes).
+
 ## Development with a real Jellyfin server
 
 1. Copy `.env.example` to `.env.local`. The file is not checked in.
@@ -275,6 +296,8 @@ Jellyfin 10.10 and later is supported, including 12.x.
 | `npm run previews`                   | Render the theme preview pictures for the theme picker again         |
 | `npm run readme-shots`               | Pictures for this README into `docs/screenshots/`                    |
 | `npm run check:bundle`               | Check the size budget of the base bundle (250 KB gzip)               |
+| `node scripts/build-starter.ts`      | Build the example plugin theme into the test fixtures                |
+| `node scripts/pack-starter.ts`       | Prepare the starter template as the release ZIP carries it           |
 | `node scripts/record-demo-clip.ts`   | Record the demo clip again (takes a minute)                          |
 | `node scripts/render-icons.ts`       | Render the app icons from `public/favicon.svg` again                 |
 | `docker build -t jellymorph .`       | Build the image locally                                              |

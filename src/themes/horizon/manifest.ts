@@ -1,7 +1,7 @@
-import type { ThemeManifest } from '../contract';
+import type { BuiltInThemeManifest } from '../contract';
 import previewDark from './preview-dark.jpg';
 
-export const horizonManifest: ThemeManifest = {
+export const horizonManifest: BuiltInThemeManifest = {
   id: 'horizon',
   nameKey: 'horizon.name',
   descriptionKey: 'horizon.description',

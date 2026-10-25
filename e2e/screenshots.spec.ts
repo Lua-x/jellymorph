@@ -1199,4 +1199,39 @@ test.describe('screenshots @shots', () => {
       await shoot(page, '18-settings', '-light');
     });
   });
+  /** Plugin themes (phase 17): the example "Starter" from theme-starter/ and its tile. */
+  for (const viewport of VIEWPORTS) {
+    test.describe(`plugin ${String(viewport.width)}x${String(viewport.height)}`, () => {
+      test.use({ viewport });
+
+      test('plugin theme', async ({ page }) => {
+        await signInAs(page, 'Alex');
+        await page.goto('/settings');
+        const tile = page
+          .getByRole('radiogroup', { name: 'Theme' })
+          .getByRole('radio', { name: /^Starter/ });
+        await tile.click();
+        await tile.scrollIntoViewIfNeeded();
+        await expect(page.locator('.theme-preview section').first()).toBeVisible();
+        await shoot(page, 'e1-plugin-settings');
+        await page.getByRole('button', { name: 'Starter übernehmen' }).click();
+        await expect(page.locator('html')).toHaveAttribute('data-theme', 'starter');
+
+        await page.goto('/');
+        await expect(page.getByRole('region', { name: 'Tipp des Tages' })).toBeVisible();
+        await expect(
+          page
+            .getByRole('region', { name: 'Weiterschauen', exact: true })
+            .getByRole('link')
+            .first(),
+        ).toBeVisible();
+        await shoot(page, 'e2-plugin-home');
+        await shoot(page, 'e2-plugin-home', '-full', true);
+
+        // A page the plugin leaves to Classic, in the plugin's colors.
+        await openFromSearch(page, 'Kupferherz', 'Filme');
+        await shoot(page, 'e3-plugin-movie');
+      });
+    });
+  }
 });

@@ -1,7 +1,7 @@
-import type { ThemeManifest } from '../contract';
+import type { BuiltInThemeManifest } from '../contract';
 import previewDark from './preview-dark.jpg';
 
-export const neonGridManifest: ThemeManifest = {
+export const neonGridManifest: BuiltInThemeManifest = {
   id: 'neon-grid',
   nameKey: 'neon-grid.name',
   descriptionKey: 'neon-grid.description',

@@ -6,8 +6,8 @@ import { ThemeContext, type ThemeContextValue } from './context';
 import { resolveColorScheme } from './color-scheme';
 import { useCustomStyles } from './custom-styles';
 import type { ColorScheme, ThemeId } from './contract';
-import { loadDefaultTheme, loadThemeModule } from './loader';
-import { getThemeManifest } from './registry';
+import { loadDefaultTheme, loadThemeOrClassic } from './loader';
+import { getThemeManifest, usePluginFailures } from './registry';
 import { crossFade } from './transition';
 
 function syncThemeColorMeta() {
@@ -38,6 +38,8 @@ export function ThemeProvider({
   const appearance = useAppearance(defaultTheme);
   const prefersDark = useMediaQuery('(prefers-color-scheme: dark)');
   const motion = useMotionPreference();
+  // A plugin that failed to load counts as Classic from then on (re-render when that happens).
+  usePluginFailures((state) => state.failed);
   const requestedManifest = getThemeManifest(appearance.theme);
   const requested: Shown = {
     theme: requestedManifest.id,
@@ -49,26 +51,19 @@ export function ThemeProvider({
     if (requested.theme === shown.theme && requested.colorScheme === shown.colorScheme) return;
     let cancelled = false;
     const target = { theme: requested.theme, colorScheme: requested.colorScheme };
-    loadThemeModule(getThemeManifest(target.theme)).then(
-      () => {
-        if (!cancelled) {
-          crossFade(() => {
-            setShown(target);
-          }, motion === 'reduced');
-        }
-      },
-      (error: unknown) => {
-        // The current theme stays; a broken chunk must not take the app down.
-        console.error(`Theme "${target.theme}" could not be loaded`, error);
-      },
-    );
+    void loadThemeOrClassic(getThemeManifest(target.theme)).then(({ manifest }) => {
+      // A theme that failed stays out; the current one remains (the loader told the user).
+      if (cancelled || manifest.id !== target.theme) return;
+      crossFade(() => {
+        setShown(target);
+      }, motion === 'reduced');
+    });
     return () => {
       cancelled = true;
     };
   }, [requested.theme, requested.colorScheme, shown.theme, shown.colorScheme, motion]);
 
-  const manifest = getThemeManifest(shown.theme);
-  const module = use(loadThemeModule(manifest));
+  const { manifest, module } = use(loadThemeOrClassic(getThemeManifest(shown.theme)));
   const fallback = use(loadDefaultTheme());
 
   useLayoutEffect(() => {

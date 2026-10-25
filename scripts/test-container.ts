@@ -6,12 +6,14 @@
  * Every container runs like in production: read-only root filesystem, /tmp as tmpfs, no
  * capabilities. Checked: health endpoint, generated config.js and manifest, security and cache
  * headers, SPA fallback, invalid settings, the /jellyfin proxy (incl. WebSocket and start before
- * Jellyfin), the picture cache in a volume and, with --e2e, the whole Playwright suite in demo
- * mode under the real CSP.
+ * Jellyfin), the picture cache in a volume, plugin theme folders and, with --e2e, the whole
+ * Playwright suite in demo mode under the real CSP (with the plugin themes switched on).
  */
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { resolve } from 'node:path';
+import { chmodSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 import { runInNewContext } from 'node:vm';
 
 const image = process.argv[2] ?? '';
@@ -322,6 +324,7 @@ function invalidSettings() {
     [{ JELLYFIN_URL: 'jellyfin:8096' }, 'JELLYFIN_URL'],
     [{ JELLYFIN_PROXY_TARGET: 'http://jellyfin:8096; evil' }, 'JELLYFIN_PROXY_TARGET'],
     [{ LOCK_SERVER: 'true' }, 'LOCK_SERVER=true needs JELLYFIN_URL'],
+    [{ THEME_PLUGINS: 'yes' }, 'THEME_PLUGINS'],
     [{ IMAGE_CACHE: 'true' }, 'IMAGE_CACHE needs JELLYFIN_PROXY_TARGET'],
     [{ IMAGE_CACHE: 'lots', JELLYFIN_PROXY_TARGET: 'http://jellyfin:8096' }, 'IMAGE_CACHE must be'],
     // No volume at /cache: the read-only root filesystem leaves nowhere to write.
@@ -511,13 +514,81 @@ async function imageCache() {
   docker(['volume', 'rm', '-f', volume], { allowFailure: true });
 }
 
+/** Plugin folders that do not fit stop the container with a message naming the folder. */
+function pluginFolders() {
+  console.log('Plugin theme folders that do not fit stop the container');
+  const cases: [string, string | null, string][] = [
+    ['crimson', '{}', 'has the name of a built-in theme'],
+    ['My_Theme', '{}', 'needs a name of lowercase letters'],
+    ['no-manifest', null, 'has no theme.json'],
+  ];
+  for (const [index, [folder, manifest, message]] of cases.entries()) {
+    const custom = mkdtempSync(join(tmpdir(), 'jellymorph-plugins-'));
+    // mkdtemp makes the folder private; the container user (UID 101) has to read it.
+    chmodSync(custom, 0o755);
+    mkdirSync(join(custom, 'themes', folder), { recursive: true });
+    if (manifest !== null) writeFileSync(join(custom, 'themes', folder, 'theme.json'), manifest);
+    const container = `${PREFIX}-plugins-${String(index)}`;
+    started.push(container);
+    const result = docker(
+      [
+        'run',
+        '--rm',
+        '--name',
+        container,
+        ...HARDENING,
+        '-e',
+        'THEME_PLUGINS=true',
+        '-v',
+        `${custom}:/custom:ro`,
+        image,
+      ],
+      { allowFailure: true },
+    );
+    if (result.status !== 0 && result.stderr.includes(message)) {
+      console.log(`  ✓ themes/${folder}`);
+    } else {
+      failures += 1;
+      report(`themes/${folder}`, `exit ${String(result.status)}\n${result.stderr}`);
+    }
+  }
+}
+
 async function demoE2e() {
   console.log('Playwright suite in demo mode');
   const port = 18090;
-  // The folder for own styles, as users mount it (phase 14); e2e/customization.spec uses it.
+  // The folder for own styles and plugin themes, as users mount it (phases 14 and 17);
+  // e2e/customization.spec and e2e/plugins.spec use it. The example plugin is built first.
   const custom = resolve(import.meta.dirname, '..', 'e2e', 'fixtures', 'custom');
-  const container = start('demo', port, { DEMO_MODE: 'true' }, ['-v', `${custom}:/custom:ro`]);
+  const built = spawnSync('node', ['scripts/build-starter.ts'], { stdio: 'inherit' });
+  if (built.status !== 0) throw new Error('the example plugin theme could not be built');
+  const mount = ['-v', `${custom}:/custom:ro`];
+  const container = start('demo', port, { DEMO_MODE: 'true', THEME_PLUGINS: 'true' }, mount);
   await waitHealthy(port, container);
+
+  await check('plugin themes from the mounted folder', container, async () => {
+    const config = (await readConfig(port)) as { themePlugins: unknown };
+    assert.deepEqual(config.themePlugins, ['broken', 'future', 'starter']);
+    const module = await get(port, '/custom/themes/starter/index.js');
+    assert.equal(module.response.status, 200);
+    assert.match(header(module.response, 'content-type'), /javascript/);
+    assert.equal(header(module.response, 'cache-control'), 'no-cache');
+    const manifest = await get(port, '/custom/themes/starter/theme.json');
+    assert.match(header(manifest.response, 'content-type'), /json/);
+    const api = await get(port, '/plugin-api/v1/react.js');
+    assert.match(header(api.response, 'content-type'), /javascript/);
+  });
+
+  // Without THEME_PLUGINS the same folder serves no code.
+  const plain = start('demo-plain', port + 1, { DEMO_MODE: 'true' }, mount);
+  await waitHealthy(port + 1, plain);
+  await check('no plugin code without THEME_PLUGINS', plain, async () => {
+    const config = (await readConfig(port + 1)) as { themePlugins: unknown };
+    assert.deepEqual(config.themePlugins, []);
+    assert.equal((await get(port + 1, '/custom/themes/starter/index.js')).response.status, 404);
+    assert.equal((await get(port + 1, '/custom/themes/starter/theme.json')).response.status, 404);
+  });
+  docker(['rm', '-f', plain]);
 
   await check('own styles from the mounted folder', container, async () => {
     const config = (await readConfig(port)) as { customCss: unknown };
@@ -553,6 +624,7 @@ try {
   await fixedServer();
   await arbitraryUser();
   invalidSettings();
+  pluginFolders();
   await proxy();
   await imageCache();
   if (withE2e) await demoE2e();

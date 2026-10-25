@@ -1,0 +1,7 @@
+{
+  "id": "future",
+  "api": 2,
+  "name": { "en": "From the future" },
+  "description": { "en": "A test plugin for a plugin interface this app does not offer." },
+  "colorSchemes": ["dark"]
+}

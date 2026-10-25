@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { THEME_IDS } from '@/config/theme-ids';
 import { CONTRAST_PAIRS, REQUIRED_TOKENS } from './contract';
-import { THEMES } from './registry';
+import { BUILT_IN_THEMES as THEMES } from './registry';
 
 const tokenFiles = import.meta.glob<string>('./*/tokens.css', {
   query: '?raw',

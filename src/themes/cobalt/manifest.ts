@@ -1,7 +1,7 @@
-import type { ThemeManifest } from '../contract';
+import type { BuiltInThemeManifest } from '../contract';
 import previewDark from './preview-dark.jpg';
 
-export const cobaltManifest: ThemeManifest = {
+export const cobaltManifest: BuiltInThemeManifest = {
   id: 'cobalt',
   nameKey: 'cobalt.name',
   descriptionKey: 'cobalt.description',

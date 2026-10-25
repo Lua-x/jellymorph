@@ -23,7 +23,8 @@ RUN rm -f /etc/nginx/conf.d/*.conf && mkdir -p /etc/jellymorph /cache \
     && chown 101:0 /cache && chmod 0775 /cache
 COPY --chmod=0644 docker/nginx.conf /etc/nginx/nginx.conf
 COPY --chmod=0644 docker/nginx.conf.template docker/proxy.conf.template \
-    docker/cache.conf.template docker/images.conf.template /etc/jellymorph/
+    docker/cache.conf.template docker/images.conf.template docker/plugins.conf.template \
+    /etc/jellymorph/
 COPY --chmod=0755 docker/entrypoint.sh /usr/local/bin/jellymorph-entrypoint
 COPY --from=build /app/dist /usr/share/nginx/html
 USER 101
@@ -34,7 +35,8 @@ ENV JELLYFIN_URL="" \
     DEFAULT_THEME="default" \
     APP_TITLE="Jellymorph" \
     DEMO_MODE="false" \
-    IMAGE_CACHE=""
+    IMAGE_CACHE="" \
+    THEME_PLUGINS="false"
 
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \

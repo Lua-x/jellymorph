@@ -1,0 +1,135 @@
+/* A wide card with the backdrop on the right, fading into the page on the left. */
+.hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: end;
+  min-height: clamp(22rem, 52vh, 34rem);
+  margin-bottom: 2rem;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  isolation: isolate;
+}
+
+.pending {
+  background: var(--color-surface-raised);
+}
+
+.picture {
+  position: absolute;
+  inset: 0 0 0 30%;
+  z-index: -1;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 40%);
+  mask-image: linear-gradient(90deg, transparent, #000 40%);
+}
+
+.content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: start;
+  gap: 0.75rem;
+  width: min(36rem, 100%);
+  padding: clamp(1.25rem, 3vw, 2.5rem);
+}
+
+.kicker {
+  margin: 0;
+  color: var(--color-accent-text);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(2rem, 1.4rem + 2.4vw, 3.5rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  text-shadow: 0 2px 12px rgb(0 0 0 / 60%);
+}
+
+.facts {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.overview {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  line-height: 1.55;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.play,
+.details {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 1.5rem;
+  border: 0;
+  border-radius: var(--radius-control);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+
+.play {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.details {
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+}
+
+/* Focus looks like hover (docs/themes.md §6): slightly larger, with the focus ring on focus. */
+.play:is(:hover, :focus-visible),
+.details:is(:hover, :focus-visible) {
+  transform: scale(1.04);
+}
+
+.play:focus-visible,
+.details:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* Only transform and opacity move; reduced motion switches the movement off. */
+:global([data-motion='reduced']) :is(.play, .details) {
+  transition: none;
+}
+
+/* On phones the picture sits above the text, so the text never lies on a bright picture. */
+@media (max-width: 40rem) {
+  .hero {
+    align-items: start;
+  }
+
+  .picture {
+    position: relative;
+    inset: auto;
+    display: block;
+    aspect-ratio: 16 / 9;
+    margin-bottom: -1.5rem;
+    -webkit-mask-image: linear-gradient(0deg, transparent, #000 45%);
+    mask-image: linear-gradient(0deg, transparent, #000 45%);
+  }
+}

@@ -8,16 +8,20 @@ import { chooseTheme, signInAs, waitForAnimations } from './helpers';
  *   npm run previews
  */
 const THEMES_DIR = join(import.meta.dirname, '..', 'src', 'themes');
-const THEMES = [
-  { id: 'default', name: 'Classic', schemes: ['dark', 'light'] as const },
-  { id: 'neon-grid', name: 'Neon Grid', schemes: ['dark'] as const },
-  { id: 'crimson', name: 'Crimson', schemes: ['dark'] as const },
-  { id: 'glass', name: 'Glass', schemes: ['dark', 'light'] as const },
-  { id: 'horizon', name: 'Horizon', schemes: ['dark'] as const },
-  { id: 'constellation', name: 'Constellation', schemes: ['dark'] as const },
-  { id: 'cobalt', name: 'Cobalt', schemes: ['dark'] as const },
-  { id: 'onyx', name: 'Onyx', schemes: ['dark'] as const },
-];
+/** The example plugin theme keeps its picture next to its theme.json (copied by its build). */
+const STARTER_DIR = join(import.meta.dirname, '..', 'theme-starter', 'public');
+const THEMES: { id: string; name: string; schemes: readonly ('dark' | 'light')[]; dir?: string }[] =
+  [
+    { id: 'default', name: 'Classic', schemes: ['dark', 'light'] as const },
+    { id: 'neon-grid', name: 'Neon Grid', schemes: ['dark'] as const },
+    { id: 'crimson', name: 'Crimson', schemes: ['dark'] as const },
+    { id: 'glass', name: 'Glass', schemes: ['dark', 'light'] as const },
+    { id: 'horizon', name: 'Horizon', schemes: ['dark'] as const },
+    { id: 'constellation', name: 'Constellation', schemes: ['dark'] as const },
+    { id: 'cobalt', name: 'Cobalt', schemes: ['dark'] as const },
+    { id: 'onyx', name: 'Onyx', schemes: ['dark'] as const },
+    { id: 'starter', name: 'Starter', schemes: ['dark'] as const, dir: STARTER_DIR },
+  ];
 
 test.describe('theme previews @previews', () => {
   for (const theme of THEMES) {
@@ -43,7 +47,7 @@ test.describe('theme previews @previews', () => {
         await waitForAnimations(page);
         await page.waitForTimeout(400);
         await page.screenshot({
-          path: join(THEMES_DIR, theme.id, `preview-${scheme}.jpg`),
+          path: join(theme.dir ?? join(THEMES_DIR, theme.id), `preview-${scheme}.jpg`),
           type: 'jpeg',
           quality: 72,
         });

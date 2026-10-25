@@ -1,0 +1,10 @@
+{
+  "id": "broken",
+  "api": 1,
+  "name": { "en": "Broken plugin", "de": "Kaputtes Plugin" },
+  "description": {
+    "en": "A test plugin whose module does not fit the theme contract.",
+    "de": "Ein Test-Plugin, dessen Modul nicht zum Theme-Vertrag passt."
+  },
+  "colorSchemes": ["dark"]
+}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { THEME_CONTRACT_VERSION, THEME_SLOTS } from './contract';
-import { THEMES } from './registry';
+import { BUILT_IN_THEMES as THEMES } from './registry';
 
 describe('theme contract', () => {
   it('registers every theme once with its name and description keys', () => {

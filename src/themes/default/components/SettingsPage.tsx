@@ -215,6 +215,11 @@ function ThemePicker({ settings }: SettingsPageProps) {
                 {theme.id === settings.theme && (
                   <span className={styles.badge}>{t('theme.active')}</span>
                 )}
+                {theme.plugin && (
+                  <span className={`${styles.badge} ${styles.pluginBadge}`}>
+                    {t('theme.plugin')}
+                  </span>
+                )}
               </span>
               <span className={styles.themeDescription}>{theme.description}</span>
             </button>

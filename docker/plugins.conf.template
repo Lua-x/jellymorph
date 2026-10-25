@@ -1,0 +1,14 @@
+# Plugin themes (THEME_PLUGINS=true, phase 17), rendered by docker/entrypoint.sh into
+# /tmp/jellymorph/plugins.conf; empty without THEME_PLUGINS, so the mounted folder never serves
+# code by accident. No placeholders.
+#
+# Only the modules and theme.json of the folders in /custom/themes; their style sheets and
+# pictures go through the location for own styles. Never cached, so a new version of a plugin
+# applies on the next page load. Plugins are code from the own origin, so the Content Security
+# Policy (script-src 'self') needs no exception.
+
+location ~ ^/custom/themes/(?<plugin_file>[a-z0-9-]+/[A-Za-z0-9_./-]+\.(?:js|json))$ {
+    alias /custom/themes/$plugin_file;
+    include /tmp/jellymorph/headers.conf;
+    add_header Cache-Control "no-cache" always;
+}

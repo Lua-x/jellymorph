@@ -75,10 +75,12 @@ src/
     constellation/
     cobalt/
     onyx/
+  plugin-api/     # public interface and loading of plugin themes (phase 17)
   mocks/          # MSW handlers + fixtures (demo mode)
 docker/
   nginx.conf.template
   entrypoint.sh
+theme-starter/    # starter template for plugin themes (phase 17)
 e2e/              # Playwright
 docs/             # architecture.md, themes.md
 .github/workflows/
@@ -294,6 +296,7 @@ Model: HBO Max (added 2026-10-25)
 | `DEFAULT_THEME`         | Theme for new users                                                        | `default`    |
 | `APP_TITLE`             | Title in the browser                                                       | `Jellymorph` |
 | `IMAGE_CACHE`           | Keep pictures in a volume at `/cache` (only with the proxy; since 1.4.1)   | `false`      |
+| `THEME_PLUGINS`         | Load plugin themes from `/custom/themes` (since 1.5.0)                     | `false`      |
 
 Local development: Vite dev proxy to `JELLYFIN_DEV_URL` from `.env.local` (in `.gitignore`). Without a server the app runs in demo mode with MSW.
 
@@ -347,7 +350,7 @@ From here on: phase n → next minor version (1.x.0), bug fixes as a patch (1.x.
 - [x] Phase 14 – Make it your own: own colors, fonts and CSS per theme (files from a mounted folder, no injected CSS because of the CSP); arrangement by setting in every theme: order and visibility of the buttons on the detail page, details shown, home page areas, navigation entries; a default for everybody (admin) and per user, by drag and drop. No foreign code. → v1.2.0 _(done 2026-10-15, approved 2026-10-15)_
 - [x] Phase 15 – Theme cobalt (§6) → v1.3.0 _(done 2026-10-25, approved 2026-10-25)_
 - [x] Phase 16 – Theme onyx (§6) → v1.4.0 _(done 2026-10-25, approved 2026-10-25; tags `v1.3.0`, `v1.4.0` and `v1.4.1` set by the user)_
-- [ ] Phase 17 – Own themes as plugins: a public, versioned theme interface, loading at runtime from the mounted folder, a starter template for building, choosing installed themes in the settings. Security concept: plugin themes are code with access to the session; only the container admin may install them. → v1.5.0 (moved from phase 15 on 2026-10-25, see §12)
+- [x] Phase 17 – Own themes as plugins: a public, versioned theme interface, loading at runtime from the mounted folder, a starter template for building, choosing installed themes in the settings. Security concept: plugin themes are code with access to the session; only the container admin may install them. → v1.5.0 (moved from phase 15 on 2026-10-25, see §12) _(done 2026-10-25)_
 
 Not planned (user decision 2026-10-14): native apps for Android/iOS, SSO.
 
@@ -523,6 +526,15 @@ Claude Code records important architecture decisions and deviations here, with r
   - **Trailer preview off by default,** stored under the new key `jellymorph.trailerPreview`: the old key held the old default (`true`) for everybody who ever saved a setting, so only a new key switches it off for existing users. The settings page and the model keep their names.
   - **Picture cache `IMAGE_CACHE`** in the container (a new variable, §7; details in architecture.md §15.3): nginx keeps every tagged picture in a volume at `/cache` and serves it on every device, after restarts and while Jellyfin is down. Only with `JELLYFIN_PROXY_TARGET`; the user's compose switches to it. On the user's UGREEN NAS a host folder was not writable for UID 101 (the container stopped with its message as intended); running the container as the user (`user: '<uid>:<gid>'`) solved it and is in the README now. The user confirmed that the cache fills (one file per picture, size and format: a short nginx header, then the WebP).
   - Pitfall on the way: `String.replace` with a replacement string interprets `$'` (in `grep -Eq '^…$'`) and duplicated the rest of the file; edit scripts use a replacer function now.
+- **2026-10-25 – Phase 17, plugin themes** (user decisions: `THEME_PLUGINS=true` as an opt-in; the starter template in the repository plus a ZIP at every release; details in architecture.md §7.10 and §15.4, for theme authors in docs/themes.md §12):
+  - **Format:** `/custom/themes/<id>/` with `theme.json` (id = folder name, `api`, names and descriptions in `en`/`de`, color schemes, preview, entry, styles), an ES module whose default export is the `ThemeModule`, and its CSS. The settings read only theme.json; the code loads when the theme is shown or previewed. Plugin themes carry the badge "Plugin".
+  - **Interface v1:** plugins import `react`, `react/jsx-runtime`, `react-dom`, `react-i18next` and `jellymorph`; their build maps these to `/plugin-api/v1/*.js` (static files in `public/`), which hand out the app's own objects from `globalThis.__jellymorph.v1`. No import map (an inline script against the CSP), no second React. `src/plugin-api/jellymorph.ts` is the public list; a unit test keeps the files in step.
+  - **Robustness:** theme.json and the module are checked like untrusted input (`plugin-api/themes.ts`). `loadThemeOrClassic` never rejects: a theme whose code fails shows Classic and a message, a broken plugin leaves the list for the visit. `ThemeId` is any well-formed id now (`BuiltInThemeId` for the built-in ones), so a stored plugin choice survives while the plugin is missing.
+  - **Container:** the entrypoint lists the folders in `config.js` and includes `plugins.conf` (JS and JSON from `/custom/themes`) only with `THEME_PLUGINS=true`; a folder that does not fit stops the container. `DEFAULT_THEME` may name a plugin.
+  - **Template:** `theme-starter/` with the example "Starter" (warm amber, own Hero and MediaCard, own texts, Classic for the rest; 4 KB JS). In the repository its types come straight from `src`; `scripts/pack-starter.ts` generates standalone declarations for the ZIP and compiles the template against them (CI check and release). `scripts/build-starter.ts` builds it into the test fixtures with the repository's Vite.
+  - **Tests:** `e2e/plugins.spec.ts` (badge and preview, incompatible plugin left out, own slots plus Classic in the plugin's colors, code from the folder and the interface, reload, a broken plugin with the message, axe), unit tests for theme.json and module checks, the interface files and the template's versions, container test (folder errors, serving with and without the switch, whole suite with plugins on).
+  - Found along the way: the dev server's list of theme ids missed Cobalt and Onyx (own style sheets for them were not found in development); it now imports the list from `src/config/theme-ids.ts`. The ESLint rule that themes may only reuse Classic did not list Cobalt and Onyx either.
+  - The base bundle grew from 187.1 to 192.8 KB gzip (Vite splits the modules the interface shares with the base into more chunks); the plugin code itself loads only with plugins.
 - **2026-10-07 – MSW 3 through the Vite plugin `msw/vite` in `worker-only` mode.** It serves `mockServiceWorker.js` in the dev server and puts it into `dist/` on build. The file is therefore not in the repo and always matches the installed MSW version. It is started through the stable `setupWorker` API, not the experimental `virtual:msw`.
 
 - **2026-10-07 – SDK 1.0.0 despite the minimum version 10.10.** `@jellyfin/sdk` 1.0.0 is generated against the OpenAPI of Jellyfin 12.0 (classes renamed, e.g. `ItemsApi` → `LibraryApi`, `PlaystateApi` → `SessionApi`). A comparison of all endpoint paths with SDK 0.11.0 (= Jellyfin 10.10) shows: every path the client needs exists unchanged in 10.10. The SDK's `MINIMUM_VERSION` is still 10.10.0. Details: docs/architecture.md §1.2.

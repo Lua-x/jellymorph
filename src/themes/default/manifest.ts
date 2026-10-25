@@ -1,8 +1,8 @@
-import type { ThemeManifest } from '../contract';
+import type { BuiltInThemeManifest } from '../contract';
 import previewDark from './preview-dark.jpg';
 import previewLight from './preview-light.jpg';
 
-export const defaultManifest: ThemeManifest = {
+export const defaultManifest: BuiltInThemeManifest = {
   id: 'default',
   nameKey: 'default.name',
   descriptionKey: 'default.description',

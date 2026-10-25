@@ -1,0 +1,59 @@
+/*
+ * Design tokens of the theme. Every rule is scoped to the theme's id (the folder name), so it
+ * never touches other themes: rename "starter" here when you rename the theme in theme.json.
+ * Classic draws every page this theme leaves out with these tokens, so define all of them
+ * (the list is REQUIRED_TOKENS in the module "jellymorph") and keep text contrast at WCAG AA.
+ */
+
+[data-theme='starter'] {
+  color-scheme: dark;
+
+  --color-bg: #14110f;
+  --color-surface: #1e1a17;
+  --color-surface-raised: #29231f;
+  --color-surface-hover: #342c26;
+  --color-border: #4a3f37;
+  --color-text: #f6f0ea;
+  --color-text-muted: #c7b9ad;
+  --color-accent: #e9a640;
+  --color-on-accent: #1b1308;
+  --color-accent-text: #f2bb63;
+  --color-focus: #ffd894;
+  --color-danger: #ff8f80;
+  --color-success: #8fd3a0;
+  --color-progress: #e9a640;
+  --color-overlay: rgb(10 8 6 / 74%);
+
+  /* Inter comes with Classic, which is always loaded. */
+  --font-body: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', 'SFMono-Regular', Consolas, monospace;
+
+  --radius-card: 0.75rem;
+  --radius-control: 999px;
+  --shadow-card: 0 0.5rem 1.5rem rgb(0 0 0 / 45%);
+  --shadow-overlay: 0 1rem 3rem rgb(0 0 0 / 70%);
+
+  --duration-fast: 120ms;
+  --duration-base: 220ms;
+  --duration-slow: 420ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --focus-ring: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-focus);
+
+  --logo-shape: #5a3a12;
+  --logo-dot: #ffd894;
+}
+
+[data-theme='starter'] body {
+  background:
+    radial-gradient(60% 28rem at 15% -10rem, rgb(233 166 64 / 16%), transparent 70%) fixed,
+    var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+}
+
+:where([data-theme='starter']) :focus-visible {
+  outline: 0.125rem solid var(--color-focus);
+  outline-offset: 2px;
+}

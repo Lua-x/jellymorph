@@ -1,6 +1,6 @@
 {
   "name": "jellymorph",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "private": true,
   "description": "Self-hosted Jellyfin web client with complete, switchable UI themes",
   "license": "AGPL-3.0-only",
@@ -13,7 +13,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --max-warnings 0",
-    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json && tsc -p theme-starter/tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test --grep-invert \"@shots|@previews|@readme\"",

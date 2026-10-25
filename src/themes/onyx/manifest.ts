@@ -1,7 +1,7 @@
-import type { ThemeManifest } from '../contract';
+import type { BuiltInThemeManifest } from '../contract';
 import previewDark from './preview-dark.jpg';
 
-export const onyxManifest: ThemeManifest = {
+export const onyxManifest: BuiltInThemeManifest = {
   id: 'onyx',
   nameKey: 'onyx.name',
   descriptionKey: 'onyx.description',

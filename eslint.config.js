@@ -28,13 +28,24 @@ const themeForbiddenImports = [
       '@/themes/glass/*',
       '@/themes/horizon/*',
       '@/themes/constellation/*',
+      '@/themes/cobalt/*',
+      '@/themes/onyx/*',
     ],
     message: 'Themes may only reuse the default theme.',
   },
 ];
 
 export default defineConfig(
-  globalIgnores(['dist', 'coverage', 'playwright-report', 'test-results', 'artifacts']),
+  globalIgnores([
+    'dist',
+    'coverage',
+    'playwright-report',
+    'test-results',
+    'artifacts',
+    // Built from theme-starter/ (scripts/build-starter.ts).
+    'e2e/fixtures/custom/themes/starter',
+    'theme-starter/dist',
+  ]),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
@@ -44,7 +55,7 @@ export default defineConfig(
     ],
     languageOptions: {
       parserOptions: {
-        project: ['./tsconfig.json', './tsconfig.node.json'],
+        project: ['./tsconfig.json', './tsconfig.node.json', './theme-starter/tsconfig.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -55,7 +66,7 @@ export default defineConfig(
     },
   },
   {
-    files: ['src/**/*.{ts,tsx}'],
+    files: ['src/**/*.{ts,tsx}', 'theme-starter/src/**/*.{ts,tsx}'],
     extends: [
       reactHooks.configs.flat.recommended,
       reactRefresh.configs.vite,
@@ -78,6 +89,31 @@ export default defineConfig(
     ignores: ['src/themes/**/*.test.{ts,tsx}'],
     rules: {
       'no-restricted-imports': ['error', { patterns: themeForbiddenImports }],
+      'no-restricted-globals': [
+        'error',
+        { name: 'fetch', message: 'Themes must not make network requests.' },
+        { name: 'XMLHttpRequest', message: 'Themes must not make network requests.' },
+        { name: 'localStorage', message: 'Themes read settings through the shared hooks.' },
+        { name: 'sessionStorage', message: 'Themes read settings through the shared hooks.' },
+      ],
+    },
+  },
+  // The plugin template only uses the public interface; the rest of the app is private.
+  {
+    files: ['theme-starter/src/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/*'],
+              message:
+                'Plugin themes import the module "jellymorph"; the rest of the app is private.',
+            },
+          ],
+        },
+      ],
       'no-restricted-globals': [
         'error',
         { name: 'fetch', message: 'Themes must not make network requests.' },
@@ -111,7 +147,13 @@ export default defineConfig(
     },
   },
   {
-    files: ['vite.config.ts', 'playwright.config.ts', 'scripts/**/*.ts', 'e2e/**/*.ts'],
+    files: [
+      'vite.config.ts',
+      'playwright.config.ts',
+      'scripts/**/*.ts',
+      'e2e/**/*.ts',
+      'theme-starter/vite.config.ts',
+    ],
     languageOptions: { globals: globals.node },
   },
   {

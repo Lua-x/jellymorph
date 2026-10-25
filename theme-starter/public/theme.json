@@ -1,0 +1,15 @@
+{
+  "id": "starter",
+  "api": 1,
+  "name": { "en": "Starter", "de": "Starter" },
+  "description": {
+    "en": "An example plugin theme: warm amber on dark brown, its own stage and cards, Classic for the rest.",
+    "de": "Ein Beispiel-Plugin: warmes Bernstein auf dunklem Braun, eigene Bühne und Karten, sonst Classic."
+  },
+  "version": "1.0.0",
+  "author": "Jellymorph",
+  "colorSchemes": ["dark"],
+  "preview": { "dark": "preview-dark.jpg" },
+  "entry": "index.js",
+  "styles": ["index.css"]
+}

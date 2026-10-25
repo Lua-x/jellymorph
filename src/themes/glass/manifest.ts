@@ -1,8 +1,8 @@
-import type { ThemeManifest } from '../contract';
+import type { BuiltInThemeManifest } from '../contract';
 import previewDark from './preview-dark.jpg';
 import previewLight from './preview-light.jpg';
 
-export const glassManifest: ThemeManifest = {
+export const glassManifest: BuiltInThemeManifest = {
   id: 'glass',
   nameKey: 'glass.name',
   descriptionKey: 'glass.description',

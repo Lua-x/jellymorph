@@ -1,16 +1,14 @@
 /// <reference types="vitest/config" />
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { extname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import { msw } from 'msw/vite';
 import { defineConfig, loadEnv, type Plugin, type PreviewServer, type ViteDevServer } from 'vite';
+import { isBuiltInThemeId, isThemeId, THEME_IDS } from './src/config/theme-ids.ts';
 
 /** Path under which the dev server proxies a real Jellyfin server (same as in the container). */
 const PROXY_PATH = '/jellyfin';
-
-/** Keep in sync with src/config/theme-ids.ts and docker/entrypoint.sh. */
-const THEME_IDS = ['default', 'neon-grid', 'crimson', 'glass', 'horizon', 'constellation'];
 
 /** The file types the container serves from /custom (docker/nginx.conf.template). */
 const CUSTOM_TYPES: Record<string, string> = {
@@ -27,6 +25,25 @@ const CUSTOM_TYPES: Record<string, string> = {
   '.gif': 'image/gif',
   '.svg': 'image/svg+xml',
 };
+
+/** Code of plugin themes, served only from /custom/themes and only with THEME_PLUGINS=true. */
+const PLUGIN_TYPES: Record<string, string> = {
+  '.js': 'text/javascript; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+};
+
+/** Plugin theme folders in CUSTOM_DIR/themes, found like the container entrypoint finds them. */
+function themePluginsIn(folder: string | null): string[] {
+  const themes = folder === null ? null : resolve(folder, 'themes');
+  if (themes === null || !existsSync(themes)) return [];
+  return readdirSync(themes, { withFileTypes: true })
+    .filter(
+      (entry) => entry.isDirectory() && isThemeId(entry.name) && !isBuiltInThemeId(entry.name),
+    )
+    .filter((entry) => existsSync(resolve(themes, entry.name, 'theme.json')))
+    .map((entry) => entry.name)
+    .sort();
+}
 
 /** Own style sheets in CUSTOM_DIR, found like the container entrypoint finds them in /custom. */
 function customCssIn(folder: string | null) {
@@ -49,6 +66,7 @@ function devAppConfig(env: Record<string, string | undefined>): Plugin {
   const demoMode = readEnv(env, 'DEMO_MODE');
   const customDir = readEnv(env, 'CUSTOM_DIR');
   const customRoot = customDir === null ? null : resolve(customDir);
+  const plugins = readEnv(env, 'THEME_PLUGINS') === 'true';
   const config = {
     jellyfinUrl: readEnv(env, 'JELLYFIN_URL'),
     lockServer: readEnv(env, 'LOCK_SERVER') === 'true',
@@ -57,6 +75,7 @@ function devAppConfig(env: Record<string, string | undefined>): Plugin {
     appTitle: readEnv(env, 'APP_TITLE') ?? 'Jellymorph',
     demoMode: demoMode === null ? devUrl === null : demoMode === 'true',
     customCss: customCssIn(customRoot),
+    themePlugins: plugins ? themePluginsIn(customRoot) : [],
   };
   const body = `window.__APP_CONFIG__ = ${JSON.stringify(config)};\n`;
   const serve = (server: ViteDevServer | PreviewServer) => {
@@ -70,7 +89,10 @@ function devAppConfig(env: Record<string, string | undefined>): Plugin {
       const name = decodeURIComponent((request.url ?? '').split('?')[0] ?? '').replace(/^\/+/, '');
       const file = customRoot === null ? null : resolve(customRoot, name);
       const inside = customRoot !== null && file?.startsWith(customRoot + sep) === true;
-      const type = CUSTOM_TYPES[extname(name).toLowerCase()];
+      const extension = extname(name).toLowerCase();
+      const type =
+        CUSTOM_TYPES[extension] ??
+        (plugins && name.startsWith('themes/') ? PLUGIN_TYPES[extension] : undefined);
       if (!file || !type || !inside || !existsSync(file) || !statSync(file).isFile()) {
         response.statusCode = 404;
         response.end();
