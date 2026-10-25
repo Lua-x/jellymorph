@@ -121,6 +121,10 @@ export default defineConfig(({ mode }) => {
       // Size is enforced on gzip output by scripts/check-bundle.ts (250 KB base budget);
       // the minified-size warning would only add noise.
       chunkSizeWarningLimit: 1000,
+      // Fonts are never inlined as data: URLs: the container's CSP allows fonts only from the own
+      // origin (font-src 'self'). Small subsets (e.g. Manrope's Cyrillic Extended, 2.5 KB) would
+      // otherwise fall under Vite's 4 KB inline limit. Other assets keep the default.
+      assetsInlineLimit: (file) => (/\.(?:woff2?|ttf|otf)$/.test(file) ? false : undefined),
     },
     test: {
       environment: 'jsdom',

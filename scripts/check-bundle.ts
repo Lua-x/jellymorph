@@ -65,3 +65,14 @@ if (baseKb > BASE_BUDGET_KB) {
   console.error(`\n✖ Base bundle exceeds ${BASE_BUDGET_KB} KB gzip.`);
   process.exitCode = 1;
 }
+
+// The container's CSP allows fonts only from the own origin (font-src 'self'), so a font inlined
+// as a data: URL would be blocked there. The dev server has no CSP and would not show it.
+const inlinedFonts = Object.values(manifest)
+  .flatMap((chunk) => chunk.css ?? [])
+  .filter((file, index, list) => list.indexOf(file) === index)
+  .filter((file) => readFileSync(join(dist, file), 'utf8').includes('data:font'));
+if (inlinedFonts.length > 0) {
+  console.error(`\n✖ Fonts inlined as data: URLs (blocked by the CSP): ${inlinedFonts.join(', ')}`);
+  process.exitCode = 1;
+}
