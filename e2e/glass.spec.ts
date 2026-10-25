@@ -255,6 +255,13 @@ test('the light scheme keeps the glass readable and accessible @desktop-only', a
 test('arrow keys reach the shelves; focus looks like hover @desktop-only', async ({ page }) => {
   await useGlass(page);
   await expect(cards(page, 'Weiterschauen').first()).toBeVisible();
+  // The hero loads its titles of the day after the rows: its buttons are the entry point.
+  await expect(
+    page
+      .getByRole('region', { name: 'Empfohlen' })
+      .getByRole('button', { name: 'Abspielen' })
+      .first(),
+  ).toBeVisible();
   await page.keyboard.press('ArrowDown');
   await expect(page.getByRole('button', { name: 'Abspielen' }).first()).toBeFocused();
   // The hero's indicator sits beside the buttons, so the next row is one step down.

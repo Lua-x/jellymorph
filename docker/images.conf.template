@@ -1,0 +1,36 @@
+# Pictures from Jellyfin through the picture cache (IMAGE_CACHE), rendered by
+# docker/entrypoint.sh into /tmp/jellymorph/proxy.conf after the /jellyfin/ proxy. Same
+# placeholders as proxy.conf.template.
+#
+# A picture is fetched from Jellyfin once and then served from the volume, also after a restart
+# and while Jellyfin is down. Jellyfin is not asked again, so it does not touch the disks the
+# artwork lies on. Every address the app builds carries the picture's tag: a changed picture gets
+# a new address, a kept one never goes stale.
+
+location ~ ^/jellyfin/(?:Items/[^/]+/Images/|UserImage) {
+    ${JM_RESOLVER_DIRECTIVE}
+
+    proxy_pass ${JM_PROXY_TARGET}$jellyfin_rest;
+    proxy_http_version 1.1;
+    proxy_ssl_server_name on;
+    proxy_set_header Connection "";
+    proxy_set_header Accept $jellymorph_image_accept;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $forwarded_proto;
+    proxy_set_header X-Forwarded-Host $host;
+
+    proxy_cache jellymorph_images;
+    proxy_cache_key $jellymorph_image_format$jellyfin_rest;
+    proxy_cache_valid 200 365d;
+    proxy_ignore_headers Cache-Control Expires Set-Cookie Vary;
+    proxy_cache_bypass $jellymorph_image_untagged;
+    proxy_no_cache $jellymorph_image_untagged;
+    # Many cards asking for the same new picture wait for one request to Jellyfin.
+    proxy_cache_lock on;
+    proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
+    add_header X-Cache-Status $upstream_cache_status always;
+
+    # Picture uploads in the administration dialogs (Base64 text) pass through uncached.
+    client_max_body_size 100m;
+}

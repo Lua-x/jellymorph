@@ -142,6 +142,13 @@ test('arrow keys reach the cards; focus looks like hover @desktop-only', async (
     page.getByRole('region', { name: 'Weiterschauen' }).getByRole('link').first(),
   ).toBeVisible();
   await waitForScramble(page);
+  // The hero loads its titles of the day after the rows: its buttons are the entry point.
+  await expect(
+    page
+      .getByRole('region', { name: 'Empfohlen' })
+      .getByRole('button', { name: 'Abspielen' })
+      .first(),
+  ).toBeVisible();
   await page.keyboard.press('ArrowDown');
   await expect(page.getByRole('button', { name: 'Abspielen' }).first()).toBeFocused();
   // Step down until the focus enters the row (late layout shifts can change the number of steps).

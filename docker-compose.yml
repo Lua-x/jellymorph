@@ -20,11 +20,15 @@ services:
       # LOCK_SERVER: "true"
       DEFAULT_THEME: default
       APP_TITLE: Jellymorph
-    # Own colors, fonts and CSS (README, "Eigene Gestaltung"): custom.css for every theme,
+      # Keep pictures in the volume below, so Jellyfin (and the disks with your artwork) is asked
+      # only once per picture (README, "Picture cache"). Needs JELLYFIN_PROXY_TARGET.
+      # IMAGE_CACHE: 10g
+    # Own colors, fonts and CSS (README, "Own styling"): custom.css for every theme,
     # <theme>.css for one theme, fonts and pictures next to them.
     # volumes:
     #   - ./custom:/custom:ro
-    # The container needs no write access outside /tmp and no extra privileges.
+    #   - jellymorph-cache:/cache
+    # The container needs no write access outside /tmp (and /cache) and no extra privileges.
     read_only: true
     tmpfs:
       - /tmp
@@ -32,3 +36,7 @@ services:
       - ALL
     security_opt:
       - no-new-privileges:true
+
+# With IMAGE_CACHE: the named volume for the pictures (Docker gives it the right owner).
+# volumes:
+#   jellymorph-cache:

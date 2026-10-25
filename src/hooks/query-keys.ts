@@ -14,7 +14,8 @@ export const queryKeys = {
   user,
   currentUser: (key: SessionKey) => [...user(key), 'currentUser'] as const,
   libraries: (key: SessionKey) => [...user(key), 'libraries'] as const,
-  featured: (key: SessionKey, count: number) => [...user(key), 'featured', count] as const,
+  featured: (key: SessionKey, count: number, day: string) =>
+    [...user(key), 'featured', count, day] as const,
   resume: (key: SessionKey) => [...user(key), 'resume'] as const,
   nextUp: (key: SessionKey, seriesId: string | null) => [...user(key), 'nextUp', seriesId] as const,
   seriesStart: (key: SessionKey, seriesId: string) =>

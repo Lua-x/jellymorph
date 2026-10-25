@@ -1,7 +1,10 @@
 # Jellymorph site, rendered by docker/entrypoint.sh into /tmp/jellymorph/site.conf.
 # Placeholder: JM_LISTEN_IPV6 (the IPv6 listen directive, or nothing). The entrypoint also
 # writes the files included from /tmp/jellymorph: headers.conf (security headers incl. CSP)
-# and proxy.conf (the /jellyfin/ reverse proxy, empty without JELLYFIN_PROXY_TARGET).
+# and proxy.conf (the /jellyfin/ reverse proxy, empty without JELLYFIN_PROXY_TARGET), and in
+# the http context cache.conf (the picture cache, empty without IMAGE_CACHE).
+
+include /tmp/jellymorph/cache.conf;
 
 # Path and query of a /jellyfin/... request without the prefix, exactly as the client sent it.
 map $request_uri $jellyfin_rest {

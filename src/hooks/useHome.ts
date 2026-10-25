@@ -1,4 +1,5 @@
 import { useQueries, useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import {
   fetchCollections,
   fetchFavoritesPreview,
@@ -11,6 +12,7 @@ import {
   fetchUpcoming,
 } from '@/api/items';
 import { fetchCurrentUser, fetchLibraries } from '@/api/user';
+import { dayKey } from '@/domain/daily';
 import { visibleIds, type HomeAreaKind } from '@/domain/layout';
 import type { HomeSection, Library, MediaItem, QueryResult } from '@/domain/types';
 import { paths } from '@/navigation/paths';
@@ -19,13 +21,15 @@ import { toQueryResult } from './query-result';
 import { useEffectiveLayout } from './useLayout';
 import { useActiveSession } from './useSession';
 
-/** Featured items for the hero. Random on the server, so kept stable for the whole visit. */
+/** Featured items for the hero: the titles of the day, kept for the whole visit. */
 export function useFeatured(count: number, enabled = true): QueryResult<MediaItem[]> {
   const { api, key } = useActiveSession();
+  // Read once per page, so the hero does not change at midnight while it is shown.
+  const [day] = useState(dayKey);
   return toQueryResult(
     useQuery({
-      queryKey: queryKeys.featured(key, count),
-      queryFn: ({ signal }) => fetchFeatured(api, count, signal),
+      queryKey: queryKeys.featured(key, count, day),
+      queryFn: ({ signal }) => fetchFeatured(api, count, day, signal),
       staleTime: Infinity,
       refetchOnWindowFocus: false,
       enabled,

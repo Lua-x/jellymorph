@@ -1,6 +1,6 @@
 {
   "name": "jellymorph",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "private": true,
   "description": "Self-hosted Jellyfin web client with complete, switchable UI themes",
   "license": "AGPL-3.0-only",

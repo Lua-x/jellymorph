@@ -17,7 +17,11 @@ export interface UserSettings {
   colorScheme: ColorSchemePreference;
   language: Language;
   motion: MotionPreference;
-  trailerAutoplay: boolean;
+  /**
+   * The muted trailer in the hero. Off by default since 1.4.1: it reads the trailer file, which
+   * wakes a sleeping disk. Stored under a new key, so the old default (on) is not carried over.
+   */
+  trailerPreview: boolean;
   /** Interface sounds of themes that have them (off by default). */
   uiSounds: boolean;
   /** The user's own arrangement of lists (phase 14); lists not in it follow the defaults. */
@@ -34,7 +38,7 @@ export function defaultUserSettings(theme: ThemeId): UserSettings {
     colorScheme: 'auto',
     language: DEFAULT_LANGUAGE,
     motion: 'system',
-    trailerAutoplay: true,
+    trailerPreview: false,
     uiSounds: false,
     layout: {},
   };
@@ -52,7 +56,7 @@ export function parseUserSettings(raw: unknown): Partial<UserSettings> {
   if (includes(COLOR_SCHEME_PREFERENCES, value.colorScheme)) result.colorScheme = value.colorScheme;
   if (isLanguage(value.language)) result.language = value.language;
   if (includes(MOTION_PREFERENCES, value.motion)) result.motion = value.motion;
-  if (typeof value.trailerAutoplay === 'boolean') result.trailerAutoplay = value.trailerAutoplay;
+  if (typeof value.trailerPreview === 'boolean') result.trailerPreview = value.trailerPreview;
   if (typeof value.uiSounds === 'boolean') result.uiSounds = value.uiSounds;
   if (typeof value.layout === 'object' && value.layout !== null)
     result.layout = parseLayout(value.layout);
@@ -70,7 +74,7 @@ export function toCustomPrefs(settings: UserSettings): Record<string, string> {
     [`${PREFIX}colorScheme`]: settings.colorScheme,
     [`${PREFIX}language`]: settings.language,
     [`${PREFIX}motion`]: settings.motion,
-    [`${PREFIX}trailerAutoplay`]: String(settings.trailerAutoplay),
+    [`${PREFIX}trailerPreview`]: String(settings.trailerPreview),
     [`${PREFIX}uiSounds`]: String(settings.uiSounds),
     [`${PREFIX}layout`]: layoutToJson(settings.layout),
   };
@@ -94,7 +98,8 @@ export function fromCustomPrefs(
     colorScheme: prefs[`${PREFIX}colorScheme`],
     language: prefs[`${PREFIX}language`],
     motion: prefs[`${PREFIX}motion`],
-    trailerAutoplay: flag('trailerAutoplay'),
+    // jellymorph.trailerAutoplay (up to 1.4.0, on by default) is deliberately not read.
+    trailerPreview: flag('trailerPreview'),
     uiSounds: flag('uiSounds'),
     // Saved before arrangements existed: no value, so the defaults stay.
     layout: prefs[`${PREFIX}layout`] == null ? undefined : layoutFromJson(prefs[`${PREFIX}layout`]),

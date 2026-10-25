@@ -6,7 +6,8 @@
  * Every container runs like in production: read-only root filesystem, /tmp as tmpfs, no
  * capabilities. Checked: health endpoint, generated config.js and manifest, security and cache
  * headers, SPA fallback, invalid settings, the /jellyfin proxy (incl. WebSocket and start before
- * Jellyfin) and, with --e2e, the whole Playwright suite in demo mode under the real CSP.
+ * Jellyfin), the picture cache in a volume and, with --e2e, the whole Playwright suite in demo
+ * mode under the real CSP.
  */
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
@@ -321,6 +322,13 @@ function invalidSettings() {
     [{ JELLYFIN_URL: 'jellyfin:8096' }, 'JELLYFIN_URL'],
     [{ JELLYFIN_PROXY_TARGET: 'http://jellyfin:8096; evil' }, 'JELLYFIN_PROXY_TARGET'],
     [{ LOCK_SERVER: 'true' }, 'LOCK_SERVER=true needs JELLYFIN_URL'],
+    [{ IMAGE_CACHE: 'true' }, 'IMAGE_CACHE needs JELLYFIN_PROXY_TARGET'],
+    [{ IMAGE_CACHE: 'lots', JELLYFIN_PROXY_TARGET: 'http://jellyfin:8096' }, 'IMAGE_CACHE must be'],
+    // No volume at /cache: the read-only root filesystem leaves nowhere to write.
+    [
+      { IMAGE_CACHE: '1g', JELLYFIN_PROXY_TARGET: 'http://jellyfin:8096' },
+      'IMAGE_CACHE needs a writable folder',
+    ],
   ];
   for (const [index, [env, message]] of cases.entries()) {
     const envArgs = Object.entries(env).flatMap(([key, value]) => ['-e', `${key}=${value}`]);
@@ -426,6 +434,83 @@ async function proxy() {
   });
 }
 
+/** The picture cache (IMAGE_CACHE) in a named volume; runs after proxy(), whose upstream it uses. */
+async function imageCache() {
+  console.log('Picture cache');
+  const port = 18085;
+  const volume = `${PREFIX}-cache`;
+  docker(['volume', 'rm', '-f', volume], { allowFailure: true });
+  const run = () =>
+    start('cache', port, { JELLYFIN_PROXY_TARGET: 'http://upstream:8096', IMAGE_CACHE: '100m' }, [
+      '--network',
+      NETWORK,
+      '-v',
+      `${volume}:/cache`,
+    ]);
+  let container = run();
+  await waitHealthy(port, container);
+  const picture = '/jellyfin/Items/abc/Images/Backdrop/0?tag=t1&maxWidth=1280&quality=80';
+  const webp = { headers: { Accept: 'image/avif,image/webp,image/apng,*/*;q=0.8' } };
+  const status = (response: Response) => header(response, 'x-cache-status');
+
+  await check('fetches a picture once, then serves the kept copy', container, async () => {
+    const first = await get(port, picture, webp);
+    assert.equal(first.response.status, 200);
+    assert.equal(status(first.response), 'MISS');
+    const echo = JSON.parse(first.body) as { url: string; headers: Record<string, string> };
+    assert.equal(echo.url, '/Items/abc/Images/Backdrop/0?tag=t1&maxWidth=1280&quality=80');
+    assert.equal(echo.headers.accept, 'image/webp,*/*');
+    const second = await get(port, picture, webp);
+    assert.equal(status(second.response), 'HIT');
+    assert.equal(second.body, first.body);
+  });
+
+  await check('keeps one copy per format', container, async () => {
+    const jpeg = await get(port, picture, { headers: { Accept: 'image/jpeg,*/*' } });
+    assert.equal(status(jpeg.response), 'MISS');
+    const echo = JSON.parse(jpeg.body) as { headers: Record<string, string> };
+    assert.equal(echo.headers.accept, 'image/jpeg,image/png,*/*');
+  });
+
+  await check(
+    'pictures without a tag and other requests always reach Jellyfin',
+    container,
+    async () => {
+      const untagged = '/jellyfin/Items/abc/Images/Primary?maxWidth=300';
+      await get(port, untagged);
+      assert.equal(status((await get(port, untagged)).response), 'BYPASS');
+      const api = await get(port, '/jellyfin/Items/abc');
+      assert.equal(api.response.status, 200);
+      assert.equal(status(api.response), '');
+    },
+  );
+
+  await check('user pictures are kept too', container, async () => {
+    const avatar = '/jellyfin/UserImage?userId=u1&tag=a1';
+    assert.equal(status((await get(port, avatar)).response), 'MISS');
+    assert.equal(status((await get(port, avatar)).response), 'HIT');
+  });
+
+  // Jellyfin (and its disks) are no longer needed for pictures seen before, even after a restart.
+  docker(['stop', `${PREFIX}-upstream`]);
+  docker(['rm', '-f', container]);
+  container = run();
+  await waitHealthy(port, container);
+  await check(
+    'serves kept pictures after a restart while Jellyfin is down',
+    container,
+    async () => {
+      const kept = await get(port, picture, webp);
+      assert.equal(kept.response.status, 200);
+      assert.equal(status(kept.response), 'HIT');
+      const unknown = await get(port, '/jellyfin/Items/abc/Images/Primary?tag=new', webp);
+      assert.equal(unknown.response.status, 502);
+    },
+  );
+  docker(['rm', '-f', container]);
+  docker(['volume', 'rm', '-f', volume], { allowFailure: true });
+}
+
 async function demoE2e() {
   console.log('Playwright suite in demo mode');
   const port = 18090;
@@ -469,6 +554,7 @@ try {
   await arbitraryUser();
   invalidSettings();
   await proxy();
+  await imageCache();
   if (withE2e) await demoE2e();
 } catch (error) {
   failures += 1;

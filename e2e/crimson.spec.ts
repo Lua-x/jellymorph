@@ -256,6 +256,13 @@ test('the player has the Crimson controls and shows what is playing when paused'
 test('arrow keys reach the rows; focus looks like hover @desktop-only', async ({ page }) => {
   await useCrimson(page);
   await expect(cards(page, 'Weiterschauen').first()).toBeVisible();
+  // The hero loads its titles of the day after the rows: its buttons are the entry point.
+  await expect(
+    page
+      .getByRole('region', { name: 'Empfohlen' })
+      .getByRole('button', { name: 'Abspielen' })
+      .first(),
+  ).toBeVisible();
   await page.keyboard.press('ArrowDown');
   await expect(page.getByRole('button', { name: 'Abspielen' }).first()).toBeFocused();
   await page.keyboard.press('ArrowDown');

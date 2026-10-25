@@ -28,7 +28,7 @@ export function SettingsRoute() {
   const overscan = useDeviceSettings((state) => state.overscan);
   const player = useDeviceSettings((state) => state.player);
   const sync = useUserSettings((state) => state.sync);
-  const trailerAutoplay = useUserSettings((state) => state.values?.trailerAutoplay ?? true);
+  const trailerAutoplay = useUserSettings((state) => state.values?.trailerPreview ?? false);
   const uiSounds = useUserSettings((state) => state.values?.uiSounds ?? false);
   const playback = usePlaybackPreferences();
   const audioLanguages = useLanguageOptions();
@@ -64,7 +64,7 @@ export function SettingsRoute() {
     },
     trailerAutoplay,
     setTrailerAutoplay: (trailerAutoplay) => {
-      update({ trailerAutoplay });
+      update({ trailerPreview: trailerAutoplay });
     },
     uiSounds,
     setUiSounds: (uiSounds) => {

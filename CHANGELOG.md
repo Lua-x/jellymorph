@@ -2,6 +2,19 @@
 
 All notable changes to Jellymorph. Versions follow [Semantic Versioning](https://semver.org/). The release notes on GitHub are also generated automatically from the commits.
 
+## 1.4.1 – 2026-10-25
+
+Fewer wake-ups for sleeping hard disks.
+
+### New
+
+- **Picture cache** (`IMAGE_CACHE`, with `JELLYFIN_PROXY_TARGET`): Jellymorph keeps every picture it got from Jellyfin in a volume and serves it from there, on every device, after restarts and while Jellyfin is down. Jellyfin, and the disks the artwork lies on, are asked only once per picture. See "Picture cache" in the README.
+
+### Fixed
+
+- Opening Jellymorph woke sleeping hard disks. The title stage chose new random titles on every visit, whose artwork Jellyfin often had never prepared in that size, so it read the originals from the disk. The stage now shows the titles of the day: the same all day on every device, new ones the next day.
+- The trailer preview in the title stage is off by default: it played the trailer file from the disk a few seconds after opening the home page. It is switched off once for everybody (the setting is stored under a new name); switch it on again under _Settings → Trailer autoplay_ if you like it.
+
 ## 1.4.0 – 2026-10-25
 
 An eighth theme: Onyx.

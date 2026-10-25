@@ -17,9 +17,13 @@ FROM ghcr.io/nginx/nginx-unprivileged:1.31-alpine
 
 USER root
 # The directory is created here: COPY --chmod would give a new directory the file mode (0644).
-RUN rm -f /etc/nginx/conf.d/*.conf && mkdir -p /etc/jellymorph
+# /cache is where the picture cache's volume goes (IMAGE_CACHE): a named volume takes over its
+# owner and mode, so nginx (UID 101, or any UID in group 0) can write there.
+RUN rm -f /etc/nginx/conf.d/*.conf && mkdir -p /etc/jellymorph /cache \
+    && chown 101:0 /cache && chmod 0775 /cache
 COPY --chmod=0644 docker/nginx.conf /etc/nginx/nginx.conf
-COPY --chmod=0644 docker/nginx.conf.template docker/proxy.conf.template /etc/jellymorph/
+COPY --chmod=0644 docker/nginx.conf.template docker/proxy.conf.template \
+    docker/cache.conf.template docker/images.conf.template /etc/jellymorph/
 COPY --chmod=0755 docker/entrypoint.sh /usr/local/bin/jellymorph-entrypoint
 COPY --from=build /app/dist /usr/share/nginx/html
 USER 101
@@ -29,7 +33,8 @@ ENV JELLYFIN_URL="" \
     JELLYFIN_PROXY_TARGET="" \
     DEFAULT_THEME="default" \
     APP_TITLE="Jellymorph" \
-    DEMO_MODE="false"
+    DEMO_MODE="false" \
+    IMAGE_CACHE=""
 
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \

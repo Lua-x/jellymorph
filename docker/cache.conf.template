@@ -1,0 +1,25 @@
+# Picture cache (IMAGE_CACHE), rendered by docker/entrypoint.sh into /tmp/jellymorph/cache.conf
+# in the http context; empty without IMAGE_CACHE. Placeholders: JM_CACHE_DIR (a folder in the
+# mounted volume) and JM_CACHE_SIZE (nginx size, e.g. 5g). Pictures not requested for a year are
+# removed; when the volume holds JM_CACHE_SIZE, the least recently used ones make room.
+
+proxy_cache_path ${JM_CACHE_DIR} levels=1:2 keys_zone=jellymorph_images:16m max_size=${JM_CACHE_SIZE}
+    inactive=365d use_temp_path=off;
+
+# Jellyfin answers in WebP when the Accept header names it, otherwise in JPEG or PNG. One copy per
+# format is kept, and Jellyfin gets exactly the Accept header the copy stands for.
+map $http_accept $jellymorph_image_format {
+    "~*image/webp" webp;
+    default jpeg;
+}
+
+map $jellymorph_image_format $jellymorph_image_accept {
+    webp "image/webp,*/*";
+    default "image/jpeg,image/png,*/*";
+}
+
+# Without a tag a picture may change under the same address: those always go to Jellyfin.
+map $arg_tag $jellymorph_image_untagged {
+    "" 1;
+    default 0;
+}

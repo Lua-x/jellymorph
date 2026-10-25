@@ -10,6 +10,7 @@ import { getLibraryApi } from '@jellyfin/sdk/lib/utils/api/library-api';
 import { getPersonApi } from '@jellyfin/sdk/lib/utils/api/person-api';
 import { getShowApi } from '@jellyfin/sdk/lib/utils/api/show-api';
 import { getUserDataApi } from '@jellyfin/sdk/lib/utils/api/user-data-api';
+import { dailyPicks } from '@/domain/daily';
 import { toGenre, toItemDetail, toMediaItem, toSeason, type ImageUrlFactory } from '@/domain/map';
 import type {
   FavoriteGroup,
@@ -65,25 +66,47 @@ export function libraryItemTypes(kind: LibraryKind): BaseItemKind[] {
   }
 }
 
+/**
+ * The hero's titles of the day (`day` from `dayKey()`): positions drawn per day in the list of
+ * candidates sorted by name, so every visit and device that day shows the same titles and their
+ * artwork comes from Jellyfin's image cache after the first time (see domain/daily.ts).
+ */
 export async function fetchFeatured(
   api: Api,
   count: number,
+  day: string,
   signal?: AbortSignal,
 ): Promise<MediaItem[]> {
-  const { data } = await getLibraryApi(api).getItems(
-    {
-      ...cardQuery,
-      fields: [...CARD_FIELDS, 'Taglines'],
-      includeItemTypes: ['Movie', 'Series'],
-      recursive: true,
-      sortBy: ['Random'],
-      imageTypes: ['Backdrop'],
-      hasOverview: true,
-      limit: count,
-    },
+  const library = getLibraryApi(api);
+  const candidates = {
+    includeItemTypes: ['Movie', 'Series'],
+    recursive: true,
+    imageTypes: ['Backdrop'],
+    hasOverview: true,
+    sortBy: ['SortName'],
+  } satisfies Parameters<typeof library.getItems>[0];
+  const { data: list } = await library.getItems(
+    { ...candidates, limit: 1, enableImages: false, enableUserData: false },
     { signal },
   );
-  return mapItems(api, data.Items);
+  const pages = await Promise.all(
+    dailyPicks(list.TotalRecordCount ?? 0, count, day).map((startIndex) =>
+      library.getItems(
+        {
+          ...cardQuery,
+          ...candidates,
+          fields: [...CARD_FIELDS, 'Taglines'],
+          startIndex,
+          limit: 1,
+        },
+        { signal },
+      ),
+    ),
+  );
+  return mapItems(
+    api,
+    pages.flatMap(({ data }) => data.Items ?? []),
+  );
 }
 
 export async function fetchResume(api: Api, signal?: AbortSignal): Promise<MediaItem[]> {

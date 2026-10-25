@@ -200,6 +200,13 @@ test('the player has its controls in the middle and the tools on top', async ({ 
 test('arrow keys reach the rows; focus looks like hover @desktop-only', async ({ page }) => {
   await useHorizon(page);
   await expect(cards(page, 'Weiterschauen').first()).toBeVisible();
+  // The hero loads its titles of the day after the rows: its buttons are the entry point.
+  await expect(
+    page
+      .getByRole('region', { name: 'Empfohlen' })
+      .getByRole('button', { name: 'Abspielen' })
+      .first(),
+  ).toBeVisible();
   await page.keyboard.press('ArrowDown');
   await expect(page.getByRole('button', { name: 'Abspielen' }).first()).toBeFocused();
   const resume = page.getByRole('region', { name: 'Weiterschauen', exact: true });

@@ -14,16 +14,28 @@ describe('settings schema', () => {
     ...defaultUserSettings('default'),
     colorScheme: 'light' as const,
     language: 'en' as const,
-    trailerAutoplay: false,
+    trailerPreview: true,
     uiSounds: true,
   };
 
   it('round-trips through DisplayPreferences custom prefs', () => {
     const prefs = toCustomPrefs(settings);
     expect(prefs['jellymorph.version']).toBe(String(SCHEMA_VERSION));
-    expect(prefs['jellymorph.trailerAutoplay']).toBe('false');
+    expect(prefs['jellymorph.trailerPreview']).toBe('true');
     expect(prefs['jellymorph.uiSounds']).toBe('true');
     expect(fromCustomPrefs(prefs)).toEqual(settings);
+  });
+
+  it('starts without the trailer preview, also for users who stored the old key', () => {
+    expect(defaultUserSettings('default').trailerPreview).toBe(false);
+    // Saved by 1.4.0 and older: the old key, with the old default switched on.
+    const old = Object.fromEntries(
+      Object.entries(toCustomPrefs(defaultUserSettings('default'))).filter(
+        ([key]) => key !== 'jellymorph.trailerPreview',
+      ),
+    );
+    old['jellymorph.trailerAutoplay'] = 'true';
+    expect(fromCustomPrefs(old)?.trailerPreview).toBeUndefined();
   });
 
   it('keeps interface sounds off unless the user turned them on', () => {

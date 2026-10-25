@@ -31,7 +31,7 @@ function saveData(): boolean {
  */
 export function useTrailerPreview(itemId: string | null): TrailerPreview {
   const { api, session } = useActiveSession();
-  const autoplay = useUserSettings((state) => state.values?.trailerAutoplay ?? false);
+  const autoplay = useUserSettings((state) => state.values?.trailerPreview ?? false);
   const motion = useMotionPreference();
   const device = useDeviceKind();
   const videoRef = useRef<HTMLVideoElement>(null);

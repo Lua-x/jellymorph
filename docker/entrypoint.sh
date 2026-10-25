@@ -12,6 +12,8 @@ template_dir=${JELLYMORPH_TEMPLATE_DIR:-/etc/jellymorph}
 out_dir=${JELLYMORPH_RUNTIME_DIR:-/tmp/jellymorph}
 # Own styles, fonts and pictures (phase 14); nginx serves them from this folder.
 custom_dir=${JELLYMORPH_CUSTOM_DIR:-/custom}
+# The picture cache (IMAGE_CACHE) keeps its files in a volume mounted here.
+cache_dir=${JELLYMORPH_CACHE_DIR:-/cache}
 
 # Keep in sync with src/config/theme-ids.ts (checked by src/config/theme-ids.test.ts).
 theme_ids="default neon-grid crimson glass horizon constellation cobalt onyx"
@@ -102,6 +104,27 @@ fi
 proxy_path=""
 if [ -n "$proxy_target" ]; then
   proxy_path=/jellyfin
+fi
+
+# Pictures kept in a volume (1.4.1): true (5g), false, or the most space to use, e.g. 10g or 500m.
+# Only with the proxy: without it the browser loads pictures straight from Jellyfin.
+image_cache=$(printf '%s' "${IMAGE_CACHE:-}" | tr 'A-Z' 'a-z')
+case "$image_cache" in
+  "" | false) image_cache="" ;;
+  true) image_cache=5g ;;
+  *)
+    if ! printf '%s\n' "$image_cache" | grep -Eq '^[1-9][0-9]*[mg]$'; then
+      fail "IMAGE_CACHE must be true, false or a size such as 10g or 500m (got \"${IMAGE_CACHE:-}\")."
+    fi
+    ;;
+esac
+if [ -n "$image_cache" ]; then
+  if [ -z "$proxy_target" ]; then
+    fail "IMAGE_CACHE needs JELLYFIN_PROXY_TARGET: without the proxy the browser loads pictures straight from Jellyfin."
+  fi
+  if ! mkdir -p "$cache_dir/images" 2> /dev/null || [ ! -w "$cache_dir/images" ]; then
+    fail "IMAGE_CACHE needs a writable folder at $cache_dir: mount a volume there (e.g. jellymorph-cache:/cache); a host folder must belong to the container's user (UID 101)."
+  fi
 fi
 
 # Own style sheets: custom.css for every theme, <theme>.css for one. Found once at start; changes
@@ -220,11 +243,29 @@ if [ -n "$proxy_target" ]; then
   JM_PROXY_TARGET=$proxy_target JM_RESOLVER_DIRECTIVE=$resolver_directive \
     envsubst '${JM_PROXY_TARGET} ${JM_RESOLVER_DIRECTIVE}' \
     < "$template_dir/proxy.conf.template" > "$out_dir/proxy.conf"
+  if [ -n "$image_cache" ]; then
+    JM_PROXY_TARGET=$proxy_target JM_RESOLVER_DIRECTIVE=$resolver_directive \
+      envsubst '${JM_PROXY_TARGET} ${JM_RESOLVER_DIRECTIVE}' \
+      < "$template_dir/images.conf.template" >> "$out_dir/proxy.conf"
+  fi
 else
   : > "$out_dir/proxy.conf"
 fi
 
+if [ -n "$image_cache" ]; then
+  JM_CACHE_DIR=$cache_dir/images JM_CACHE_SIZE=$image_cache \
+    envsubst '${JM_CACHE_DIR} ${JM_CACHE_SIZE}' \
+    < "$template_dir/cache.conf.template" > "$out_dir/cache.conf"
+else
+  : > "$out_dir/cache.conf"
+fi
+
 log "server: $mode; default theme: $default_theme; title: $app_title"
 log "own styles: ${custom_found:-none}"
+if [ -n "$image_cache" ]; then
+  log "picture cache: up to $image_cache in $cache_dir"
+else
+  log "picture cache: off"
+fi
 
 exec "$@"

@@ -127,14 +127,15 @@ Jellymorph is then available at `http://<host>:8080`. A complete Docker Compose 
 
 ### Variables
 
-| Variable                | Purpose                                                                                                                                              | Default      |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| `JELLYFIN_PROXY_TARGET` | Address of your Jellyfin server. Jellymorph passes it through under `/jellyfin` (recommended).                                                       | empty        |
-| `JELLYFIN_URL`          | Server address pre-filled at sign-in. The browser connects directly.                                                                                 | empty        |
-| `LOCK_SERVER`           | `true`: the address from `JELLYFIN_URL` is fixed and cannot be changed in the app.                                                                   | `false`      |
-| `DEFAULT_THEME`         | Theme for users without a choice of their own: `default` (Classic), `neon-grid`, `crimson`, `glass`, `horizon`, `constellation`, `cobalt` or `onyx`. | `default`    |
-| `APP_TITLE`             | Name in the browser tab and when installed as an app                                                                                                 | `Jellymorph` |
-| `DEMO_MODE`             | `true`: a demo with made-up data, without any Jellyfin server                                                                                        | `false`      |
+| Variable                | Purpose                                                                                                                                                                             | Default      |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| `JELLYFIN_PROXY_TARGET` | Address of your Jellyfin server. Jellymorph passes it through under `/jellyfin` (recommended).                                                                                      | empty        |
+| `JELLYFIN_URL`          | Server address pre-filled at sign-in. The browser connects directly.                                                                                                                | empty        |
+| `LOCK_SERVER`           | `true`: the address from `JELLYFIN_URL` is fixed and cannot be changed in the app.                                                                                                  | `false`      |
+| `DEFAULT_THEME`         | Theme for users without a choice of their own: `default` (Classic), `neon-grid`, `crimson`, `glass`, `horizon`, `constellation`, `cobalt` or `onyx`.                                | `default`    |
+| `APP_TITLE`             | Name in the browser tab and when installed as an app                                                                                                                                | `Jellymorph` |
+| `DEMO_MODE`             | `true`: a demo with made-up data, without any Jellyfin server                                                                                                                       | `false`      |
+| `IMAGE_CACHE`           | Keeps pictures in a volume, so Jellyfin is asked only once per picture: `true` (up to 5 GB), a size such as `10g` or `500m`, or `false`. Needs `JELLYFIN_PROXY_TARGET` (see below). | `false`      |
 
 Changes need no new build: adjust the variable, restart the container. Invalid values, such as a typo in the theme name, stop the container with a message in the log (`docker logs jellymorph`) that names the variable.
 
@@ -143,10 +144,36 @@ Changes need no new build: adjust the variable, restart the container. Invalid v
 - **With `JELLYFIN_PROXY_TARGET` (recommended):** Jellyfin appears under the same address as Jellymorph. There are no CORS or mixed-content problems, there is no server selection, and the browser may only talk to Jellymorph itself. The container also starts while Jellyfin is not running yet, and it finds a restarted Jellyfin container again on its own. In Kubernetes, give the full DNS name (e.g. `http://jellyfin.media.svc.cluster.local:8096`), because nginx does not know search domains.
 - **With `JELLYFIN_URL`:** the browser connects to Jellyfin directly. If Jellymorph runs on HTTPS, Jellyfin has to be reachable over HTTPS too. Without `LOCK_SERVER`, users can add further servers.
 
+### Picture cache (sleeping disks)
+
+If the artwork of your media lies on hard disks that go to sleep, every picture Jellyfin has not prepared in that size before wakes them up, even when you only browse. With `IMAGE_CACHE` Jellymorph keeps every picture it got from Jellyfin in a volume and serves it from there from then on: after a restart, on every device, and while Jellyfin is down. A picture that changes in Jellyfin gets a new address, so the cache never shows outdated artwork.
+
+```yaml
+services:
+  jellymorph:
+    image: ghcr.io/lua-x/jellymorph:latest
+    restart: unless-stopped
+    ports:
+      - '8080:8080'
+    environment:
+      JELLYFIN_PROXY_TARGET: http://192.168.1.10:8096
+      IMAGE_CACHE: 10g
+    volumes:
+      - jellymorph-cache:/cache
+
+volumes:
+  jellymorph-cache:
+```
+
+- It only works with `JELLYFIN_PROXY_TARGET`: without the proxy the browser loads pictures straight from Jellyfin and never passes Jellymorph.
+- Use a named volume as above; Docker gives it the right owner by itself. A host folder (`./cache:/cache`) has to belong to UID 101 (`sudo chown 101 cache`), otherwise the container stops with a message.
+- Pictures nobody asked for in a year are removed, and when the cache is full, the ones used least recently make room. The response header `X-Cache-Status` (`MISS`, `HIT`) shows where a picture came from.
+- Each picture is still read from the disk once. The title stage on the home page therefore changes its titles once a day instead of on every visit, and the trailer in it is off unless you switch it on.
+
 ### HTTPS, installing as an app and security
 
 - For HTTPS, put a reverse proxy (e.g. Caddy, Traefik or nginx) in front of the container. Only with HTTPS (or on `localhost`) can Jellymorph be installed as an app from the browser menu, and only then does the demo mode run on other devices too.
-- Jellymorph runs as an unprivileged user (UID 101) and only writes to `/tmp`, which is why `--read-only` and `--cap-drop ALL` work. The container sets a strict Content Security Policy and further security headers. Pictures may come from any HTTPS address, because the picture suggestions of metadata providers (e.g. TMDB) load directly from their sites.
+- Jellymorph runs as an unprivileged user (UID 101) and only writes to `/tmp` (and to `/cache` with `IMAGE_CACHE`), which is why `--read-only` and `--cap-drop ALL` work. The container sets a strict Content Security Policy and further security headers. Pictures may come from any HTTPS address, because the picture suggestions of metadata providers (e.g. TMDB) load directly from their sites.
 - Health check: `GET /healthz` answers `ok`. The image comes with a matching `HEALTHCHECK`.
 - So that Jellyfin sees the real client addresses behind the proxy, you can add the address of the Jellymorph container in Jellyfin under _Networking → Known proxies_.
 
@@ -180,7 +207,7 @@ In demo mode every title plays the same 60-second clip, with intro, credits, cha
 
 ## Settings and input
 
-Jellymorph stores theme, color scheme, language, motion and trailer autoplay per user on the Jellyfin server, so they apply on every device. Audio and subtitle language, subtitle mode and "Play next episode automatically" live in your Jellyfin account and also apply to the other Jellyfin apps. Streaming quality, input mode and overscan stay on the device.
+Jellymorph stores theme, color scheme, language, motion and the trailer preview per user on the Jellyfin server, so they apply on every device. Audio and subtitle language, subtitle mode and "Play next episode automatically" live in your Jellyfin account and also apply to the other Jellyfin apps. Streaming quality, input mode and overscan stay on the device.
 
 Everything works with mouse, touch, keyboard or remote control: the arrow keys move the focus, Enter selects, Esc or the back key goes back. On TVs Jellymorph switches to the TV mode with larger type and an adjustable overscan margin by itself. It can also be switched on permanently in the settings.
 
