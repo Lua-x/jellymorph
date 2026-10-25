@@ -203,6 +203,7 @@ async function defaults() {
       appTitle: 'Jellymorph',
       demoMode: false,
       customCss: { all: false, themes: [] },
+      themePlugins: [],
     });
   });
 
@@ -282,6 +283,7 @@ async function fixedServer() {
       appTitle: title,
       demoMode: false,
       customCss: { all: false, themes: [] },
+      themePlugins: [],
     });
   });
 
