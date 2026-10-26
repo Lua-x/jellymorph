@@ -1,0 +1,19 @@
+{
+  "brand": { "tag": "ムーンショット" },
+  "hero": {
+    "kicker": "Titel des Tages",
+    "kana": "本日のおすすめ",
+    "tabs": "Titel des Tages",
+    "pause": "Automatischen Wechsel anhalten",
+    "resume": "Automatischen Wechsel fortsetzen"
+  },
+  "detail": {
+    "related": "Mehr wie dieses",
+    "details": "Details",
+    "released": "Erschienen",
+    "runtime": "Laufzeit",
+    "rated": "Freigabe",
+    "genres": "Genres",
+    "episode": "Folge {{number}}"
+  }
+}

@@ -2,6 +2,14 @@
 
 All notable changes to Jellymorph. Versions follow [Semantic Versioning](https://semver.org/). The release notes on GitHub are also generated automatically from the commits.
 
+## 1.6.0 – 2026-10-26
+
+A ninth theme: Moonshot.
+
+### New
+
+- Theme **Moonshot**, our second design of our own: comic panels under a pale moon. Loud yellow, red and cyan on a violet night, hard black ink, screen-print dots and small katakana decorations, with the fonts Anton and Chakra Petch. The stage is a title card with the titles of the day behind numbered tabs; a hazard stripe fills until the next one arrives with a short color-offset glitch. Buttons, tabs and cards are slanted panels with hard shadows that jump up on hover and focus, the libraries are crooked covers in four colors, and the detail pages show the episodes as comic strips. Reduced motion switches the automatic change and every glitch off.
+
 ## 1.5.0 – 2026-10-25
 
 Your own themes as plugins.

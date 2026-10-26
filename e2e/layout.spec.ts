@@ -179,6 +179,8 @@ test.describe('own arrangement', () => {
     expect((await homeOrder(page))[0]).toBe('Genres');
     await chooseTheme(page, 'Onyx', 'onyx');
     expect((await homeOrder(page))[0]).toBe('Genres');
+    await chooseTheme(page, 'Moonshot', 'moonshot');
+    expect((await homeOrder(page))[0]).toBe('Genres');
   });
 
   test('the arrangement section is accessible', async ({ page }) => {

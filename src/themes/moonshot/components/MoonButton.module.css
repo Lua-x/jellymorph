@@ -1,0 +1,127 @@
+/*
+ * Buttons as slanted comic panels: the panel is a pseudo element (so the label stays upright),
+ * with a hard black shadow. Hover and focus look the same: the panel jumps up and to the left,
+ * and its shadow turns red.
+ */
+.button {
+  position: relative;
+  z-index: 0;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  max-width: 100%;
+  min-height: 2.75rem;
+  padding: 0 1.375rem;
+  border: 0;
+  background: transparent;
+  color: var(--label);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-decoration: none;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+
+  --fill: var(--ms-ink);
+  --edge: var(--ms-yellow);
+  --label: #ffffff;
+  --cast: var(--ms-ink);
+}
+
+.button::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border: 0.125rem solid var(--edge);
+  background: var(--fill);
+  box-shadow: 0.25rem 0.25rem 0 var(--cast);
+  content: '';
+  transform: skewX(-12deg);
+  transition: transform var(--duration-fast) var(--ease-emphasized);
+}
+
+.button > svg {
+  flex: none;
+  font-size: 1.25rem;
+}
+
+.button:focus-visible {
+  outline: none;
+}
+
+.button:is(:hover, :focus-visible) {
+  --cast: var(--ms-red);
+}
+
+.button:is(:hover, :focus-visible)::before {
+  box-shadow: 0.375rem 0.375rem 0 var(--cast);
+  transform: skewX(-12deg) translate(-0.1875rem, -0.1875rem);
+}
+
+.button:active::before {
+  transform: skewX(-12deg) translate(0.125rem, 0.125rem);
+}
+
+.button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.primary {
+  --fill: var(--ms-button);
+  --edge: var(--ms-ink);
+  --label: var(--ms-on-button);
+}
+
+.primary:is(:hover, :focus-visible) {
+  --fill: var(--ms-button-hover);
+}
+
+.secondary:is(:hover, :focus-visible),
+.round:is(:hover, :focus-visible) {
+  --fill: var(--ms-secondary-hover);
+}
+
+.round {
+  width: 2.75rem;
+  padding: 0;
+}
+
+.round[aria-pressed='true'] {
+  --fill: var(--ms-yellow);
+  --edge: var(--ms-ink);
+  --label: var(--ms-on-button);
+}
+
+.lg {
+  min-height: 3.25rem;
+  padding: 0 1.875rem;
+  font-size: 1.0625rem;
+}
+
+.lg.round {
+  width: 3.25rem;
+  padding: 0;
+}
+
+.lg > svg {
+  font-size: 1.375rem;
+}
+
+/* Long labels end with an ellipsis instead of leaving the screen. */
+.label {
+  display: inline-block;
+  min-width: 0;
+  overflow: hidden;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+}
+
+:global([data-motion='reduced']) .button::before {
+  transition: none;
+}

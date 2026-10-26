@@ -1,0 +1,19 @@
+{
+  "brand": { "tag": "ムーンショット" },
+  "hero": {
+    "kicker": "Titles of the day",
+    "kana": "本日のおすすめ",
+    "tabs": "Titles of the day",
+    "pause": "Pause automatic change",
+    "resume": "Resume automatic change"
+  },
+  "detail": {
+    "related": "More like this",
+    "details": "Details",
+    "released": "Released",
+    "runtime": "Runtime",
+    "rated": "Rating",
+    "genres": "Genres",
+    "episode": "Episode {{number}}"
+  }
+}

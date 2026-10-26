@@ -1,0 +1,44 @@
+/*
+ * Moonshot – global styles. Every selector starts with the theme scope; :where() keeps the
+ * specificity low so component styles always win.
+ */
+
+/*
+ * A violet night: a pale moon high on the right with a faint halo, the sky darkening towards
+ * the city below, a warm red glow at the bottom. Fixed while scrolling, no image files.
+ */
+[data-theme='moonshot'] body {
+  background:
+    radial-gradient(
+        circle at 84% 8rem,
+        rgb(244 236 214 / 15%) 0 6.5rem,
+        rgb(244 236 214 / 5%) 6.6rem,
+        transparent 15rem
+      )
+      fixed,
+    radial-gradient(90% 22rem at 30% 100%, rgb(255 64 96 / 12%), transparent 70%) fixed,
+    linear-gradient(180deg, #1d1336 0%, var(--color-bg) 42%, #120a16 100%) fixed;
+  color: var(--color-text);
+  font-family: var(--font-body);
+}
+
+:where([data-theme='moonshot']) ::selection {
+  background: #ffc800;
+  color: #120d00;
+}
+
+:where([data-theme='moonshot']) :focus-visible {
+  outline: 0.1875rem solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+/* Title-card headings: tall condensed capitals. */
+:where([data-theme='moonshot']) h1,
+:where([data-theme='moonshot']) h2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  /* Anton has one weight; a heading Classic sets bold would otherwise be smeared. */
+  font-synthesis: none;
+}

@@ -20,6 +20,7 @@ const THEMES: { id: string; name: string; schemes: readonly ('dark' | 'light')[]
     { id: 'constellation', name: 'Constellation', schemes: ['dark'] as const },
     { id: 'cobalt', name: 'Cobalt', schemes: ['dark'] as const },
     { id: 'onyx', name: 'Onyx', schemes: ['dark'] as const },
+    { id: 'moonshot', name: 'Moonshot', schemes: ['dark'] as const },
     { id: 'starter', name: 'Starter', schemes: ['dark'] as const, dir: STARTER_DIR },
   ];
 

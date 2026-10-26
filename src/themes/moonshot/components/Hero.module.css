@@ -1,0 +1,461 @@
+/* The stage and its tabs; the hard shadow follows the slanted panel (drop-shadow, not box-shadow). */
+.hero {
+  display: grid;
+  /* minmax(0, 1fr): otherwise the row of tabs sets the column, and text overflows. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  margin-bottom: 2.75rem;
+}
+
+.hero[data-context='preview'] {
+  margin-bottom: 1.5rem;
+}
+
+/* --- The panel: picture right, text left, the lower right corner cut off --------------------- */
+
+/* Carries the hard shadow, so it follows the cut corner (the frame itself is clipped). */
+.panel {
+  filter: drop-shadow(0.5rem 0.5rem 0 var(--ms-yellow));
+}
+
+.frame {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: end;
+  min-height: clamp(26rem, 40cqi, 70vh);
+  overflow: hidden;
+  isolation: isolate;
+  border: 0.1875rem solid var(--ms-ink);
+  background: var(--ms-ink);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 3.5rem), calc(100% - 3.5rem) 100%, 0 100%);
+}
+
+.skeleton .frame {
+  background: var(--color-surface-raised);
+}
+
+.backdrops {
+  position: absolute;
+  inset: 0 0 0 36%;
+  z-index: 0;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 500ms var(--ease-standard);
+}
+
+.backdrop[data-current] {
+  opacity: 1;
+}
+
+.trailer {
+  position: absolute;
+  inset: 0 0 0 36%;
+  z-index: 1;
+  width: 64%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.2s var(--ease-standard);
+}
+
+.trailer[data-playing='true'] {
+  opacity: 1;
+}
+
+/*
+ * Ink on the left for the text, ending in a slanted yellow cut; screen-print dots over the
+ * picture's lower part, like a printed comic.
+ */
+.shade {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(
+    97deg,
+    var(--ms-ink) 0 40%,
+    var(--ms-yellow) 40% 41.2%,
+    rgb(0 0 0 / 55%) 41.2% 50%,
+    transparent 68%
+  );
+}
+
+.shade::after {
+  position: absolute;
+  inset: 0;
+  background: var(--ms-halftone);
+  content: '';
+  -webkit-mask-image: linear-gradient(0deg, #000, transparent 55%);
+  mask-image: linear-gradient(0deg, #000, transparent 55%);
+}
+
+/* --- Text ------------------------------------------------------------------------------------- */
+
+.stage {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: end;
+  padding: 2.5rem 2.25rem 2.25rem;
+}
+
+/* All slides share one grid cell; the current one fades in over the others. */
+.slide {
+  grid-area: 1 / 1;
+  min-width: 0;
+  opacity: 0;
+  transition: opacity 300ms var(--ease-standard);
+}
+
+.slide[data-current] {
+  opacity: 1;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: start;
+  gap: 1rem;
+  /* Within the ink, left of the yellow cut (at 40 %, leaning left towards the bottom). */
+  width: min(36rem, calc(40% - 7rem));
+}
+
+/* A new title slams in from the left with a short color-offset glitch. */
+.slide[data-current] .content {
+  animation: slam var(--duration-slow) var(--ease-emphasized) both;
+}
+
+.slide[data-current] :is(.title, .logo) {
+  animation: glitch 420ms steps(4, end) both;
+}
+
+@keyframes slam {
+  from {
+    opacity: 0;
+    transform: translateX(-2rem) skewX(-6deg);
+  }
+}
+
+@keyframes glitch {
+  0% {
+    filter: drop-shadow(-0.375rem 0 0 var(--ms-cyan)) drop-shadow(0.375rem 0 0 var(--ms-red));
+  }
+
+  50% {
+    filter: drop-shadow(0.25rem 0 0 var(--ms-cyan)) drop-shadow(-0.25rem 0 0 var(--ms-red));
+  }
+
+  100% {
+    filter: drop-shadow(0 0 0 transparent);
+  }
+}
+
+.kicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.kickerTag {
+  padding: 0.25rem 0.625rem;
+  background: var(--ms-red-deep);
+  color: #ffffff;
+  transform: skewX(-12deg);
+}
+
+.kickerCount {
+  color: var(--ms-yellow);
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  letter-spacing: 0.06em;
+}
+
+.kickerKana {
+  color: var(--ms-cyan);
+  font-family: system-ui, sans-serif;
+  letter-spacing: 0.2em;
+}
+
+.logo {
+  width: min(26rem, 92%);
+  height: clamp(4.5rem, 9cqi, 9rem);
+  margin: 0;
+  filter: drop-shadow(0.25rem 0.25rem 0 var(--ms-ink));
+}
+
+/* The title in tall capitals: yellow ink with a red offset, like a screen print out of register. */
+.title {
+  margin: 0;
+  color: var(--ms-yellow);
+  font-size: clamp(2.75rem, 1.6rem + 3.6cqi, 6rem);
+  line-height: 0.95;
+  overflow-wrap: anywhere;
+  text-shadow:
+    0.1875rem 0.1875rem 0 var(--ms-red),
+    0.375rem 0.375rem 0 var(--ms-ink);
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.facts > li {
+  padding: 0.25rem 0.5rem;
+  border: 0.125rem solid var(--ms-yellow);
+  background: var(--ms-ink);
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.facts > .rating {
+  background: var(--ms-yellow);
+  color: var(--ms-on-button);
+}
+
+.overview {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: #ece8ff;
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  max-width: 100%;
+  margin-top: 0.5rem;
+}
+
+/* --- Tabs: numbered like episode cards -------------------------------------------------------- */
+
+.tabsArea {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-height: 4.25rem;
+  padding: 0 0.5rem;
+}
+
+.tabs {
+  display: flex;
+  flex: 1;
+  gap: 0.875rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0.5rem 0.75rem 0.75rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  list-style: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tabs > li {
+  position: relative;
+  flex: 0 1 12rem;
+  min-width: 0;
+}
+
+.tab {
+  position: relative;
+  z-index: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.375rem 0.875rem 0.625rem;
+  border: 0;
+  background: transparent;
+  color: #ffffff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tab::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border: 0.125rem solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: 0.25rem 0.25rem 0 var(--ms-ink);
+  content: '';
+  transform: skewX(-12deg);
+  transition: transform var(--duration-fast) var(--ease-emphasized);
+}
+
+.tab[aria-current='true']::before {
+  border-color: var(--ms-ink);
+  background: var(--ms-yellow);
+}
+
+.tab[aria-current='true'] {
+  color: var(--ms-on-button);
+}
+
+/* Focus = hover: the panel jumps up and to the left, with a red shadow. */
+.tab:focus-visible {
+  outline: none;
+}
+
+.tab:is(:hover, :focus-visible)::before {
+  border-color: var(--ms-yellow);
+  box-shadow: 0.375rem 0.375rem 0 var(--ms-red);
+  transform: skewX(-12deg) translate(-0.1875rem, -0.1875rem);
+}
+
+.tabNumber {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.tabName {
+  overflow: hidden;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* The progress of the current title: a hazard stripe filling the tab's lower edge. */
+.timer {
+  position: absolute;
+  right: 0.625rem;
+  bottom: 0.3125rem;
+  left: 0.875rem;
+  height: 0.25rem;
+  overflow: hidden;
+  background: rgb(0 0 0 / 30%);
+  transform: skewX(-12deg);
+}
+
+.timerValue {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--ms-ink) 0 0.25rem,
+    var(--ms-red) 0.25rem 0.5rem
+  );
+  transform-origin: left center;
+}
+
+.timerValue[data-running] {
+  animation: fill linear both;
+}
+
+.timerValue[data-paused] {
+  animation-play-state: paused;
+}
+
+@keyframes fill {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.pause {
+  margin-right: 0.5rem;
+}
+
+:global([data-motion='reduced']) :is(.backdrop, .slide, .trailer, .tab::before) {
+  transition: none;
+}
+
+:global([data-motion='reduced']) .slide[data-current] :is(.content, .title, .logo) {
+  animation: none;
+}
+
+/* TVs: no glitch filter over the title (expensive on their graphics chips). */
+:global([data-device='tv']) .slide[data-current] :is(.title, .logo) {
+  animation: none;
+}
+
+/* --- Small screens: picture on top, text below, tabs with numbers only ---------------------- */
+
+@media (max-width: 48rem) {
+  .frame {
+    align-items: start;
+    min-height: 0;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 2rem), calc(100% - 2rem) 100%, 0 100%);
+  }
+
+  .backdrops,
+  .trailer {
+    inset: 0 0 auto;
+    width: 100%;
+    height: calc((100vw - 2 * var(--page-gutter)) * 9 / 16);
+  }
+
+  .shade {
+    background: linear-gradient(
+      0deg,
+      var(--ms-ink) calc(100% - (100vw - 2 * var(--page-gutter)) * 9 / 16),
+      transparent calc(100% - (100vw - 2 * var(--page-gutter)) * 9 / 16 + 5rem)
+    );
+  }
+
+  .stage {
+    padding: calc((100vw - 2 * var(--page-gutter)) * 9 / 16 - 2rem) 1.25rem 1.75rem;
+  }
+
+  .content {
+    width: auto;
+  }
+
+  .overview {
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+
+  .tabs > li {
+    flex: none;
+  }
+
+  .tab {
+    grid-template-columns: auto;
+  }
+
+  .tabName {
+    display: none;
+  }
+}
