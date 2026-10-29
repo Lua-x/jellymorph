@@ -1,0 +1,228 @@
+.card {
+  display: grid;
+  gap: 0.625rem;
+  color: var(--color-text);
+  text-decoration: none;
+  outline: none;
+}
+
+/*
+ * The panel carries the hard shadow as a drop-shadow, so it follows the cut corner of the
+ * picture (a box-shadow would be clipped with it).
+ */
+.panel {
+  display: block;
+  filter: drop-shadow(0.3125rem 0.3125rem 0 var(--mn-ink));
+  transition: transform var(--duration-fast) var(--ease-emphasized);
+}
+
+.media {
+  position: relative;
+  display: block;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border: 0.1875rem solid var(--mn-ink);
+  background: var(--color-surface-raised);
+  clip-path: polygon(0 0, calc(100% - 1rem) 0, 100% 1rem, 100% 100%, 0 100%);
+}
+
+.media[data-shape='landscape'] {
+  aspect-ratio: 16 / 9;
+}
+
+/* Screen-print dots over the lower part of every picture. */
+.media::after {
+  position: absolute;
+  inset: 0;
+  background: var(--mn-halftone);
+  content: '';
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(0deg, #000, transparent 40%);
+  mask-image: linear-gradient(0deg, #000, transparent 40%);
+}
+
+/* Focus = hover: the panel jumps up and to the left, its shadow turns yellow. */
+.card:is(:hover, :focus-visible) .panel {
+  filter: drop-shadow(0.5rem 0.5rem 0 var(--mn-yellow));
+  transform: translate(-0.25rem, -0.25rem);
+}
+
+/* …and the picture twitches once with a red and cyan offset. */
+.card:is(:hover, :focus-visible) .media > span:first-child {
+  animation: twitch 260ms steps(3, end);
+}
+
+@keyframes twitch {
+  0% {
+    filter: drop-shadow(-0.25rem 0 0 var(--mn-cyan)) drop-shadow(0.25rem 0 0 var(--mn-red));
+  }
+
+  100% {
+    filter: drop-shadow(0 0 0 transparent);
+  }
+}
+
+.fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  color: var(--mn-yellow);
+  font-size: 2rem;
+}
+
+.fallbackName {
+  color: var(--color-text);
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* Stickers in the corners: played and unplayed count on the right, favorite on the left. */
+.badge {
+  position: absolute;
+  top: 0.375rem;
+  right: 1.125rem;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  min-width: 1.625rem;
+  height: 1.625rem;
+  padding: 0 0.375rem;
+  border: 0.125rem solid var(--mn-ink);
+  background: var(--mn-yellow);
+  color: var(--mn-on-button);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  transform: skewX(-12deg);
+}
+
+.count {
+  background: var(--mn-red-deep);
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+}
+
+.favorite {
+  position: absolute;
+  top: 0.375rem;
+  left: 0.375rem;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 1.625rem;
+  height: 1.625rem;
+  border: 0.125rem solid var(--mn-ink);
+  background: var(--mn-cyan);
+  color: var(--mn-ink);
+  font-size: 0.875rem;
+}
+
+/* Progress as a hazard stripe on a black track. */
+.progress {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0.5rem;
+  left: 0.5rem;
+  z-index: 1;
+  height: 0.4375rem;
+  overflow: hidden;
+  border: 0.125rem solid var(--mn-ink);
+  background: var(--mn-ink);
+}
+
+.progressValue {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--mn-yellow);
+  transform-origin: left;
+}
+
+.caption {
+  display: grid;
+  gap: 0.125rem;
+  min-width: 0;
+  padding: 0 0.125rem;
+}
+
+.title,
+.subtitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.card:is(:hover, :focus-visible) .title {
+  color: var(--mn-yellow);
+}
+
+.subtitle {
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-surface-raised);
+}
+
+/* The highlight is a separate layer that moves with transform only. */
+.skeleton::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    color-mix(in srgb, var(--color-surface-hover) 85%, transparent) 50%,
+    transparent 70%
+  );
+  content: '';
+  transform: translateX(-100%);
+  animation: shimmer 1.6s linear infinite;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.skeletonLine {
+  display: block;
+  width: 80%;
+  height: 0.875rem;
+}
+
+.short {
+  width: 45%;
+}
+
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+:global([data-motion='reduced']) .panel {
+  transition: none;
+}
+
+:global([data-motion='reduced']) .card .media > span:first-child,
+:global([data-device='tv']) .card .media > span:first-child {
+  animation: none;
+}
+
+:global([data-motion='reduced']) .skeleton::after {
+  animation: none;
+  opacity: 0;
+}

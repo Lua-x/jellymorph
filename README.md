@@ -17,7 +17,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue" alt="License: AGPL-3.0" /></a>
 </p>
 
-> **Version 1.5:** eight themes and your own as plugins, the full feature set, administration of single titles for administrators and your own arrangement and styling. What changed is in the [changelog](CHANGELOG.md).
+> **Version 1.6:** nine themes, now with Moon, and your own as plugins, the full feature set, administration of single titles for administrators and your own arrangement and styling. What changed is in the [changelog](CHANGELOG.md).
 
 ## Themes
 
@@ -95,6 +95,15 @@ Almost black with a cool blue shimmer, a side panel with text, a very tall spotl
   <img src="docs/screenshots/onyx-series.jpg" width="49%" alt="Onyx: a series with season chips and a row of episodes" />
 </p>
 
+### Moon
+
+Our second design of our own: comic panels under a pale moon. Loud yellow, red and cyan on a violet night, hard black ink and screen-print dots, a title card with numbered tabs, slanted buttons and cards that jump up with a glitch.
+
+<p>
+  <img src="docs/screenshots/moon-home.jpg" width="49%" alt="Moon: the title card with numbered tabs" />
+  <img src="docs/screenshots/moon-series.jpg" width="49%" alt="Moon: a series with its episodes as comic strips" />
+</p>
+
 The pictures show the demo mode with made-up titles and generated artwork.
 
 ## Features
@@ -132,7 +141,7 @@ Jellymorph is then available at `http://<host>:8080`. A complete Docker Compose 
 | `JELLYFIN_PROXY_TARGET` | Address of your Jellyfin server. Jellymorph passes it through under `/jellyfin` (recommended).                                                                                      | empty        |
 | `JELLYFIN_URL`          | Server address pre-filled at sign-in. The browser connects directly.                                                                                                                | empty        |
 | `LOCK_SERVER`           | `true`: the address from `JELLYFIN_URL` is fixed and cannot be changed in the app.                                                                                                  | `false`      |
-| `DEFAULT_THEME`         | Theme for users without a choice of their own: `default` (Classic), `neon-grid`, `crimson`, `glass`, `horizon`, `constellation`, `cobalt` or `onyx`.                                | `default`    |
+| `DEFAULT_THEME`         | Theme for users without a choice of their own: `default` (Classic), `neon-grid`, `crimson`, `glass`, `horizon`, `constellation`, `cobalt`, `onyx` or `moon`.                        | `default`    |
 | `APP_TITLE`             | Name in the browser tab and when installed as an app                                                                                                                                | `Jellymorph` |
 | `DEMO_MODE`             | `true`: a demo with made-up data, without any Jellyfin server                                                                                                                       | `false`      |
 | `IMAGE_CACHE`           | Keeps pictures in a volume, so Jellyfin is asked only once per picture: `true` (up to 5 GB), a size such as `10g` or `500m`, or `false`. Needs `JELLYFIN_PROXY_TARGET` (see below). | `false`      |
@@ -230,7 +239,7 @@ volumes:
   - ./custom:/custom:ro
 ```
 
-- `custom.css` applies to every theme, `<theme>.css` to one: `default.css` (Classic), `neon-grid.css`, `crimson.css`, `glass.css`, `horizon.css`, `constellation.css`, `cobalt.css`, `onyx.css`.
+- `custom.css` applies to every theme, `<theme>.css` to one: `default.css` (Classic), `neon-grid.css`, `crimson.css`, `glass.css`, `horizon.css`, `constellation.css`, `cobalt.css`, `onyx.css`, `moon.css`.
 - Put fonts and pictures next to them (e.g. `custom/fonts/`) and refer to them relatively.
 - Jellymorph serves only CSS, fonts (woff2, woff, ttf, otf) and pictures from the folder. Changes to existing files apply on the next page load, new files after a restart of the container.
 

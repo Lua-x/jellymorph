@@ -6,6 +6,7 @@ import { crimsonManifest } from './crimson/manifest';
 import { defaultManifest } from './default/manifest';
 import { glassManifest } from './glass/manifest';
 import { horizonManifest } from './horizon/manifest';
+import { moonManifest } from './moon/manifest';
 import { neonGridManifest } from './neon-grid/manifest';
 import { onyxManifest } from './onyx/manifest';
 
@@ -19,6 +20,7 @@ export const BUILT_IN_THEMES: readonly BuiltInThemeManifest[] = [
   constellationManifest,
   cobaltManifest,
   onyxManifest,
+  moonManifest,
 ];
 
 let pluginThemes: readonly PluginThemeManifest[] = [];

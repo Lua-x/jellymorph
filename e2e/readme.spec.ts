@@ -151,6 +151,19 @@ test.describe('README pictures @readme', () => {
     await save(page, 'onyx-series');
   });
 
+  test('Moon', async ({ page }) => {
+    await signInAs(page, 'Alex');
+    await chooseTheme(page, 'Moon', 'moon');
+    await home(page, 'moon');
+    await openFromSearch(page, 'Hafenviertel', 'Serien');
+    // The episodes as comic strips, below the title card.
+    await page.getByRole('heading', { name: 'Episoden' }).evaluate((heading) => {
+      window.scrollTo(0, heading.getBoundingClientRect().top + window.scrollY - 360);
+    });
+    await settle(page);
+    await save(page, 'moon-series');
+  });
+
   test('Constellation', async ({ page }) => {
     await signInAs(page, 'Alex');
     await chooseTheme(page, 'Constellation', 'constellation');
