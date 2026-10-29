@@ -179,7 +179,7 @@ test.describe('own arrangement', () => {
     expect((await homeOrder(page))[0]).toBe('Genres');
     await chooseTheme(page, 'Onyx', 'onyx');
     expect((await homeOrder(page))[0]).toBe('Genres');
-    await chooseTheme(page, 'Moonshot', 'moonshot');
+    await chooseTheme(page, 'Moon', 'moon');
     expect((await homeOrder(page))[0]).toBe('Genres');
   });
 

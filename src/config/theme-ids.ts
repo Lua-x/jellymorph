@@ -8,7 +8,7 @@ export const THEME_IDS = [
   'constellation',
   'cobalt',
   'onyx',
-  'moonshot',
+  'moon',
 ] as const;
 
 export type BuiltInThemeId = (typeof THEME_IDS)[number];

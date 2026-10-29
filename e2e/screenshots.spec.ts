@@ -200,7 +200,7 @@ test.describe('screenshots @shots', () => {
           { name: 'Constellation', id: 'constellation' },
           { name: 'Cobalt', id: 'cobalt' },
           { name: 'Onyx', id: 'onyx' },
-          { name: 'Moonshot', id: 'moonshot' },
+          { name: 'Moon', id: 'moon' },
         ]) {
           // Crimson shows details above the page; start each theme from home.
           await page.goto('/');
@@ -1200,23 +1200,23 @@ test.describe('screenshots @shots', () => {
       await shoot(page, '18-settings', '-light');
     });
   });
-  /** Theme Moonshot (phase 18): every screen it designs, in all four sizes. */
+  /** Theme Moon (phase 18): every screen it designs, in all four sizes. */
   for (const viewport of VIEWPORTS) {
-    test.describe(`moonshot ${String(viewport.width)}x${String(viewport.height)}`, () => {
+    test.describe(`moon ${String(viewport.width)}x${String(viewport.height)}`, () => {
       test.use({ viewport });
 
-      test('moonshot', async ({ page }) => {
+      test('moon', async ({ page }) => {
         test.setTimeout(150_000);
         await signInAs(page, 'Alex');
-        await chooseTheme(page, 'Moonshot', 'moonshot');
+        await chooseTheme(page, 'Moon', 'moon');
         await page.goto('/');
         const resume = page.getByRole('region', { name: 'Weiterschauen', exact: true });
         await expect(resume.getByRole('list').getByRole('link').first()).toBeVisible();
         // Resting on the stage holds the tab's progress for the picture.
         await page.mouse.move(viewport.width * 0.7, 200);
-        await shoot(page, 'm1-moonshot-home');
+        await shoot(page, 'm1-moon-home');
         await page.mouse.move(0, 0);
-        await shoot(page, 'm1-moonshot-home', '-full', true);
+        await shoot(page, 'm1-moon-home', '-full', true);
 
         // A card under the pointer: the panel jumps up with a red shadow (not on phones).
         if (viewport.width > 640) {
@@ -1231,23 +1231,23 @@ test.describe('screenshots @shots', () => {
           });
           await card.hover();
           await page.waitForTimeout(400);
-          await shoot(page, 'm2-moonshot-card');
+          await shoot(page, 'm2-moon-card');
           await page.mouse.move(0, 0);
         }
 
         await openFromSearch(page, 'Kupferherz', 'Filme');
-        await shoot(page, 'm3-moonshot-movie');
-        await shoot(page, 'm3-moonshot-movie', '-full', true);
+        await shoot(page, 'm3-moon-movie');
+        await shoot(page, 'm3-moon-movie', '-full', true);
 
         await openFromSearch(page, 'Hafenviertel', 'Serien');
-        await shoot(page, 'm4-moonshot-series');
+        await shoot(page, 'm4-moon-series');
         await page.getByRole('heading', { name: 'Episoden' }).scrollIntoViewIfNeeded();
         await page.mouse.move(0, 0);
-        await shoot(page, 'm4-moonshot-series', '-episodes');
+        await shoot(page, 'm4-moon-series', '-episodes');
 
         await page.goto('/search?q=or');
         await expect(page.getByRole('region', { name: /^Filme/ })).toBeVisible();
-        await shoot(page, 'm5-moonshot-search');
+        await shoot(page, 'm5-moon-search');
 
         await page.goto('/');
         await page
@@ -1256,16 +1256,16 @@ test.describe('screenshots @shots', () => {
           .click();
         await expect(page.getByText('56 Titel')).toBeVisible();
         await page.mouse.move(0, 0);
-        await shoot(page, 'm6-moonshot-library');
+        await shoot(page, 'm6-moon-library');
 
         const movie = (await demoItems(page, 'Movie')).find(directPlayable);
         if (!movie) throw new Error('Missing demo title');
         await pausedPlayer(page, movie.Id, 22);
-        await shoot(page, 'm7-moonshot-player');
+        await shoot(page, 'm7-moon-player');
 
         await page.goto('/settings');
         await expect(page.getByRole('heading', { level: 1, name: 'Einstellungen' })).toBeVisible();
-        await shoot(page, 'm8-moonshot-settings');
+        await shoot(page, 'm8-moon-settings');
       });
     });
   }
@@ -1274,10 +1274,10 @@ test.describe('screenshots @shots', () => {
     { width: 1920, height: 1080 },
     { width: 3840, height: 2160 },
   ]) {
-    test.describe(`moonshot TV ${String(viewport.width)}x${String(viewport.height)}`, () => {
+    test.describe(`moon TV ${String(viewport.width)}x${String(viewport.height)}`, () => {
       test.use({ viewport });
 
-      test('moonshot TV mode', async ({ page }) => {
+      test('moon TV mode', async ({ page }) => {
         await page.addInitScript(() => {
           const raw = localStorage.getItem('jellymorph.settings');
           const settings = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
@@ -1287,7 +1287,7 @@ test.describe('screenshots @shots', () => {
           );
         });
         await signInAs(page, 'Alex');
-        await chooseTheme(page, 'Moonshot', 'moonshot');
+        await chooseTheme(page, 'Moon', 'moon');
         await page.goto('/');
         await expect(page.locator('html')).toHaveAttribute('data-device', 'tv');
         const resume = page.getByRole('region', { name: 'Weiterschauen', exact: true });
@@ -1299,14 +1299,14 @@ test.describe('screenshots @shots', () => {
           await expect(resume.locator(':focus')).toHaveCount(1, { timeout: 400 });
         }).toPass({ timeout: 8000 });
         await page.waitForTimeout(700);
-        await shoot(page, 'm9-moonshot-tv-home');
+        await shoot(page, 'm9-moon-tv-home');
         await page.keyboard.press('Enter');
         // The home page has an h1 and an entry point too: wait for the details' play button.
         await expect(page).toHaveURL(/\/item\//);
         await expect(page.locator('main article [data-autofocus]').first()).toBeVisible();
         await page.keyboard.press('ArrowDown');
         await page.waitForTimeout(700);
-        await shoot(page, 'm9-moonshot-tv-details');
+        await shoot(page, 'm9-moon-tv-details');
       });
     });
   }

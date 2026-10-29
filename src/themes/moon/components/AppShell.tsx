@@ -138,7 +138,7 @@ function ProfileMenu({ nav }: { nav: NavModel }) {
  */
 export function AppShell({ nav, children }: AppShellProps) {
   const { t } = useTranslation();
-  const { t: tMoon } = useTranslation('theme-moonshot');
+  const { t: tMoon } = useTranslation('theme-moon');
   const mainRef = useRef<HTMLElement>(null);
   const search = nav.items.find((item) => item.id === 'search');
   const links = nav.items.filter((item) => item.id !== 'search');

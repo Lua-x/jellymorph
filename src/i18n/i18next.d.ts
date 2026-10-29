@@ -12,7 +12,7 @@ import type crimson from '../themes/crimson/i18n/de.json';
 import type glass from '../themes/glass/i18n/de.json';
 import type horizon from '../themes/horizon/i18n/de.json';
 import type neonGrid from '../themes/neon-grid/i18n/de.json';
-import type moonshot from '../themes/moonshot/i18n/de.json';
+import type moon from '../themes/moon/i18n/de.json';
 import type onyx from '../themes/onyx/i18n/de.json';
 
 declare module 'i18next' {
@@ -33,7 +33,7 @@ declare module 'i18next' {
       'theme-constellation': typeof constellation;
       'theme-cobalt': typeof cobalt;
       'theme-onyx': typeof onyx;
-      'theme-moonshot': typeof moonshot;
+      'theme-moon': typeof moon;
     };
   }
 }

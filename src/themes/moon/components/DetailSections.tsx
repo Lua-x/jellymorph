@@ -15,7 +15,7 @@ import styles from './Detail.module.css';
 
 /** "More like this" as a poster row; left out when there is nothing similar. */
 export function RelatedRow({ items }: { items: QueryResult<MediaItem[]> }) {
-  const { t } = useTranslation('theme-moonshot');
+  const { t } = useTranslation('theme-moon');
   if (items.status === 'success' && items.data.length === 0) return null;
   return (
     <ThemeSlot
@@ -34,7 +34,7 @@ export function RelatedRow({ items }: { items: QueryResult<MediaItem[]> }) {
 /** One episode per row: the still plays it, the title opens its own page. */
 function EpisodeList({ episodes, nextUpId }: { episodes: MediaItem[]; nextUpId: string | null }) {
   const { t } = useTranslation('content');
-  const { t: tMoon } = useTranslation('theme-moonshot');
+  const { t: tMoon } = useTranslation('theme-moon');
   const actions = useMediaActions();
   return (
     <ol className={styles.episodes}>
@@ -171,7 +171,7 @@ export function EpisodesSection({
 /** Facts in columns, then the cast with links to their titles, as arranged in `facts`. */
 export function DetailsSection({ item, facts }: { item: ItemDetail; facts: readonly FactId[] }) {
   const { t, i18n } = useTranslation('content');
-  const { t: tMoon } = useTranslation('theme-moonshot');
+  const { t: tMoon } = useTranslation('theme-moon');
   const headingId = useId();
   const directors = item.cast.filter((member) => member.kind === 'director');
   const actors = item.cast.filter((member) => member.kind === 'actor');

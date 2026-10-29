@@ -30,8 +30,8 @@
   flex: none;
   width: 0.625rem;
   height: 0.9em;
-  background: var(--ms-yellow);
-  box-shadow: 0.25rem 0.25rem 0 var(--ms-red);
+  background: var(--mn-yellow);
+  box-shadow: 0.25rem 0.25rem 0 var(--mn-red);
   content: '';
   transform: skewX(-14deg);
 }
@@ -48,7 +48,7 @@
 }
 
 .channel {
-  --tint: var(--ms-yellow);
+  --tint: var(--mn-yellow);
   --tilt: -1.2deg;
 
   position: relative;
@@ -56,9 +56,9 @@
   place-items: center;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  border: 0.1875rem solid var(--ms-ink);
+  border: 0.1875rem solid var(--mn-ink);
   background: var(--tint);
-  box-shadow: 0.375rem 0.375rem 0 var(--ms-ink);
+  box-shadow: 0.375rem 0.375rem 0 var(--mn-ink);
   color: #ffffff;
   text-decoration: none;
   transform: rotate(var(--tilt));
@@ -70,11 +70,11 @@ li:nth-child(even) > .channel {
 }
 
 .channel[data-tint='red'] {
-  --tint: var(--ms-red);
+  --tint: var(--mn-red);
 }
 
 .channel[data-tint='cyan'] {
-  --tint: var(--ms-cyan);
+  --tint: var(--mn-cyan);
 }
 
 .channel[data-tint='violet'] {
@@ -86,18 +86,18 @@ li:nth-child(even) > .channel {
   position: absolute;
   inset: 10% 9%;
   overflow: hidden;
-  border: 0.1875rem solid var(--ms-ink);
+  border: 0.1875rem solid var(--mn-ink);
 }
 
 /* Focus = hover: straightened, lifted, with a yellow shadow. */
 .channel:is(:hover, :focus-visible) {
   outline: none;
-  box-shadow: 0.5rem 0.5rem 0 var(--ms-yellow);
+  box-shadow: 0.5rem 0.5rem 0 var(--mn-yellow);
   transform: translate(-0.25rem, -0.25rem) rotate(0deg);
 }
 
 .channel[data-tint='yellow']:is(:hover, :focus-visible) {
-  box-shadow: 0.5rem 0.5rem 0 var(--ms-red);
+  box-shadow: 0.5rem 0.5rem 0 var(--mn-red);
 }
 
 .channelSkeleton {
@@ -108,7 +108,7 @@ li:nth-child(even) > .channel {
   position: relative;
   z-index: 1;
   padding: 0.25rem 0.75rem;
-  background: var(--ms-ink);
+  background: var(--mn-ink);
   font-family: var(--font-display);
   font-size: 1.5rem;
   text-align: center;
@@ -131,9 +131,9 @@ li:nth-child(even) > .channel {
   align-items: center;
   min-height: 2.5rem;
   padding: 0 1rem;
-  border: 0.125rem solid var(--ms-ink);
+  border: 0.125rem solid var(--mn-ink);
   background: var(--color-surface-raised);
-  box-shadow: 0.25rem 0.25rem 0 var(--ms-ink);
+  box-shadow: 0.25rem 0.25rem 0 var(--mn-ink);
   color: var(--color-text);
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -144,9 +144,9 @@ li:nth-child(even) > .channel {
 
 .genre:is(:hover, :focus-visible) {
   outline: none;
-  background: var(--ms-yellow);
-  box-shadow: 0.25rem 0.25rem 0 var(--ms-red);
-  color: var(--ms-on-button);
+  background: var(--mn-yellow);
+  box-shadow: 0.25rem 0.25rem 0 var(--mn-red);
+  color: var(--mn-on-button);
 }
 
 @media (max-width: 40rem) {

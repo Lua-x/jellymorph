@@ -23,10 +23,10 @@ import de from './i18n/de.json';
 import en from './i18n/en.json';
 
 /**
- * Moonshot: comic panels under a pale moon. Loud yellow, red and cyan on a violet night, hard
+ * Moon: comic panels under a pale moon. Loud yellow, red and cyan on a violet night, hard
  * black ink and screen-print dots; a title card stage with numbered tabs, slanted panels for
  * cards, tiles and buttons. Sign-in, library, search, favorites, settings, the player and the
- * states use the Classic components in Moonshot colors and type.
+ * states use the Classic components in Moon colors and type.
  */
 export const theme: ThemeModule = {
   contractVersion: THEME_CONTRACT_VERSION,

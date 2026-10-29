@@ -30,8 +30,8 @@
   flex: none;
   width: 0.625rem;
   height: 0.9em;
-  background: var(--ms-yellow);
-  box-shadow: 0.25rem 0.25rem 0 var(--ms-red);
+  background: var(--mn-yellow);
+  box-shadow: 0.25rem 0.25rem 0 var(--mn-red);
   content: '';
   transform: skewX(-14deg);
 }
@@ -62,10 +62,10 @@
 .seasonPill select {
   min-height: 2.75rem;
   padding: 0 2.75rem 0 1rem;
-  border: 0.1875rem solid var(--ms-ink);
+  border: 0.1875rem solid var(--mn-ink);
   background: var(--color-surface-raised);
-  box-shadow: 0.25rem 0.25rem 0 var(--ms-ink);
-  color: var(--ms-yellow);
+  box-shadow: 0.25rem 0.25rem 0 var(--mn-ink);
+  color: var(--mn-yellow);
   font: inherit;
   font-size: 1rem;
   font-weight: 700;
@@ -78,9 +78,9 @@
 /* Focus = hover: yellow with black ink and a red shadow. */
 .seasonPill select:is(:hover, :focus-visible) {
   outline: none;
-  background: var(--ms-yellow);
-  box-shadow: 0.25rem 0.25rem 0 var(--ms-red);
-  color: var(--ms-on-button);
+  background: var(--mn-yellow);
+  box-shadow: 0.25rem 0.25rem 0 var(--mn-red);
+  color: var(--mn-on-button);
 }
 
 .seasonPill select option {
@@ -91,12 +91,12 @@
 .selectIcon {
   position: absolute;
   right: 1rem;
-  color: var(--ms-yellow);
+  color: var(--mn-yellow);
   pointer-events: none;
 }
 
 .seasonPill:has(select:is(:hover, :focus-visible)) .selectIcon {
-  color: var(--ms-on-button);
+  color: var(--mn-on-button);
 }
 
 .episodes {
@@ -114,13 +114,13 @@
   gap: 1.25rem;
   align-items: center;
   padding: 0.75rem;
-  border: 0.1875rem solid var(--ms-ink);
+  border: 0.1875rem solid var(--mn-ink);
   background: var(--color-surface);
-  box-shadow: 0.375rem 0.375rem 0 var(--ms-ink);
+  box-shadow: 0.375rem 0.375rem 0 var(--mn-ink);
 }
 
 .episode[data-next] {
-  border-left: 0.5rem solid var(--ms-yellow);
+  border-left: 0.5rem solid var(--mn-yellow);
   background: var(--color-surface-raised);
 }
 
@@ -130,7 +130,7 @@
   aspect-ratio: 16 / 9;
   padding: 0;
   overflow: hidden;
-  border: 0.1875rem solid var(--ms-ink);
+  border: 0.1875rem solid var(--mn-ink);
   background: var(--color-surface-raised);
   cursor: pointer;
   transition: transform var(--duration-fast) var(--ease-emphasized);
@@ -150,9 +150,9 @@
   width: 3rem;
   height: 3rem;
   margin: -1.5rem 0 0 -1.5rem;
-  border: 0.1875rem solid var(--ms-ink);
-  background: var(--ms-ink);
-  color: var(--ms-yellow);
+  border: 0.1875rem solid var(--mn-ink);
+  background: var(--mn-ink);
+  color: var(--mn-yellow);
   font-size: 1.25rem;
   transform: skewX(-12deg);
 }
@@ -160,13 +160,13 @@
 /* Focus = hover: the still jumps up with a yellow shadow, the play sign turns yellow. */
 .still:is(:hover, :focus-visible) {
   outline: none;
-  box-shadow: 0.375rem 0.375rem 0 var(--ms-yellow);
+  box-shadow: 0.375rem 0.375rem 0 var(--mn-yellow);
   transform: translate(-0.1875rem, -0.1875rem);
 }
 
 .still:is(:hover, :focus-visible) .stillPlay {
-  background: var(--ms-yellow);
-  color: var(--ms-on-button);
+  background: var(--mn-yellow);
+  color: var(--mn-on-button);
 }
 
 .stillProgress {
@@ -176,14 +176,14 @@
   left: 0.5rem;
   height: 0.4375rem;
   overflow: hidden;
-  border: 0.125rem solid var(--ms-ink);
-  background: var(--ms-ink);
+  border: 0.125rem solid var(--mn-ink);
+  background: var(--mn-ink);
 }
 
 .stillProgress > span {
   display: block;
   height: 100%;
-  background: var(--ms-yellow);
+  background: var(--mn-yellow);
   transform-origin: left center;
 }
 
@@ -207,7 +207,7 @@
 }
 
 .episodeNumber {
-  color: var(--ms-yellow);
+  color: var(--mn-yellow);
   font-family: var(--font-display);
   font-size: 1.25rem;
   font-weight: 400;
@@ -216,7 +216,7 @@
 
 .nextBadge {
   padding: 0.125rem 0.5rem;
-  background: var(--ms-red-deep);
+  background: var(--mn-red-deep);
   color: #ffffff;
   font-size: 0.75rem;
   transform: skewX(-12deg);
@@ -237,13 +237,13 @@
 }
 
 .episodeTitle:is(:hover, :focus-visible) {
-  color: var(--ms-yellow);
+  color: var(--mn-yellow);
   text-decoration: underline;
   text-decoration-thickness: 0.125rem;
 }
 
 .episodeTitle:focus-visible {
-  outline: 0.1875rem solid var(--ms-yellow);
+  outline: 0.1875rem solid var(--mn-yellow);
   outline-offset: 3px;
 }
 
@@ -265,9 +265,9 @@
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
   gap: 2rem 3rem;
   padding: 1.5rem;
-  border: 0.1875rem solid var(--ms-ink);
+  border: 0.1875rem solid var(--mn-ink);
   background: var(--color-surface);
-  box-shadow: 0.375rem 0.375rem 0 var(--ms-ink);
+  box-shadow: 0.375rem 0.375rem 0 var(--mn-ink);
 }
 
 .facts {
@@ -286,7 +286,7 @@
 }
 
 .facts dt {
-  color: var(--ms-yellow);
+  color: var(--mn-yellow);
   font-size: 0.8125rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -300,7 +300,7 @@
 
 .subheading {
   margin: 0 0 0.75rem;
-  color: var(--ms-yellow);
+  color: var(--mn-yellow);
   font-size: 0.8125rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -328,12 +328,12 @@
 }
 
 .person:is(:hover, :focus-visible) {
-  color: var(--ms-yellow);
+  color: var(--mn-yellow);
   text-decoration: underline;
 }
 
 .person:focus-visible {
-  outline: 0.1875rem solid var(--ms-yellow);
+  outline: 0.1875rem solid var(--mn-yellow);
   outline-offset: 2px;
 }
 

@@ -27,10 +27,10 @@
   white-space: nowrap;
   cursor: pointer;
 
-  --fill: var(--ms-ink);
-  --edge: var(--ms-yellow);
+  --fill: var(--mn-ink);
+  --edge: var(--mn-yellow);
   --label: #ffffff;
-  --cast: var(--ms-ink);
+  --cast: var(--mn-ink);
 }
 
 .button::before {
@@ -55,7 +55,7 @@
 }
 
 .button:is(:hover, :focus-visible) {
-  --cast: var(--ms-red);
+  --cast: var(--mn-red);
 }
 
 .button:is(:hover, :focus-visible)::before {
@@ -73,18 +73,18 @@
 }
 
 .primary {
-  --fill: var(--ms-button);
-  --edge: var(--ms-ink);
-  --label: var(--ms-on-button);
+  --fill: var(--mn-button);
+  --edge: var(--mn-ink);
+  --label: var(--mn-on-button);
 }
 
 .primary:is(:hover, :focus-visible) {
-  --fill: var(--ms-button-hover);
+  --fill: var(--mn-button-hover);
 }
 
 .secondary:is(:hover, :focus-visible),
 .round:is(:hover, :focus-visible) {
-  --fill: var(--ms-secondary-hover);
+  --fill: var(--mn-secondary-hover);
 }
 
 .round {
@@ -93,9 +93,9 @@
 }
 
 .round[aria-pressed='true'] {
-  --fill: var(--ms-yellow);
-  --edge: var(--ms-ink);
-  --label: var(--ms-on-button);
+  --fill: var(--mn-yellow);
+  --edge: var(--mn-ink);
+  --label: var(--mn-on-button);
 }
 
 .lg {

@@ -1,5 +1,5 @@
 /*
- * Moonshot – global styles. Every selector starts with the theme scope; :where() keeps the
+ * Moon – global styles. Every selector starts with the theme scope; :where() keeps the
  * specificity low so component styles always win.
  */
 
@@ -7,7 +7,7 @@
  * A violet night: a pale moon high on the right with a faint halo, the sky darkening towards
  * the city below, a warm red glow at the bottom. Fixed while scrolling, no image files.
  */
-[data-theme='moonshot'] body {
+[data-theme='moon'] body {
   background:
     radial-gradient(
         circle at 84% 8rem,
@@ -22,19 +22,19 @@
   font-family: var(--font-body);
 }
 
-:where([data-theme='moonshot']) ::selection {
+:where([data-theme='moon']) ::selection {
   background: #ffc800;
   color: #120d00;
 }
 
-:where([data-theme='moonshot']) :focus-visible {
+:where([data-theme='moon']) :focus-visible {
   outline: 0.1875rem solid var(--color-focus);
   outline-offset: 3px;
 }
 
 /* Title-card headings: tall condensed capitals. */
-:where([data-theme='moonshot']) h1,
-:where([data-theme='moonshot']) h2 {
+:where([data-theme='moon']) h1,
+:where([data-theme='moon']) h2 {
   font-family: var(--font-display);
   font-weight: 400;
   letter-spacing: 0.02em;

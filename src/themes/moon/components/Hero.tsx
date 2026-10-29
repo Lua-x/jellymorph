@@ -32,7 +32,7 @@ function Slide({
   current: boolean;
 }) {
   const { t } = useTranslation('content');
-  const { t: tMoon } = useTranslation('theme-moonshot');
+  const { t: tMoon } = useTranslation('theme-moon');
   const actions = useMediaActions();
   const facts = [
     yearText(t, item),
@@ -128,7 +128,7 @@ function isNear(a: number, b: number, count: number): boolean {
  */
 export function Hero({ items, context }: HeroProps) {
   const { t } = useTranslation('content');
-  const { t: tMoon } = useTranslation('theme-moonshot');
+  const { t: tMoon } = useTranslation('theme-moon');
   const [index, setIndex] = useState(0);
   const [held, setHeld] = useState(false);
   const [stopped, setStopped] = useState(false);

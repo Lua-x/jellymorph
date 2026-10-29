@@ -1,11 +1,11 @@
 /*
- * Moonshot – design tokens (docs/architecture.md §7.4). Dark only: a violet night with a pale
+ * Moon – design tokens (docs/architecture.md §7.4). Dark only: a violet night with a pale
  * moon, flat comic colors and hard black ink. The main color is a warm yellow (#ffc800, ΔE76 ≥ 21
  * to the yellow of known cyberpunk brands, ≈ 12 to Neon Grid's), with a hot red (#ff4060) and a
  * light cyan (#62d8ff) as second colors. No soft shadows: cards cast hard black offsets.
  */
 
-[data-theme='moonshot'] {
+[data-theme='moon'] {
   color-scheme: dark;
 
   --color-bg: #0d0a1a;
@@ -49,20 +49,20 @@
   --backdrop-glow-2: rgb(98 216 255 / 10%);
 
   /* Theme-own tokens */
-  --ms-nav-height: 4rem;
-  --ms-ink: #000000;
-  --ms-yellow: #ffc800;
-  --ms-red: #ff4060;
+  --mn-nav-height: 4rem;
+  --mn-ink: #000000;
+  --mn-yellow: #ffc800;
+  --mn-red: #ff4060;
   /* Behind white text (tags): the red deepened to 5.2:1. */
-  --ms-red-deep: #d21f45;
-  --ms-cyan: #62d8ff;
-  --ms-paper: #f4ecd6;
-  --ms-button: #ffc800;
-  --ms-button-hover: #ffd84d;
-  --ms-on-button: #120d00;
-  --ms-secondary: #211b36;
-  --ms-secondary-hover: #2b2445;
+  --mn-red-deep: #d21f45;
+  --mn-cyan: #62d8ff;
+  --mn-paper: #f4ecd6;
+  --mn-button: #ffc800;
+  --mn-button-hover: #ffd84d;
+  --mn-on-button: #120d00;
+  --mn-secondary: #211b36;
+  --mn-secondary-hover: #2b2445;
   /* Screen-print dots, used over pictures and on surfaces. */
-  --ms-halftone: radial-gradient(circle, rgb(0 0 0 / 55%) 0.09rem, transparent 0.11rem) 0 0 /
+  --mn-halftone: radial-gradient(circle, rgb(0 0 0 / 55%) 0.09rem, transparent 0.11rem) 0 0 /
     0.375rem 0.375rem;
 }

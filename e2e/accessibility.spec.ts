@@ -24,7 +24,7 @@ const THEMES = [
   { name: 'Constellation', id: 'constellation', scheme: 'dark' },
   { name: 'Cobalt', id: 'cobalt', scheme: 'dark' },
   { name: 'Onyx', id: 'onyx', scheme: 'dark' },
-  { name: 'Moonshot', id: 'moonshot', scheme: 'dark' },
+  { name: 'Moon', id: 'moon', scheme: 'dark' },
 ] as const;
 
 interface Listed {

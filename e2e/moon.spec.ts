@@ -7,11 +7,11 @@ import {
   signInAs,
 } from './helpers';
 
-/** Theme Moonshot (phase 18): a title card with numbered tabs, comic panels, slanted buttons. */
+/** Theme Moon (phase 18): a title card with numbered tabs, comic panels, slanted buttons. */
 
-async function useMoonshot(page: Page) {
+async function useMoon(page: Page) {
   await signInAs(page, 'Alex');
-  await chooseTheme(page, 'Moonshot', 'moonshot');
+  await chooseTheme(page, 'Moon', 'moon');
   await page.goto('/');
   await expect(page.getByRole('region', { name: 'Bibliotheken' })).toBeVisible();
 }
@@ -85,8 +85,8 @@ async function compareHoverAndFocus(page: Page, locator: Locator) {
   expect(focused).toEqual(hovered);
 }
 
-test('the whole app switches to Moonshot without a reload', async ({ page }) => {
-  await useMoonshot(page);
+test('the whole app switches to Moon without a reload', async ({ page }) => {
+  await useMoon(page);
   const fonts = await page.evaluate(async () => {
     await document.fonts.ready;
     const heading = document.querySelector('main h2');
@@ -113,7 +113,7 @@ test('the whole app switches to Moonshot without a reload', async ({ page }) => 
 test('numbered tabs choose titles; a full bar brings the next one with a glitch', async ({
   page,
 }) => {
-  await useMoonshot(page);
+  await useMoon(page);
   const hero = page.getByRole('region', { name: 'Empfohlen' });
   const buttons = tabs(page);
   await expect(buttons).toHaveCount(6);
@@ -151,7 +151,7 @@ test('numbered tabs choose titles; a full bar brings the next one with a glitch'
 });
 
 test('cards are comic panels that jump up under the pointer @desktop-only', async ({ page }) => {
-  await useMoonshot(page);
+  await useMoon(page);
   const poster = cards(page, 'Neu in Filme').first();
   await poster.scrollIntoViewIfNeeded();
   const posterBox = await poster.locator('[data-shape]').boundingBox();
@@ -179,7 +179,7 @@ test('cards are comic panels that jump up under the pointer @desktop-only', asyn
 });
 
 test('film details show the title card, more like this and the details', async ({ page }) => {
-  await useMoonshot(page);
+  await useMoon(page);
   const movie = (await demoItems(page, 'Movie'))[0];
   if (!movie) throw new Error('No movie in the demo');
   await page.goto(`/item/${movie.Id}`);
@@ -192,7 +192,7 @@ test('film details show the title card, more like this and the details', async (
 });
 
 test('series list their episodes with a season picker', async ({ page }) => {
-  await useMoonshot(page);
+  await useMoon(page);
   await page.goto('/search?q=Hafenviertel');
   await page
     .getByRole('region', { name: /^Serien/ })
@@ -219,7 +219,7 @@ test('series list their episodes with a season picker', async ({ page }) => {
 });
 
 test('arrow keys reach the rows; focus looks like hover @desktop-only', async ({ page }) => {
-  await useMoonshot(page);
+  await useMoon(page);
   await expect(cards(page, 'Weiterschauen').first()).toBeVisible();
   // The hero loads its titles of the day after the rows: its buttons are the entry point.
   await expect(
@@ -252,7 +252,7 @@ test('arrow keys reach the rows; focus looks like hover @desktop-only', async ({
 });
 
 test('home, details and search are accessible @desktop-only', async ({ page }) => {
-  await useMoonshot(page);
+  await useMoon(page);
   await page
     .getByRole('region', { name: 'Empfohlen' })
     .getByRole('button', { name: 'Automatischen Wechsel anhalten' })
@@ -267,14 +267,14 @@ test('home, details and search are accessible @desktop-only', async ({ page }) =
     .click();
   await expect(page.getByRole('region', { name: 'Episoden' })).toBeVisible();
   await expectNoA11yViolations(page);
-  // Moonshot uses Classic's search page.
+  // Moon uses Classic's search page.
   await page.goto('/search?q=ka');
   await expect(page.getByRole('region', { name: /^Filme/ })).toBeVisible();
   await expectNoA11yViolations(page);
 });
 
 test('effects only animate transform, opacity and filter @desktop-only', async ({ page }) => {
-  await useMoonshot(page);
+  await useMoon(page);
   await cards(page, 'Neu in Filme').first().hover();
   const movie = (await demoItems(page, 'Movie'))[0];
   if (!movie) throw new Error('No movie in the demo');
@@ -293,7 +293,7 @@ test.describe('reduced motion', () => {
   test.use({ reducedMotion: 'reduce' });
 
   test('the stage neither changes by itself nor glitches', async ({ page }) => {
-    await useMoonshot(page);
+    await useMoon(page);
     await expect(page.locator('html')).toHaveAttribute('data-motion', 'reduced');
     const hero = page.getByRole('region', { name: 'Empfohlen' });
     await expect(hero.getByRole('button', { name: /Automatischen Wechsel/ })).toHaveCount(0);
